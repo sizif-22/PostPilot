@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily:{
+        Jersey:"Jersey"
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

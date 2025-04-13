@@ -1,101 +1,77 @@
+"use client";
+import { FaFacebookF } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
+import mainImage from "../imgs/w-out bg.png";
+import { addUser, addUserWithFacebook } from "./Firebase/firebase.auth";
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import Loading from "./loading";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+const Home = () => {
+  const userState = useSelector((state) => state.user.userState);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (userState) {
+      setLoading(false);
+    }
+  }, [userState]);
+
+  return loading ? (
+    <Loading />
+  ) : (
+    <div className="h-screen bg-gradient-to-b from-[#212121] to-black text-white px-[70px] selection:bg-[#111]">
+      <div className="flex justify-between h-[10vh] items-center">
+        <h1 className="font-Jersey text-4xl select-none">Post Pilot</h1>
+        {userState.isLoggedIn && <p>hi {userState.name} 👋.</p>}
+      </div>
+      <div className=" flex flex-col items-center justify-between py-16 h-[90vh]">
+        <h1 className=" text-4xl">Schedule Smarter. Post Everywhere.</h1>
+        <p className=" text-[#555]">
+          Plan, schedule, and publish your social posts across platforms — all
+          in one place.
+        </p>
+        {!userState.isLoggedIn ? (
+          <div className="flex gap-2 my-10">
+            <button
+              onClick={addUserWithFacebook}
+              className="flex items-center gap-2 border  px-4 py-2 rounded border-blue-700 hover:bg-[#00000020]"
+            >
+              <FaFacebookF className="text-blue-700" /> Sign-in with Facebook
+            </button>
+            <button
+              onClick={addUser}
+              className="flex items-center gap-2 px-4 py-2 border-white border  rounded  hover:bg-[#00000020]"
+            >
+              <FcGoogle /> Sign-in with Google
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2 my-10">
+            <button
+              onClick={() => {
+                router.push("/dashboard");
+              }}
+              className="flex items-center gap-2 px-4 py-2 border-white border  rounded  hover:bg-[#00000020]"
+            >
+              Get Started
+            </button>
+          </div>
+        )}
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          src={mainImage}
+          width={1000}
+          height={1000}
+          priority={true}
+          alt="post Pilot image"
+          className="h-80 w-80 rounded-xl"
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
