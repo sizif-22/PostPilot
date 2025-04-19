@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "../../Firebase/firebase.config";
 import FacebookSection from "./facebookSection";
+import InstagramSection from "./instagramSection";
+import HomeSection from "./home";
 import SettingSection from "./settings";
 const Page = ({ params }) => {
   const user = useSelector((state) => state.user.userState);
@@ -35,7 +37,7 @@ const Page = ({ params }) => {
       if (!user.isLoggedIn) {
         router.replace("/");
       } else {
-        if (project?.FacebookConnected) {
+        if (project?.FacebookConnected || project?.InstagramConnected) {
           setSection(1);
         }
         setLoading(false);
@@ -50,14 +52,34 @@ const Page = ({ params }) => {
       <div className="flex justify-between h-[10vh] items-center">
         <h1 className="font-Jersey text-4xl select-none">Post Pilot</h1>
         <div className="flex gap-5">
-          {project.FacebookConnected && (
+          {(project.FacebookConnected || project.InstagramConnected) && (
             <button
               onClick={() => {
                 setSection(1);
               }}
               className={`${section == 1 && "underline"} `}
             >
+              Home
+            </button>
+          )}
+          {project.FacebookConnected && (
+            <button
+              onClick={() => {
+                setSection(2);
+              }}
+              className={`${section == 2 && "underline"} `}
+            >
               Facebook
+            </button>
+          )}
+          {project.InstagramConnected && (
+            <button
+              onClick={() => {
+                setSection(3);
+              }}
+              className={`${section == 3 && "underline"} `}
+            >
+              Instagram
             </button>
           )}
           <button
@@ -70,7 +92,15 @@ const Page = ({ params }) => {
           </button>
         </div>
       </div>
-      {section == 1 ? <FacebookSection /> : <SettingSection />}
+      {section == 1 ? (
+        <HomeSection />
+      ) : section == 2 ? (
+        <FacebookSection />
+      ) : section == 3 ? (
+        <InstagramSection />
+      ) : (
+        <SettingSection />
+      )}
     </div>
   );
 };

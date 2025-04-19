@@ -1,12 +1,12 @@
 "use client";
-import store from "../lib/store";
+import store from "../Redux/store";
 import { Provider } from "react-redux";
 import { useState, useEffect } from "react";
 import Loading from "./loading";
 import { useDispatch } from "react-redux";
 import { auth, db } from "./Firebase/firebase.config";
 import { checkLoggedIn } from "./Firebase/firebase.auth";
-import { handleUserState } from "../lib/user.data";
+import { handleUserState } from "../Redux/user.data";
 import * as firestore from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 const SubLayout = ({ child }) => {
