@@ -1,25 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const ImagePopup = ({ isOpen, onClose, images, initialIndex = 0 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Reset to initial index when the popup opens or when initial index changes
   useEffect(() => {
     if (isOpen) {
+      setCurrentIndex(initialIndex);
+      setIsLoading(true);
       // Prevent scrolling when popup is open
       document.body.style.overflow = "hidden";
-      // Reset loading state when changing images
-      setIsLoading(true);
-      // Reset index when popup opens
-      setCurrentIndex(initialIndex);
     } else {
       // Restore scrolling when popup is closed
       document.body.style.overflow = "auto";
     }
-    
+
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -27,96 +26,171 @@ const ImagePopup = ({ isOpen, onClose, images, initialIndex = 0 }) => {
 
   if (!isOpen || !images || images.length === 0) return null;
 
-  const currentImage = images[currentIndex];
+  const mediaItems = images || [];
+  const currentItem = mediaItems[currentIndex];
 
-  const handleNext = (e) => {
-    e.stopPropagation();
-    setIsLoading(true);
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+  if (!currentItem) {
+    return null;
+  }
 
   const handlePrevious = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     setIsLoading(true);
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? mediaItems.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e) => {
+    if (e) e.stopPropagation();
+    setIsLoading(true);
+    setCurrentIndex((prev) => (prev === mediaItems.length - 1 ? 0 : prev + 1));
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Escape") onClose();
-    if (e.key === "ArrowRight") handleNext(e);
-    if (e.key === "ArrowLeft") handlePrevious(e);
+    if (e.key === "ArrowLeft") {
+      handlePrevious();
+    } else if (e.key === "ArrowRight") {
+      handleNext();
+    } else if (e.key === "Escape") {
+      onClose();
+    }
   };
 
-
-
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
-      onClick={onClose}
-      onKeyDown={handleKeyDown}
+    <div
+      className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
       tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onClick={onClose}
     >
-      {/* Close button */}
-      <button 
-        className="absolute top-4 right-4 text-white bg-black bg-opacity-50 hover:bg-opacity-70 p-2 rounded-full z-10"
-        onClick={onClose}
-      >
-        <X size={24} />
-      </button>
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-70"
+        >
+          <X size={24} />
+        </button>
+      </div>
 
-      {/* Image container */}
-      <div 
-        className="relative w-full h-full flex items-center justify-center p-4 md:p-8"
+      <div
+        className="absolute top-1/2 left-4 transform -translate-y-1/2"
         onClick={(e) => e.stopPropagation()}
       >
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
-          </div>
-        )}
-        
-        <Image
-          src={currentImage.url}
-          alt={currentImage.name || "Gallery image"}
-          fill
-          className="object-contain"
-          onLoad={() => setIsLoading(false)}
-          priority
-        />
+        <button
+          onClick={handlePrevious}
+          className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-70"
+          disabled={mediaItems.length <= 1}
+        >
+          <ChevronLeft size={24} />
+        </button>
       </div>
 
-      {/* Navigation buttons */}
-      {images.length > 1 && (
-        <>
-          <button 
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-70 p-2 rounded-full"
-            onClick={handlePrevious}
-          >
-            <ChevronLeft size={24} />
-          </button>
-          
-          <button 
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-70 p-2 rounded-full"
-            onClick={handleNext}
-          >
-            <ChevronRight size={24} />
-          </button>
-        </>
-      )}
-      
-      {/* Download button */}
-      {/* <button 
-        className="absolute bottom-4 right-4 text-white bg-black bg-opacity-50 hover:bg-opacity-70 p-2 rounded-full flex items-center gap-2"
-        onClick={handleDownload}
+      <div
+        className="absolute top-1/2 right-4 transform -translate-y-1/2"
+        onClick={(e) => e.stopPropagation()}
       >
-        <Download size={20} />
-        <span className="mr-1">Download</span>
-      </button> */}
-      
-      {/* Image counter */}
-      <div className="absolute bottom-4 left-4 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full">
-        {currentIndex + 1} / {images.length}
+        <button
+          onClick={handleNext}
+          className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-70"
+          disabled={mediaItems.length <= 1}
+        >
+          <ChevronRight size={24} />
+        </button>
       </div>
+
+      <div
+        className="max-w-4xl max-h-[50vh] relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Use isVideo flag instead of trying to determine from URL */}
+        {!currentItem.isVideo ? (
+          <div className="relative">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              </div>
+            )}
+            <Image
+              src={currentItem.url}
+              alt={currentItem.name || "Image"}
+              width={1200}
+              height={800}
+              className="max-w-full max-h-[80vh] object-contain mx-auto"
+              onLoad={() => setIsLoading(false)}
+              priority
+            />
+          </div>
+        ) : (
+          <video
+            src={currentItem.url}
+            controls
+            className="max-h-[50vh] object-contain mx-auto"
+            autoPlay
+            onLoadStart={() => setIsLoading(false)}
+          >
+            Your browser does not support the video tag.
+          </video>
+        )}
+      </div>
+
+      {/* Image counter */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-3 py-1 rounded-full text-white text-sm">
+        {currentIndex + 1} / {mediaItems.length}
+      </div>
+
+      {/* Thumbnail gallery */}
+      {mediaItems.length > 1 && (
+        <div
+          className="absolute bottom-12 left-0 right-0 flex justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex space-x-2 overflow-x-auto p-2 bg-black bg-opacity-50 rounded-lg max-w-[80vw]">
+            {mediaItems.map((item, index) => (
+              <div
+                key={index}
+                className={`w-16 h-16 cursor-pointer rounded overflow-hidden border-2 ${
+                  index === currentIndex
+                    ? "border-blue-500"
+                    : "border-transparent"
+                }`}
+                onClick={() => {
+                  setCurrentIndex(index);
+                  setIsLoading(true);
+                }}
+              >
+                {item.isVideo ? (
+                  <div className="h-[50vh] bg-gray-800 flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-white"
+                    >
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </div>
+                ) : (
+                  <Image
+                    src={item.url}
+                    alt={`Thumbnail ${index}`}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,13 +1,21 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { uploadImage } from "@/app/Firebase/firebase.storage";
-import { Plus, Trash2, CheckSquare, Square, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Play,
+  CheckSquare,
+  Square,
+  AlertCircle,
+  Video,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import ImagePopup from "./ImagePopup"; // Import the new component
+import ImagePopup from "./ImagePopup";
 
 const validateFileType = (file) => {
-  const allowedTypes = [
+  const allowedImageTypes = [
     "image/jpeg",
     "image/png",
     "image/gif",
@@ -15,30 +23,82 @@ const validateFileType = (file) => {
     "image/heif",
     "image/webp",
   ];
-  if (!allowedTypes.includes(file.type)) {
+
+  const allowedVideoTypes = [
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
+    "video/quicktime",
+    "video/x-msvideo",
+  ];
+
+  // Check if file is an allowed image or video
+  if (
+    !allowedImageTypes.includes(file.type) &&
+    !allowedVideoTypes.includes(file.type)
+  ) {
     return false;
   }
-  if (file.size > 10 * 1024 * 1024) {
-    return false;
-  }
+
   return true;
+};
+
+// Helper function to check if file is a video
+const isVideoFile = (file) => {
+  // If it's a media object with contentType or isVideo flag
+  if (file && typeof file === "object") {
+    // First check for isVideo flag that comes from Firebase metadata
+    if (file.isVideo !== undefined) {
+      return file.isVideo;
+    }
+
+    // Then check contentType if available
+    if (file.contentType) {
+      return file.contentType.startsWith("video/");
+    }
+
+    // For File objects (during upload)
+    if (file.type) {
+      const videoTypes = [
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
+        "video/quicktime",
+        "video/x-msvideo",
+      ];
+      return videoTypes.includes(file.type);
+    }
+  }
+
+  // Fallback for string URLs - check for video content type indicators
+  if (typeof file === "string") {
+    // If it's a Firebase Storage URL with a token
+    if (file.includes("?alt=media")) {
+      return file.includes("video/") || file.includes("content_type=video");
+    }
+
+    // Traditional extension checking
+    const extension = file.split(".").pop().split("?")[0].toLowerCase();
+    return ["mp4", "webm", "ogg", "mov", "avi"].includes(extension);
+  }
+
+  return false;
 };
 
 const STORAGE_LIMIT_MB = 500; // 500MB total storage limit
 
-const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
+const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  // const [imgs, setImgs] = useState([]);
-  const [selectedImgs, setSelectedImgs] = useState([]);
+  const [selectedMedia, setSelectedMedia] = useState([]);
   const [selectedForDelete, setSelectedForDelete] = useState([]);
   const [selectMode, setSelectMode] = useState(false);
-  // const [storageUsed, setStorageUsed] = useState(0); // in MB
   const inputRef = useRef(null);
-  // const [isChanged, setIsChanged] = useState(false);
-  // New state for the image popup
+  // State for the image popup
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupImageIndex, setPopupImageIndex] = useState(0);
+  // State for video preview
+  const [videoPreview, setVideoPreview] = useState(null);
 
   // Calculate columns based on screen width
   const getColumns = (width) => {
@@ -61,78 +121,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // const calculateStorageUsed = async (items) => {
-  //   try {
-  //     const { ref, getMetadata } = await import("firebase/storage");
-  //     const { storage } = await import("@/app/Firebase/firebase.config");
-
-  //     let totalSize = 0;
-  //     const metadataPromises = items.map(async (imageRef) => {
-  //       try {
-  //         const metadata = await getMetadata(imageRef);
-  //         return metadata.size; // size in bytes
-  //       } catch (err) {
-  //         console.error(
-  //           `Error getting metadata for ${imageRef.fullPath}:`,
-  //           err
-  //         );
-  //         return 0;
-  //       }
-  //     });
-
-  //     const sizes = await Promise.all(metadataPromises);
-  //     totalSize = sizes.reduce((acc, size) => acc + size, 0);
-
-  //     // Convert bytes to MB
-  //     const sizeInMB = totalSize / (1024 * 1024);
-  //     setStorageUsed(parseFloat(sizeInMB.toFixed(1)));
-  //   } catch (error) {
-  //     console.error("Error calculating storage:", error);
-  //   }
-  // };
-
-  // const fetchImgs = useCallback(async () => {
-  //   try {
-  //     const { ref, listAll, getDownloadURL } = await import("firebase/storage");
-  //     const { storage } = await import("@/app/Firebase/firebase.config");
-
-  //     const storageRef = ref(storage, id.toString());
-  //     const result = await listAll(storageRef);
-
-  //     // Calculate storage used
-  //     calculateStorageUsed(result.items);
-
-  //     const urlPromises = result.items.map(async (imageRef) => {
-  //       try {
-  //         const url = await getDownloadURL(imageRef);
-  //         return {
-  //           url,
-  //           path: imageRef.fullPath,
-  //           name: imageRef.name,
-  //         };
-  //       } catch (err) {
-  //         console.error(`Error getting URL for ${imageRef.fullPath}:`, err);
-  //         return null;
-  //       }
-  //     });
-
-  //     const urlObjects = await Promise.all(urlPromises);
-  //     // Filter out any null values from failed downloads
-  //     const validUrlObjects = urlObjects.filter((obj) => obj !== null);
-  //     setImgs(validUrlObjects);
-  //   } catch (error) {
-  //     console.error("Error fetching images:", error);
-  //     setImgs([]);
-  //   }
-  // }, [id, isChanged]);
-
-  // useEffect(() => {
-  //   if (id) {
-  //     fetchImgs();
-  //   }
-  // }, [id]);
-
-  const handleNewImage = (e) => {
+  const handleNewMedia = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter((file) => validateFileType(file));
 
@@ -147,23 +136,23 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
         return;
       }
 
-      setSelectedImgs((prev) => [...prev, ...validFiles]);
+      setSelectedMedia((prev) => [...prev, ...validFiles]);
     }
   };
 
   const handleUpload = async () => {
     try {
       setIsUploading(true);
-      // Upload all images concurrently
+      // Upload all media concurrently
       await Promise.all(
-        selectedImgs.map(async (img) => {
+        selectedMedia.map(async (media) => {
           const result = await uploadImage({
             dir: id.toString(),
-            file: img,
+            file: media,
           });
 
           if (!result) {
-            throw new Error(`Failed to upload ${img.name}`);
+            throw new Error(`Failed to upload ${media.name}`);
           }
           return result;
         })
@@ -173,7 +162,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
       setIsChanged(!isChanged);
 
       // Clear selection after successful upload
-      setSelectedImgs([]);
+      setSelectedMedia([]);
     } catch (error) {
       console.error("Upload failed:", error);
     } finally {
@@ -184,6 +173,10 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
   const toggleSelectMode = () => {
     setSelectMode(!selectMode);
     setSelectedForDelete([]);
+    // Close video preview if open
+    if (videoPreview) {
+      setVideoPreview(null);
+    }
   };
 
   const toggleSelectImage = (imagePath) => {
@@ -211,7 +204,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
 
     if (
       !confirm(
-        `Are you sure you want to delete ${selectedForDelete.length} image(s)?`
+        `Are you sure you want to delete ${selectedForDelete.length} item(s)?`
       )
     ) {
       return;
@@ -224,11 +217,11 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
 
       await Promise.all(
         selectedForDelete.map(async (path) => {
-          const imageRef = ref(storage, path);
+          const mediaRef = ref(storage, path);
           try {
-            await deleteObject(imageRef);
+            await deleteObject(mediaRef);
           } catch (error) {
-            console.error(`Error deleting image ${path}:`, error);
+            console.error(`Error deleting item ${path}:`, error);
           }
         })
       );
@@ -246,16 +239,52 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
     }
   };
 
-  // Function to handle image click
-  const handleImageClick = (index) => {
+  // Function to handle media click
+  const handleMediaClick = (index, item) => {
     if (!selectMode) {
-      setPopupImageIndex(index);
-      setPopupOpen(true);
+      if (isVideoFile(item)) {
+        // For videos, open video preview
+        setVideoPreview(item);
+      } else {
+        // For images, open image popup - get proper index for images only
+        const imagesList = imgs.filter((img) => !isVideoFile(img));
+        const actualImageIndex = imagesList.findIndex(
+          (img) => img.path === item.path
+        );
+        if (actualImageIndex >= 0) {
+          setPopupImageIndex(actualImageIndex);
+          setPopupOpen(true);
+        }
+      }
     }
   };
 
-  // Function to distribute images across columns for masonry layout
-  const getImageColumns = () => {
+  // Function to process media items with proper indexing
+  const processMediaItems = () => {
+    // Create two separate arrays
+    const images = [];
+    const videos = [];
+
+    imgs.forEach((item, index) => {
+      const isVideo = isVideoFile(item);
+      const mediaItem = {
+        ...item,
+        index,
+        isVideo,
+      };
+
+      if (isVideo) {
+        videos.push(mediaItem);
+      } else {
+        images.push(mediaItem);
+      }
+    });
+
+    return { images, videos, allMedia: [...videos, ...images] };
+  };
+
+  // Function to distribute media across columns for masonry layout
+  const getMediaColumns = () => {
     const columns = Array(numOfColumns)
       .fill()
       .map(() => []);
@@ -266,8 +295,11 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
       key: "upload-button",
     });
 
-    // Distribute images across columns
-    imgs.forEach((img, index) => {
+    // Get processed media items
+    const { allMedia } = processMediaItems();
+
+    // Distribute all media across columns
+    allMedia.forEach((item) => {
       // Find the shortest column
       const shortestColumnIndex = columns
         .map((col, i) => ({ index: i, height: col.length }))
@@ -277,22 +309,26 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
         }).index;
 
       columns[shortestColumnIndex].push({
-        type: "image",
-        url: img.url,
-        path: img.path,
-        key: `img-${index}`,
-        index: index, // Store the actual index for the popup
+        type: "media",
+        ...item,
+        key: `media-${item.index}`,
       });
     });
 
     return columns;
   };
 
-  const imageColumns = getImageColumns();
+  const mediaColumns = getMediaColumns();
+  const { images } = processMediaItems();
 
   // Calculate storage percentage
   const storagePercentage = (storageUsed / STORAGE_LIMIT_MB) * 100;
   const isStorageNearLimit = storagePercentage >= 80;
+
+  // Close video preview
+  const closeVideoPreview = () => {
+    setVideoPreview(null);
+  };
 
   return (
     <div className="h-[90vh]">
@@ -300,7 +336,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
       <div className="px-4 md:px-12 pt-3">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium">
-            Storage: {storageUsed}/{STORAGE_LIMIT_MB}MB
+            Storage: {storageUsed.toFixed(2)}/{STORAGE_LIMIT_MB}MB
           </span>
           {isStorageNearLimit && (
             <div className="flex items-center text-red-500 text-sm">
@@ -309,8 +345,8 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
             </div>
           )}
         </div>
-        {/* Fixed Progress component without the incorrect prop */}
-        <div className="w-[20%] bg-gray-100 h-2 rounded-full overflow-hidden">
+        {/* Progress bar */}
+        <div className="w-full md:w-1/5 bg-gray-100 h-2 rounded-full overflow-hidden">
           <div
             className={`h-full ${
               isStorageNearLimit ? "bg-red-500" : "bg-blue-500"
@@ -324,12 +360,12 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
       <div className="px-4 md:px-12 py-2 flex justify-between items-center">
         <div className="flex gap-2">
           <Button
-            variant={selectMode ? "default " : "outline"}
+            variant={selectMode ? "default" : "outline"}
             size="sm"
             onClick={toggleSelectMode}
             className="text-sm text-black"
           >
-            {selectMode ? "Cancel Selection" : "Select Images"}
+            {selectMode ? "Cancel Selection" : "Select Media"}
           </Button>
 
           {selectMode && (
@@ -361,22 +397,33 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
         </div>
       </div>
 
-      {/* Selected images and upload controls */}
+      {/* Selected media and upload controls */}
       <div className="h-16 md:px-8 flex justify-between items-center p-2">
         <div className="flex gap-2 overflow-x-auto p-5">
-          {selectedImgs.map((val, index) => (
+          {selectedMedia.map((media, index) => (
             <div key={index} className="relative">
-              <Image
-                src={URL.createObjectURL(val)}
-                alt="selected image"
-                width={100}
-                height={100}
-                className="w-16 h-16 object-cover relative rounded"
-              />
+              {isVideoFile(media) ? (
+                <div className="w-16 h-16 bg-gray-800 flex items-center justify-center rounded relative">
+                  <Video size={24} className="text-white" />
+                  <span className="text-xs text-white absolute bottom-1 w-full text-center truncate px-1">
+                    {media.name?.length > 10
+                      ? media.name.substring(0, 7) + "..."
+                      : media.name}
+                  </span>
+                </div>
+              ) : (
+                <Image
+                  src={URL.createObjectURL(media)}
+                  alt="selected media"
+                  width={100}
+                  height={100}
+                  className="w-16 h-16 object-cover relative rounded"
+                />
+              )}
               <button
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
                 onClick={() =>
-                  setSelectedImgs((prev) => prev.filter((_, i) => i !== index))
+                  setSelectedMedia((prev) => prev.filter((_, i) => i !== index))
                 }
               >
                 ×
@@ -385,7 +432,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
           ))}
         </div>
         <div
-          className={`${selectedImgs.length === 0 ? "hidden" : "flex gap-2"}`}
+          className={`${selectedMedia.length === 0 ? "hidden" : "flex gap-2"}`}
         >
           <Button
             onClick={handleUpload}
@@ -396,7 +443,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
           </Button>
           <Button
             variant="outline"
-            onClick={() => setSelectedImgs([])}
+            onClick={() => setSelectedMedia([])}
             disabled={isUploading}
             className="text-sm text-red-600"
           >
@@ -408,7 +455,7 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
       {/* Masonry gallery */}
       <div className="overflow-y-auto h-[calc(90vh-10rem)] py-2 md:px-[10vw]">
         <div className="flex flex-wrap -mx-2">
-          {imageColumns.map((column, colIndex) => (
+          {mediaColumns.map((column, colIndex) => (
             <div
               key={`col-${colIndex}`}
               className={`px-2 ${
@@ -428,14 +475,14 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
                     >
                       <Plus size={24} className="text-gray-500" />
                       <span className="text-sm text-gray-500 mt-2">
-                        Add Image
+                        Add Media
                       </span>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         ref={inputRef}
                         className="hidden"
-                        onChange={handleNewImage}
+                        onChange={handleNewMedia}
                         multiple
                       />
                     </div>
@@ -445,20 +492,40 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
                       onClick={() =>
                         selectMode
                           ? toggleSelectImage(item.path)
-                          : handleImageClick(item.index)
+                          : handleMediaClick(item.index, item)
                       }
                     >
-                      <Image
-                        width={1000}
-                        height={1000}
-                        src={item.url}
-                        alt={`Gallery image ${item.key}`}
-                        className={`w-full h-auto max-h-[100vh] rounded-lg object-cover media-section ${
-                          selectMode && selectedForDelete.includes(item.path)
-                            ? "opacity-70"
-                            : ""
-                        }`}
-                      />
+                      {item.isVideo ? (
+                        <div className="w-full aspect-video bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
+                          {/* Use poster image for better performance */}
+                          <video
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                            poster="/api/placeholder/400/300"
+                          >
+                            {/* Fix: Stream correct content without full download */}
+                            <source src={item.url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                              <Play size={24} className="text-white" />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <Image
+                          width={1000}
+                          height={1000}
+                          src={item.url}
+                          alt={`Gallery image ${item.key}`}
+                          className={`w-full h-auto max-h-[100vh] rounded-lg object-cover media-section ${
+                            selectMode && selectedForDelete.includes(item.path)
+                              ? "opacity-70"
+                              : ""
+                          }`}
+                        />
+                      )}
                       {/* Selection indicator */}
                       {selectMode && (
                         <div className="absolute top-2 right-2 z-10">
@@ -482,13 +549,41 @@ const MediaSection = ({ id,imgs,isChanged,setIsChanged,storageUsed }) => {
         </div>
       </div>
 
-      {/* Image Popup */}
+      {/* Image Popup - only pass image files, not videos */}
       <ImagePopup
         isOpen={popupOpen}
         onClose={() => setPopupOpen(false)}
-        images={imgs}
+        images={images}
         initialIndex={popupImageIndex}
       />
+
+      {/* Video Preview Modal */}
+      {videoPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+          <div className="w-fit max-w-4xl bg-black rounded-lg overflow-hidden">
+            <div className="p-2 flex justify-between items-center">
+              <h3 className="text-white text-lg truncate">
+                {videoPreview.name || "Video Preview"}
+              </h3>
+              <button
+                onClick={closeVideoPreview}
+                className="text-white hover:text-gray-300"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <video
+              controls
+              autoPlay
+              className="h-[70vh]"
+              src={videoPreview.url}
+              controlsList="nodownload"
+            >
+              Your browser does not support video playback.
+            </video>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
