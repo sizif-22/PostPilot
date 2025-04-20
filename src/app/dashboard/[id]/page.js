@@ -1,11 +1,12 @@
 "use client";
 import Loading from "../../loading";
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "../../Firebase/firebase.config";
 import FacebookSection from "./facebookSection";
 import InstagramSection from "./instagramSection";
+import MediaSection from "./media";
 import HomeSection from "./home";
 import SettingSection from "./settings";
 const Page = ({ params }) => {
@@ -14,6 +15,83 @@ const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
   const [section, setSection] = useState(0);
+  const [imgs, setImgs] = useState([]);
+  const [isChanged, setIsChanged] = useState(false);
+  const [storageUsed, setStorageUsed] = useState(0); // in MB
+  const fetchImgs = useCallback(async () => {
+    console.log("start fetchImgs");
+    try {
+      const { ref, listAll, getDownloadURL } = await import("firebase/storage");
+      const { storage } = await import("@/app/Firebase/firebase.config");
+
+      const storageRef = ref(storage, id.toString());
+      const result = await listAll(storageRef);
+
+      // Calculate storage used
+      calculateStorageUsed(result.items);
+
+      const urlPromises = result.items.map(async (imageRef) => {
+        try {
+          const url = await getDownloadURL(imageRef);
+          return {
+            url,
+            path: imageRef.fullPath,
+            name: imageRef.name,
+          };
+        } catch (err) {
+          console.error(`Error getting URL for ${imageRef.fullPath}:`, err);
+          return null;
+        }
+      });
+
+      const urlObjects = await Promise.all(urlPromises);
+      // Filter out any null values from failed downloads
+      const validUrlObjects = urlObjects.filter((obj) => obj !== null);
+      setImgs(validUrlObjects);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      setImgs([]);
+    }
+  }, [id, isChanged]);
+  const calculateStorageUsed = useCallback(
+    async (items) => {
+      console.log("start calculating storage used");
+      try {
+        const { ref, getMetadata } = await import("firebase/storage");
+        const { storage } = await import("@/app/Firebase/firebase.config");
+
+        let totalSize = 0;
+        const metadataPromises = items.map(async (imageRef) => {
+          try {
+            const metadata = await getMetadata(imageRef);
+            return metadata.size; // size in bytes
+          } catch (err) {
+            console.error(
+              `Error getting metadata for ${imageRef.fullPath}:`,
+              err
+            );
+            return 0;
+          }
+        });
+
+        const sizes = await Promise.all(metadataPromises);
+        totalSize = sizes.reduce((acc, size) => acc + size, 0);
+
+        // Convert bytes to MB
+        const sizeInMB = totalSize / (1024 * 1024);
+        setStorageUsed(parseFloat(sizeInMB.toFixed(1)));
+      } catch (error) {
+        console.error("Error calculating storage:", error);
+      }
+    },
+    [id, isChanged, imgs]
+  );
+
+  useEffect(() => {
+    if (id) {
+      fetchImgs();
+    }
+  }, [id, isChanged]);
   useEffect(() => {
     const fetchingData = async () => {
       try {
@@ -84,6 +162,14 @@ const Page = ({ params }) => {
           )}
           <button
             onClick={() => {
+              setSection(4);
+            }}
+            className={`${section == 4 && "underline"} `}
+          >
+            Media
+          </button>
+          <button
+            onClick={() => {
               setSection(0);
             }}
             className={`${section == 0 && "underline"} `}
@@ -98,6 +184,14 @@ const Page = ({ params }) => {
         <FacebookSection />
       ) : section == 3 ? (
         <InstagramSection />
+      ) : section == 4 ? (
+        <MediaSection
+          id={id}
+          imgs={imgs}
+          isChanged={isChanged}
+          setIsChanged={setIsChanged}
+          storageUsed={storageUsed}
+        />
       ) : (
         <SettingSection />
       )}

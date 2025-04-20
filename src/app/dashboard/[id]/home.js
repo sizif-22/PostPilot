@@ -26,8 +26,6 @@
 
 // const HomeSection = () => {
 
-  
-
 //   const scheduledPosts = [
 //     {
 //       id:"39244798247938473924_785274324720347",
@@ -147,7 +145,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SendHorizontal, Plus, Facebook, Instagram, Image as ImageIcon, Trash2 } from "lucide-react";
+import {
+  SendHorizontal,
+  Plus,
+  Facebook,
+  Instagram,
+  Image as ImageIcon,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 
 const validateFileType = (file) => {
@@ -172,31 +177,73 @@ const scheduledPosts = [
   {
     id: "39244798247938473924_785274324720347",
     message: "Exciting product launch next week! Stay tuned for updates.",
-    scheduled_publish_time: 1719878400, // April 22, 2025
+    scheduled_publish_time: 1745084619 , // April 22, 2025
     created_time: "2025-04-19T17:43:39+0000",
-    platform: "facebook"
+    platform: "facebook",
   },
   {
     id: "39244798365938473924_782364324720347",
     message: "Check out our latest blog post on sustainability initiatives!",
     scheduled_publish_time: 1719964800, // April 23, 2025
     created_time: "2025-04-19T17:43:39+0000",
-    platform: "instagram"
+    platform: "instagram",
   },
   {
     id: "39244793867938473924_782484324720347",
     message: "Behind the scenes look at our design team's creative process.",
     scheduled_publish_time: 1720051200, // April 24, 2025
     created_time: "2025-04-19T17:43:39+0000",
-    platform: "facebook"
+    platform: "facebook",
   },
   {
     id: "39244793867938473924_782484324758347",
     message: "Join us for our live Q&A session tomorrow at 3PM EST!",
     scheduled_publish_time: 1720137600, // April 25, 2025
     created_time: "2025-04-19T17:43:39+0000",
-    platform: "instagram"
-  }
+    platform: "instagram",
+  },
+  {
+    id: "39244798365938473924_782364324720347",
+    message: "Check out our latest blog post on sustainability initiatives!",
+    scheduled_publish_time: 1719964800, // April 23, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "instagram",
+  },
+  {
+    id: "39244793867938473924_782484324720347",
+    message: "Behind the scenes look at our design team's creative process.",
+    scheduled_publish_time: 1720051200, // April 24, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "facebook",
+  },
+  {
+    id: "39244793867938473924_782484324758347",
+    message: "Join us for our live Q&A session tomorrow at 3PM EST!",
+    scheduled_publish_time: 1720137600, // April 25, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "instagram",
+  },
+  {
+    id: "39244798365938473924_782364324720347",
+    message: "Check out our latest blog post on sustainability initiatives!",
+    scheduled_publish_time: 1719964800, // April 23, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "instagram",
+  },
+  {
+    id: "39244793867938473924_782484324720347",
+    message: "Behind the scenes look at our design team's creative process.",
+    scheduled_publish_time: 1720051200, // April 24, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "facebook",
+  },
+  {
+    id: "39244793867938473924_782484324758347",
+    message: "Join us for our live Q&A session tomorrow at 3PM EST!",
+    scheduled_publish_time: 1720137600, // April 25, 2025
+    created_time: "2025-04-19T17:43:39+0000",
+    platform: "instagram",
+  },
 ];
 
 const HomeSection = () => {
@@ -206,10 +253,10 @@ const HomeSection = () => {
   const [scheduledTime, setScheduledTime] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState({
     facebook: true,
-    instagram: false
+    instagram: false,
   });
   const [highlightedPost, setHighlightedPost] = useState(null);
-  
+
   const inputRef = useRef(null);
   const postsContainerRef = useRef(null);
   const postRefs = useRef({});
@@ -217,29 +264,33 @@ const HomeSection = () => {
   // Prepare calendar data - mark days with posts
   const daysWithPosts = useMemo(() => {
     const days = {};
-    scheduledPosts.forEach(post => {
+    scheduledPosts.forEach((post) => {
       const postDate = new Date(post.scheduled_publish_time * 1000);
-      const dateStr = postDate.toISOString().split('T')[0];
+      console.log(postDate);
+      const dateStr = postDate.toISOString().split("T")[0];
       days[dateStr] = true;
     });
+    console.log(days);
     return days;
   }, [scheduledPosts]);
 
   // Filter posts by selected date
   const filteredPosts = useMemo(() => {
     if (!date) return scheduledPosts;
-    
+
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     const startTimestamp = Math.floor(startOfDay.getTime() / 1000);
     const endTimestamp = Math.floor(endOfDay.getTime() / 1000);
-    
+
     return scheduledPosts.filter(
-      post => post.scheduled_publish_time >= startTimestamp && post.scheduled_publish_time <= endTimestamp
+      (post) =>
+        post.scheduled_publish_time >= startTimestamp &&
+        post.scheduled_publish_time <= endTimestamp
     );
   }, [scheduledPosts, date]);
 
@@ -247,36 +298,38 @@ const HomeSection = () => {
   const dayModifiers = useMemo(() => {
     return {
       hasPost: (day) => {
-        const dateStr = day.toISOString().split('T')[0];
+        const dateStr = day.toISOString().split("T")[0];
         return daysWithPosts[dateStr];
-      }
+      },
     };
   }, [daysWithPosts]);
 
   // Handle calendar day click
   const handleDayClick = (selectedDate) => {
     setDate(selectedDate);
-    
+
     // Find posts for this day
     const startOfDay = new Date(selectedDate);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(selectedDate);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     const startTimestamp = Math.floor(startOfDay.getTime() / 1000);
     const endTimestamp = Math.floor(endOfDay.getTime() / 1000);
-    
+
     const dayPosts = scheduledPosts.filter(
-      post => post.scheduled_publish_time >= startTimestamp && post.scheduled_publish_time <= endTimestamp
+      (post) =>
+        post.scheduled_publish_time >= startTimestamp &&
+        post.scheduled_publish_time <= endTimestamp
     );
-    
+
     if (dayPosts.length > 0) {
       // Scroll to the first post for this day
       const firstPostId = dayPosts[0].id;
       if (postRefs.current[firstPostId] && postsContainerRef.current) {
-        postRefs.current[firstPostId].scrollIntoView({ behavior: 'smooth' });
-        
+        postRefs.current[firstPostId].scrollIntoView({ behavior: "smooth" });
+
         // Highlight the post
         setHighlightedPost(firstPostId);
         setTimeout(() => setHighlightedPost(null), 2000);
@@ -287,7 +340,13 @@ const HomeSection = () => {
   // Format date-time for input
   const formatDateTimeForInput = (date) => {
     const d = new Date(date);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(
+      2,
+      "0"
+    )}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
   useEffect(() => {
@@ -304,20 +363,20 @@ const HomeSection = () => {
 
   // Handle platform selection
   const togglePlatform = (platform) => {
-    setSelectedPlatforms(prev => ({
+    setSelectedPlatforms((prev) => ({
       ...prev,
-      [platform]: !prev[platform]
+      [platform]: !prev[platform],
     }));
   };
 
   // Format post time for display
   const formatPostTime = (timestamp) => {
     const date = new Date(timestamp * 1000);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -332,40 +391,49 @@ const HomeSection = () => {
             className="rounded-md border w-full max-w-fit"
             modifiers={dayModifiers}
             modifiersClassNames={{
-              hasPost: "bg-blue-100 dark:bg-blue-900/30 rounded-md font-bold"
+              hasPost:
+                "bg-blue-100 dark:bg-blue-900/30 rounded-md font-bold special",
             }}
           />
         </div>
-        
+
         <div className="bg-black/10 dark:bg-white/5 backdrop-blur-sm p-4 rounded-lg shadow-sm flex-1 flex flex-col">
           <div className="flex items-center space-x-3 mb-3">
-            <button 
-              onClick={() => togglePlatform('facebook')} 
-              className={`p-1.5 rounded-full ${selectedPlatforms.facebook ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
+            <button
+              onClick={() => togglePlatform("facebook")}
+              className={`p-1.5 rounded-full ${
+                selectedPlatforms.facebook
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700"
+              }`}
             >
               <Facebook size={18} />
             </button>
-            <button 
-              onClick={() => togglePlatform('instagram')} 
-              className={`p-1.5 rounded-full ${selectedPlatforms.instagram ? 'bg-pink-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
+            <button
+              onClick={() => togglePlatform("instagram")}
+              className={`p-1.5 rounded-full ${
+                selectedPlatforms.instagram
+                  ? "bg-pink-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700"
+              }`}
             >
               <Instagram size={18} />
             </button>
-            <Input 
-              type="datetime-local" 
-              className="ml-auto w-48 text-xs" 
+            <Input
+              type="datetime-local"
+              className="ml-auto w-48 text-xs"
               value={scheduledTime}
               onChange={(e) => setScheduledTime(e.target.value)}
             />
           </div>
-          
+
           <Textarea
             placeholder="What would you like to share?"
             className="resize-none max-h-[70px] flex-1 w-full text-sm mb-3"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          
+
           <div className="flex items-center gap-2 mb-2">
             <button
               onClick={() => inputRef.current.click()}
@@ -387,13 +455,13 @@ const HomeSection = () => {
               <ImageIcon size={14} />
               <span>Add Image</span>
             </button>
-            
+
             <Button size="sm" className="ml-auto text-xs h-8">
               <SendHorizontal className="mr-1" size={14} />
               Schedule Post
             </Button>
           </div>
-          
+
           {imgs.length > 0 && (
             <div className="flex gap-2 flex-wrap mt-1 p-2  rounded-md">
               {imgs.map((image, index) => (
@@ -405,7 +473,7 @@ const HomeSection = () => {
                     height={60}
                     className="w-14 h-14 object-cover rounded-md"
                   />
-                  <button 
+                  <button
                     onClick={() => removeImage(index)}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
@@ -417,56 +485,62 @@ const HomeSection = () => {
           )}
         </div>
       </div>
-      
+
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-medium">Scheduled Posts</h3>
           {filteredPosts.length > 0 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''} scheduled
+              {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""}{" "}
+              scheduled
             </span>
           )}
         </div>
-        
-        <div 
-          ref={postsContainerRef} 
-          className="flex-1 overflow-y-auto pr-2 space-y-3"
-        >
-          {filteredPosts.length === 0 ? (
-            <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/5 rounded-lg text-sm">
-              No posts scheduled for this date
-            </div>
-          ) : (
-            filteredPosts.map((post, index) => (
-              <div 
-                key={index} 
-                ref={el => postRefs.current[post.id] = el}
-                className={`bg-black/10 dark:bg-white/5 backdrop-blur-sm p-3 rounded-lg transition-all duration-500 ${highlightedPost === post.id ? 'shadow-lg shadow-blue-500/50 dark:shadow-blue-400/30 scale-[1.02]' : 'shadow-sm'}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center">
-                    {post.platform === 'facebook' ? (
-                      <Facebook size={16} className="text-blue-600" />
-                    ) : (
-                      <Instagram size={16} className="text-pink-600" />
-                    )}
-                    <span className="text-xs ml-2 text-gray-500 dark:text-gray-400">
-                      {formatPostTime(post.scheduled_publish_time)}
-                    </span>
-                  </div>
-                  <div className="flex gap-1">
-                    <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs my-1.5">{post.message}</p>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Created: {new Date(post.created_time).toLocaleString()}
-                </div>
+        <div>
+          <ul
+            ref={postsContainerRef}
+            className="flex-1 overflow-y-auto p-2   space-y-3 rounded "
+          >
+            {scheduledPosts.length === 0 ? (
+              <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/5 rounded-lg text-sm">
+                No posts scheduled for this date
               </div>
-            ))
-          )}
+            ) : (
+              scheduledPosts.map((post, index) => (
+                <li
+                  key={index}
+                  ref={(el) => (postRefs.current[post.id] = el)}
+                  className={`bg-black/10 dark:bg-white/5 backdrop-blur-sm p-3 rounded-lg transition-all duration-500 ${
+                    highlightedPost === post.id
+                      ? "shadow-lg shadow-blue-500/50 dark:shadow-blue-400/30 scale-[1.02]"
+                      : "shadow-sm"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center">
+                      {post.platform === "facebook" ? (
+                        <Facebook size={16} className="text-blue-600" />
+                      ) : (
+                        <Instagram size={16} className="text-pink-600" />
+                      )}
+                      <span className="text-xs ml-2 text-gray-500 dark:text-gray-400">
+                        {formatPostTime(post.scheduled_publish_time)}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs my-1.5">{post.message}</p>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Created: {new Date(post.created_time).toLocaleString()}
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
         </div>
       </div>
     </div>
