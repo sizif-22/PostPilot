@@ -101,7 +101,7 @@ const ImagePopup = ({ isOpen, onClose, images, initialIndex = 0 }) => {
       </div>
 
       <div
-        className="max-w-4xl max-h-[50vh] relative"
+        className="max-w-4xl h-screen pt-2"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Use isVideo flag instead of trying to determine from URL */}

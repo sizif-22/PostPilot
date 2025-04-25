@@ -363,7 +363,7 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
             variant={selectMode ? "default" : "outline"}
             size="sm"
             onClick={toggleSelectMode}
-            className="text-sm text-black"
+            className={`text-sm text-black ${selectMode && "text-white"}`}
           >
             {selectMode ? "Cancel Selection" : "Select Media"}
           </Button>
@@ -496,12 +496,12 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
                       }
                     >
                       {item.isVideo ? (
-                        <div className="w-full aspect-video bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-fit media-section bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
                           {/* Use poster image for better performance */}
                           <video
-                            className="w-full h-full object-cover"
+                            className="w-full h-auto max-h-[60vh] object-cover"
                             preload="metadata"
-                            poster="/api/placeholder/400/300"
+                            // poster="/api/placeholder/400/300"
                           >
                             {/* Fix: Stream correct content without full download */}
                             <source src={item.url} type="video/mp4" />
@@ -519,7 +519,7 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
                           height={1000}
                           src={item.url}
                           alt={`Gallery image ${item.key}`}
-                          className={`w-full h-auto max-h-[100vh] rounded-lg object-cover media-section ${
+                          className={`w-full h-auto max-h-[60vh] rounded-lg object-cover media-section ${
                             selectMode && selectedForDelete.includes(item.path)
                               ? "opacity-70"
                               : ""
