@@ -32,6 +32,7 @@ const addUser = async () => {
         projects: [],
       });
       console.log("New user added to Firestore.");
+      window.location.reload();
     } else {
       console.log("User already exists in Firestore.");
     }
@@ -42,7 +43,7 @@ const addUser = async () => {
     const credential = GoogleAuthProvider.credentialFromError(error);
     console.error("Error during sign-in:", errorCode, errorMessage, email);
   }
-  window.location.reload();
+  
 };
 const addUserWithFacebook = async () => {
   const provider = new FacebookAuthProvider();
@@ -68,6 +69,7 @@ const addUserWithFacebook = async () => {
         projects: [],
       });
       console.log("New user added to Firestore.");
+      window.location.reload();
     } else {
       console.log("User already exists in Firestore.");
     }
@@ -83,7 +85,7 @@ const addUserWithFacebook = async () => {
       email
     );
   }
-  window.location.reload();
+  
 };
 
 const checkLoggedIn = async () => {
