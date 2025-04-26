@@ -42,6 +42,7 @@ const addUser = async () => {
     const credential = GoogleAuthProvider.credentialFromError(error);
     console.error("Error during sign-in:", errorCode, errorMessage, email);
   }
+  window.location.reload();
 };
 const addUserWithFacebook = async () => {
   const provider = new FacebookAuthProvider();
@@ -82,6 +83,7 @@ const addUserWithFacebook = async () => {
       email
     );
   }
+  window.location.reload();
 };
 
 const checkLoggedIn = async () => {

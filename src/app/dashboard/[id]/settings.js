@@ -1,20 +1,44 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
 const SettingSection = () => {
+  const socialMediaPlatforms = [{ name: "Facebook" }, { name: "Instagram" }];
   return (
-    <div className=" h-[90vh] py-10 px-[80px] overflow-y-auto">
-      <div>
-        <h1 className="text-4xl">Configurations:</h1>
-        <div className="px-[80px] py-10">
-          <h2 className="text-2xl">Facebook Configuration</h2>
-          <div className="grid grid-cols-3 gap-5 px-6 md:px-24 justify-items-start py-5">
-            <label className="col-span-1">Access Token:</label>
-            <input
-              className="col-span-2 w-full bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="password"
-            />
-            <label className="col-span-1">Page ID:</label>
-            <input className="col-span-2 w-full bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    <div className=" h-[90vh] py-10 px-[80px] overflow-y-auto grid grid-cols-3 gap-2">
+      <div className="">
+        <a href="#general">General</a><br/>
+        <a href="#Facebook">Facebook</a><br/>
+        <a href="#Instagram">Instagram</a>
+      </div>
+      <div className="col-span-2 overflow-y-auto">
+        <h1 className="text-2xl" id="general">General</h1>
+        <hr />
+        <br />
+        <div>
+          <label>Channel Name</label>
+          <br />
+          <div className="flex">
+            <Input className="w-1/2" />
+            <Button variant="outline" className="text-black">
+              Rename
+            </Button>
           </div>
+          <br />
         </div>
+        <br />
+        {socialMediaPlatforms.map((value, index) => (
+          <div key={index}>
+            <h1 className="text-2xl" id={value.name}>{value.name} Configuration</h1>
+            <hr />
+            <br />
+            <div>
+              <Button variant="outline" className="text-black">
+                Connect
+              </Button>
+            </div>
+            <br />
+          </div>
+        ))}
       </div>
     </div>
   );

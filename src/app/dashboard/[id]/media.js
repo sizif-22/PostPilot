@@ -331,129 +331,134 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
   };
 
   return (
-    <div className="h-[90vh]">
-      {/* Storage limit display */}
-      <div className="px-4 md:px-12 pt-3">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium">
-            Storage: {storageUsed.toFixed(2)}/{STORAGE_LIMIT_MB}MB
-          </span>
-          {isStorageNearLimit && (
-            <div className="flex items-center text-red-500 text-sm">
-              <AlertCircle size={16} className="mr-1" />
-              Storage almost full
-            </div>
-          )}
+    <div className="h-[90vh]  grid grid-cols-5 px-5">
+      <div className="py-20">
+        {/* Storage limit display */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-sm font-medium">
+              Storage: {storageUsed.toFixed(2)}/{STORAGE_LIMIT_MB}MB
+            </span>
+            {isStorageNearLimit && (
+              <div className="flex items-center text-red-500 text-sm">
+                <AlertCircle size={16} className="mr-1" />
+                Storage almost full
+              </div>
+            )}
+          </div>
+          {/* Progress bar */}
+          <div className="w-full md:w-1/5 bg-gray-100 h-2 rounded-full overflow-hidden">
+            <div
+              className={`h-full ${
+                isStorageNearLimit ? "bg-red-500" : "bg-blue-500"
+              }`}
+              style={{ width: `${storagePercentage}%` }}
+            ></div>
+          </div>
         </div>
-        {/* Progress bar */}
-        <div className="w-full md:w-1/5 bg-gray-100 h-2 rounded-full overflow-hidden">
+
+        {/* Selection controls */}
+        <div className="py-2 flex flex-wrap items-center">
+          <div className="flex flex-wrap justify-between gap-3 w-fit">
+            <Button
+              variant={selectMode ? "default" : "outline"}
+              size="sm"
+              onClick={toggleSelectMode}
+              className={`text-sm text-black ${selectMode && "text-white"}`}
+            >
+              {selectMode ? "Cancel Selection" : "Select Media"}
+            </Button>
+
+            {selectMode && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllImages}
+                  className="text-sm text-black"
+                >
+                  {selectedForDelete.length === imgs.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={deleteSelectedImages}
+                  disabled={selectedForDelete.length === 0 || isDeleting}
+                  className="text-sm"
+                >
+                  {isDeleting
+                    ? "Deleting..."
+                    : `Delete (${selectedForDelete.length})`}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Selected media and upload controls */}
+        <div className="h-16flex flex-col justify-between items-center py-5">
           <div
-            className={`h-full ${
-              isStorageNearLimit ? "bg-red-500" : "bg-blue-500"
+            className={` ${
+              selectedMedia.length === 0 ? "hidden" : "flex justify-end gap-4"
             }`}
-            style={{ width: `${storagePercentage}%` }}
-          ></div>
+          >
+            <Button
+              onClick={handleUpload}
+              disabled={isUploading}
+              className="text-sm"
+            >
+              {isUploading ? "Uploading..." : "Upload All"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedMedia([])}
+              disabled={isUploading}
+              className="text-sm text-red-600"
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="flex flex-wrap justify-between gap-2 py-5">
+            {selectedMedia.map((media, index) => (
+              <div key={index} className="relative">
+                {isVideoFile(media) ? (
+                  <div className="w-16 h-16 bg-gray-800 flex items-center justify-center rounded relative">
+                    <Video size={24} className="text-white" />
+                    <span className="text-xs text-white absolute bottom-1 w-full text-center truncate px-1">
+                      {media.name?.length > 10
+                        ? media.name.substring(0, 7) + "..."
+                        : media.name}
+                    </span>
+                  </div>
+                ) : (
+                  <Image
+                    src={URL.createObjectURL(media)}
+                    alt="selected media"
+                    width={100}
+                    height={100}
+                    className="w-16 h-16 object-cover relative rounded"
+                  />
+                )}
+                <button
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                  onClick={() =>
+                    setSelectedMedia((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    )
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Selection controls */}
-      <div className="px-4 md:px-12 py-2 flex justify-between items-center">
-        <div className="flex gap-2">
-          <Button
-            variant={selectMode ? "default" : "outline"}
-            size="sm"
-            onClick={toggleSelectMode}
-            className={`text-sm text-black ${selectMode && "text-white"}`}
-          >
-            {selectMode ? "Cancel Selection" : "Select Media"}
-          </Button>
-
-          {selectMode && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={selectAllImages}
-                className="text-sm text-black"
-              >
-                {selectedForDelete.length === imgs.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </Button>
-
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={deleteSelectedImages}
-                disabled={selectedForDelete.length === 0 || isDeleting}
-                className="text-sm"
-              >
-                {isDeleting
-                  ? "Deleting..."
-                  : `Delete (${selectedForDelete.length})`}
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Selected media and upload controls */}
-      <div className="h-16 md:px-8 flex justify-between items-center p-2">
-        <div className="flex gap-2 overflow-x-auto p-5">
-          {selectedMedia.map((media, index) => (
-            <div key={index} className="relative">
-              {isVideoFile(media) ? (
-                <div className="w-16 h-16 bg-gray-800 flex items-center justify-center rounded relative">
-                  <Video size={24} className="text-white" />
-                  <span className="text-xs text-white absolute bottom-1 w-full text-center truncate px-1">
-                    {media.name?.length > 10
-                      ? media.name.substring(0, 7) + "..."
-                      : media.name}
-                  </span>
-                </div>
-              ) : (
-                <Image
-                  src={URL.createObjectURL(media)}
-                  alt="selected media"
-                  width={100}
-                  height={100}
-                  className="w-16 h-16 object-cover relative rounded"
-                />
-              )}
-              <button
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                onClick={() =>
-                  setSelectedMedia((prev) => prev.filter((_, i) => i !== index))
-                }
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-        <div
-          className={`${selectedMedia.length === 0 ? "hidden" : "flex gap-2"}`}
-        >
-          <Button
-            onClick={handleUpload}
-            disabled={isUploading}
-            className="text-sm"
-          >
-            {isUploading ? "Uploading..." : "Upload All"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setSelectedMedia([])}
-            disabled={isUploading}
-            className="text-sm text-red-600"
-          >
-            Cancel
-          </Button>
-        </div>
-      </div>
-
       {/* Masonry gallery */}
-      <div className="overflow-y-auto h-[calc(90vh-10rem)] py-2 md:px-[10vw]">
+      <div className="overflow-y-auto h-[90vh] py-20 md:px-[5vw] col-span-4">
         <div className="flex flex-wrap -mx-2">
           {mediaColumns.map((column, colIndex) => (
             <div
@@ -471,7 +476,7 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
                   {item.type === "upload" ? (
                     <div
                       onClick={() => inputRef.current.click()}
-                      className="aspect-square mx-4 bg-gray-100 rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-gray-200 transition-all border border-dashed border-gray-300"
+                      className="aspect-square mx-2 bg-gray-100 rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-gray-200 transition-all border border-dashed border-gray-300"
                     >
                       <Plus size={24} className="text-gray-500" />
                       <span className="text-sm text-gray-500 mt-2">
@@ -488,7 +493,7 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
                     </div>
                   ) : (
                     <div
-                      className={`relative group mx-5 cursor-pointer`}
+                      className={`relative group mx-2 cursor-pointer`}
                       onClick={() =>
                         selectMode
                           ? toggleSelectImage(item.path)
