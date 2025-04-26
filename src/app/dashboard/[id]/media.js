@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import ImagePopup from "@/app/dashboard/[id]/ImagePopup";
+import ImagePopup from "./imagePopup.js";
 
 const validateFileType = (file) => {
   const allowedImageTypes = [
