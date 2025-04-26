@@ -331,10 +331,10 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
   };
 
   return (
-    <div className="h-[90vh]  grid grid-cols-5 px-5">
+    <div className="h-[90vh]  grid grid-cols-5 px-10">
       <div className="py-20">
         {/* Storage limit display */}
-        <div>
+        <div className="w-full">
           <div className="flex justify-between items-center mb-1">
             <span className="text-sm font-medium">
               Storage: {storageUsed.toFixed(2)}/{STORAGE_LIMIT_MB}MB
@@ -347,7 +347,7 @@ const MediaSection = ({ id, imgs, isChanged, setIsChanged, storageUsed }) => {
             )}
           </div>
           {/* Progress bar */}
-          <div className="w-full md:w-1/5 bg-gray-100 h-2 rounded-full overflow-hidden">
+          <div className="w-full  bg-gray-100 h-2 rounded-full overflow-hidden">
             <div
               className={`h-full ${
                 isStorageNearLimit ? "bg-red-500" : "bg-blue-500"
