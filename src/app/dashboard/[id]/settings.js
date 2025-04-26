@@ -43,7 +43,7 @@ const SettingSection = () => {
                 className="text-black"
                 onClick={() => {
                   if (value.name == "Facebook") {
-                    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=2475636742798573&redirect_uri=postpilot-22.vercel.app&scope=pages_manage_posts,pages_show_list&response_type=code`;
+                    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=2475636742798573&redirect_uri=https://postpilot-22.vercel.app&scope=pages_manage_posts,pages_show_list&response_type=code`;
                   }
                 }}
               >
