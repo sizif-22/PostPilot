@@ -32,7 +32,6 @@ const addUser = async () => {
         projects: [],
       });
       console.log("New user added to Firestore.");
-      window.location.reload();
     } else {
       console.log("User already exists in Firestore.");
     }
@@ -69,7 +68,6 @@ const addUserWithFacebook = async () => {
         projects: [],
       });
       console.log("New user added to Firestore.");
-      window.location.reload();
     } else {
       console.log("User already exists in Firestore.");
     }
