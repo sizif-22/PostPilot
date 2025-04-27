@@ -16,7 +16,7 @@ const Connected = ({ params }) => {
   const [pages, setPages] = useState([]);
 
   const id = Cookies.get("currentChannelId");
-  
+
   // Effect to check if we have a valid ID
   useEffect(() => {
     if (!id) {
@@ -29,7 +29,7 @@ const Connected = ({ params }) => {
 
   useEffect(() => {
     // Only proceed with token exchange if we have a valid ID and we're in the browser
-    if (!id || typeof window === 'undefined') return;
+    if (!id || typeof window === "undefined") return;
 
     const getAccessToken = async () => {
       try {
@@ -43,38 +43,26 @@ const Connected = ({ params }) => {
           return;
         }
 
-        // Construct the URL with query parameters
-        const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET}&redirect_uri=https://postpilot-22.vercel.app/dashboard/connected&code=${code.split("&")[0]}`;
-
-        // Exchange code for access token using GET request
-        const response = await fetch(tokenUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            `Failed to get access token: ${
-              errorData.error?.message || response.statusText
-            }`
-          );
-        }
-
+        // Call your Next.js API route instead of Facebook directly
+        const response = await fetch(
+          `/api/facebook/token?code=${code.split("&")[0]}`
+        );
         const data = await response.json();
 
-        // Update the project document with the access token
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to get access token");
+        }
+
+        // Continue with the rest of your code (updating Firestore, fetching pages, etc.)
         const projectRef = doc(db, "project", id);
         await updateDoc(projectRef, {
           FacebookConnected: true,
           facebookAccessToken: data.access_token,
         });
 
-        // Fetch user pages with the access token
+        // You'll also need to create another API route for this request
         const pagesResponse = await fetch(
-          `https://graph.facebook.com/v19.0/me/accounts?access_token=${data.access_token}`
+          `/api/facebook/pages?access_token=${data.access_token}`
         );
 
         if (!pagesResponse.ok) {
@@ -83,7 +71,7 @@ const Connected = ({ params }) => {
 
         const pagesData = await pagesResponse.json();
         console.log(pagesData); // List of Pages
-        
+
         if (pagesData.data && Array.isArray(pagesData.data)) {
           setPages(pagesData.data);
           setPopupOpen(true);
@@ -144,7 +132,7 @@ const Connected = ({ params }) => {
 
 const PopUp = ({ selectedPage, setSelectedPage, isOpen, onClose, pages }) => {
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 z-10 flex items-center justify-center">
       <div
