@@ -31,7 +31,7 @@ const Connected = ({ params }) => {
             params: new URLSearchParams({
               client_id: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
               client_secret: process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET,
-              redirect_uri: `https://postpilot-22.vercel.app/dashboard/${params.id}/connected`,
+              redirect_uri: `https://postpilot-22.vercel.app/dashboard/connected`,
               code: code,
             }).toString(),
           }

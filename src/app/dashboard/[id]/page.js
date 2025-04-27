@@ -215,7 +215,7 @@ const Page = ({ params }) => {
           storageUsed={storageUsed}
         />
       ) : (
-        <SettingSection />
+        <SettingSection id={id}/>
       )}
     </div>
   );

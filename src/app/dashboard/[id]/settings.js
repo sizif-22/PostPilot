@@ -1,7 +1,11 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { handleCurrentChannelId } from "@/Redux/user.data";
+import { useDispatch } from "react-redux";
 
-const SettingSection = () => {
+const SettingSection = ({id}) => {
+  const dispatch = useDispatch();
   console.log(window.location.pathname);
   const socialMediaPlatforms = [{ name: "Facebook" }, { name: "Instagram" }];
   return (
@@ -44,6 +48,7 @@ const SettingSection = () => {
                 className="text-black"
                 onClick={() => {
                   if (value.name == "Facebook") {
+                    dispatch(handleCurrentChannelId(id));
                     const redirectUri = encodeURIComponent(
                       `https://postpilot-22.vercel.app/${window.location.pathname}/connected`
                     );
