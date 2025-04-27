@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/app/Firebase/firebase.config";
-import { useSelector } from "react-redux";
+import Cookies from "js-cookie";
 import Loading from "@/app/loading";
 
 const Connected = ({ params }) => {
