@@ -26,19 +26,19 @@ const Connected = ({ params }) => {
         const response = await fetch(
           "https://graph.facebook.com/v19.0/oauth/access_token",
           {
-            method: "GET",
+            method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded",
             },
-            params: new URLSearchParams({
+            body: new URLSearchParams({
               client_id: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
               client_secret: process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET,
-              redirect_uri: `https://postpilot-22.vercel.app/dashboard/connected`,
-              code: code,
+              redirect_uri:
+                "https://postpilot-22.vercel.app/dashboard/connected",
+              code: code.split("&")[0],
             }).toString(),
           }
         );
-
         if (!response.ok) {
           throw new Error("Failed to get access token");
         }
