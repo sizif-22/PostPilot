@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/app/Firebase/firebase.config";
-
+import { useSelector } from "react-redux";
 const Connected = ({ params }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // const [id , setId] = useState(null);
+  const id = useSelector((state) => state.user.currentChannelId);
 
   useEffect(() => {
     const getAccessToken = async () => {
@@ -44,13 +46,13 @@ const Connected = ({ params }) => {
         const data = await response.json();
 
         // Update the project document with the access token
-        await updateDoc(doc(db, "project", params.id), {
+        await updateDoc(doc(db, "project", id), {
           FacebookConnected: true,
           facebookAccessToken: data.access_token,
         });
 
         // Redirect back to dashboard
-        router.push(`/dashboard/${params.id}`);
+        router.push(`/dashboard/${id}`);
       } catch (err) {
         console.error("Error getting access token:", err);
         setError(err.message);
@@ -60,7 +62,7 @@ const Connected = ({ params }) => {
     };
 
     getAccessToken();
-  }, [params.id, router]);
+  }, [id, router]);
 
   if (loading) {
     return (

@@ -50,7 +50,7 @@ const SettingSection = ({id}) => {
                   if (value.name == "Facebook") {
                     dispatch(handleCurrentChannelId(id));
                     const redirectUri = encodeURIComponent(
-                      `https://postpilot-22.vercel.app/${window.location.pathname}/connected`
+                      `https://postpilot-22.vercel.app/dashboard/connected`
                     );
                     window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=2475636742798573&redirect_uri=${redirectUri}&scope=pages_manage_posts,pages_show_list&response_type=code&state=yourCustomStateValue`;
                   }
