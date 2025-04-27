@@ -10,12 +10,16 @@ const Connected = ({ params }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const id = useSelector((state) => state.user.currentChannelId);
-
+  // const id = useSelector((state) => state.user.currentChannelId);
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get("code");
+  const id = Cookies.get("currentChannelId");
   // Effect to check if we have a valid ID
   useEffect(() => {
     if (!id) {
-      setError("No valid channel ID found. Please go back to dashboard and try again.");
+      setError(
+        "No valid channel ID found. Please go back to dashboard and try again."
+      );
       setLoading(false);
     }
   }, [id]);
@@ -27,8 +31,6 @@ const Connected = ({ params }) => {
     const getAccessToken = async () => {
       try {
         // Get the code from URL search params
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
 
         if (!code) {
           throw new Error("No authorization code found");
@@ -54,7 +56,11 @@ const Connected = ({ params }) => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Failed to get access token: ${errorData.error?.message || response.statusText}`);
+          throw new Error(
+            `Failed to get access token: ${
+              errorData.error?.message || response.statusText
+            }`
+          );
         }
 
         const data = await response.json();

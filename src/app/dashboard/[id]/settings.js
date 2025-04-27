@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { handleCurrentChannelId } from "@/Redux/user.data";
 import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
 
-const SettingSection = ({id}) => {
+const SettingSection = ({ id }) => {
   const dispatch = useDispatch();
   console.log(window.location.pathname);
   const socialMediaPlatforms = [{ name: "Facebook" }, { name: "Instagram" }];
@@ -48,7 +49,7 @@ const SettingSection = ({id}) => {
                 className="text-black"
                 onClick={() => {
                   if (value.name == "Facebook") {
-                    dispatch(handleCurrentChannelId(id));
+                    Cookies.set("currentChannelId", id, { expires: 30 });
                     const redirectUri = encodeURIComponent(
                       `https://postpilot-22.vercel.app/dashboard/connected`
                     );
