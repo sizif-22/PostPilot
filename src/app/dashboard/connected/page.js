@@ -117,8 +117,12 @@ const Connected = ({ params }) => {
       <div>Connecting to Facebook...</div>
       <PopUp
         isOpen={popupOpen}
-        onClose={() => {
+        onClose={async () => {
           setPopupOpen(false);
+          const projectRef = doc(db, "project", id);
+          await updateDoc(projectRef, {
+            pageName: selectedPage,
+          });
           router.replace(`/dashboard/${id}`);
         }}
         setSelectedPage={setSelectedPage}
