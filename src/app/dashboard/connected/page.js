@@ -11,12 +11,12 @@ const Connected = ({ params }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const urlParams = new URLSearchParams(window.location.search);
   const [popupOpen, setPopupOpen] = useState(true);
   const [selectedPage, setSelectedPage] = useState({ name: "", id: "" });
   const [pages, setPages] = useState([]);
 
   const id = Cookies.get("currentChannelId");
+  
   // Effect to check if we have a valid ID
   useEffect(() => {
     if (!id) {
@@ -28,36 +28,31 @@ const Connected = ({ params }) => {
   }, [id]);
 
   useEffect(() => {
-    // Only proceed with token exchange if we have a valid ID
-    if (!id) return;
+    // Only proceed with token exchange if we have a valid ID and we're in the browser
+    if (!id || typeof window === 'undefined') return;
 
     const getAccessToken = async () => {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
-        // Get the code from URL search params
 
         if (!code) {
           console.log("No authorization code found");
+          setError("No authorization code found in URL");
+          setLoading(false);
           return;
         }
 
-        // Exchange code for access token
-        const response = await fetch(
-          "https://graph.facebook.com/v19.0/oauth/access_token",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              client_id: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
-              client_secret: process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET,
-              redirect_uri:
-                "https://postpilot-22.vercel.app/dashboard/connected",
-              code: code.split("&")[0],
-            }).toString(),
-          }
-        );
+        // Construct the URL with query parameters
+        const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET}&redirect_uri=https://postpilot-22.vercel.app/dashboard/connected&code=${code.split("&")[0]}`;
+
+        // Exchange code for access token using GET request
+        const response = await fetch(tokenUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -71,24 +66,30 @@ const Connected = ({ params }) => {
         const data = await response.json();
 
         // Update the project document with the access token
-        // Make sure path follows collection/document pattern
         const projectRef = doc(db, "project", id);
         await updateDoc(projectRef, {
           FacebookConnected: true,
           facebookAccessToken: data.access_token,
         });
 
-        const response2 = await fetch(
+        // Fetch user pages with the access token
+        const pagesResponse = await fetch(
           `https://graph.facebook.com/v19.0/me/accounts?access_token=${data.access_token}`
         );
 
-        const data2 = await response2.json();
-        console.log(data2); // List of Pages
-        setPages([...data2.data]);
-        setPopupOpen(true);
+        if (!pagesResponse.ok) {
+          throw new Error("Failed to fetch user pages");
+        }
 
-        // Redirect back to dashboard
-        // router.push(`/dashboard/${id}`);
+        const pagesData = await pagesResponse.json();
+        console.log(pagesData); // List of Pages
+        
+        if (pagesData.data && Array.isArray(pagesData.data)) {
+          setPages(pagesData.data);
+          setPopupOpen(true);
+        } else {
+          throw new Error("Invalid page data received");
+        }
       } catch (err) {
         console.error("Error getting access token:", err);
         setError(err.message);
@@ -98,7 +99,22 @@ const Connected = ({ params }) => {
     };
 
     getAccessToken();
-  }, [id, router, urlParams]);
+  }, [id, router]);
+
+  const handlePageSelection = async () => {
+    try {
+      setPopupOpen(false);
+      const projectRef = doc(db, "project", id);
+      await updateDoc(projectRef, {
+        pageName: selectedPage.name,
+        pageId: selectedPage.id,
+      });
+      router.replace(`/dashboard/${id}`);
+    } catch (err) {
+      console.error("Error updating page selection:", err);
+      setError("Failed to save page selection");
+    }
+  };
 
   if (loading) {
     return <Loading />;
@@ -117,15 +133,7 @@ const Connected = ({ params }) => {
       <div>Connecting to Facebook...</div>
       <PopUp
         isOpen={popupOpen}
-        onClose={async () => {
-          setPopupOpen(false);
-          const projectRef = doc(db, "project", id);
-          await updateDoc(projectRef, {
-            pageName: selectedPage.name,
-            pageId: selectedPage.id,
-          });
-          router.replace(`/dashboard/${id}`);
-        }}
+        onClose={handlePageSelection}
         setSelectedPage={setSelectedPage}
         selectedPage={selectedPage}
         pages={pages}
@@ -135,33 +143,32 @@ const Connected = ({ params }) => {
 };
 
 const PopUp = ({ selectedPage, setSelectedPage, isOpen, onClose, pages }) => {
-  const arr = [{ name: "page1" }, { name: "page2" }, { name: "page3" }];
   if (!isOpen) return null;
+  
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-80 z-10 flex items-center justify-center"
-      // onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-80 z-10 flex items-center justify-center">
       <div
-        className="z-20 w-[50vw] h-[70vh] relative p-10 rounded-xl bg-gradient-to-b from-[#212121] to-[#010101] text-white"
+        className="z-20 w-1/2 h-2/3 relative p-10 rounded-xl bg-gradient-to-b from-[#212121] to-[#010101] text-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <p>Choose one Page:</p>
-        {pages.map((value, index) => (
-          <div
-            key={index}
-            className={`${
-              selectedPage == value.name && "border"
-            } p-5 my-2 transition-all rounded hover:shadow hover:shadow-white`}
-            onClick={() => {
-              setSelectedPage({ name: value.name, id: value.id });
-            }}
-          >
-            <h1 className="text-3xl">{value.name}</h1>
-            <p className="text-xl">{value.id}</p>
-          </div>
-        ))}
-        {selectedPage && (
+        <p className="text-xl mb-4">Choose one Page:</p>
+        <div className="max-h-[60%] overflow-y-auto">
+          {pages.map((value, index) => (
+            <div
+              key={index}
+              className={`${
+                selectedPage.id === value.id ? "border border-white" : ""
+              } p-5 my-2 transition-all rounded hover:shadow hover:shadow-white cursor-pointer`}
+              onClick={() => {
+                setSelectedPage({ name: value.name, id: value.id });
+              }}
+            >
+              <h1 className="text-3xl">{value.name}</h1>
+              <p className="text-xl text-gray-400">{value.id}</p>
+            </div>
+          ))}
+        </div>
+        {selectedPage.id && (
           <Button className="absolute bottom-10 right-10" onClick={onClose}>
             Done
           </Button>
