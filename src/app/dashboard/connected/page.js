@@ -4,14 +4,26 @@ import { useRouter } from "next/navigation";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/app/Firebase/firebase.config";
 import { useSelector } from "react-redux";
+import Loading from "@/app/loading";
+
 const Connected = ({ params }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [id , setId] = useState(null);
   const id = useSelector((state) => state.user.currentChannelId);
 
+  // Effect to check if we have a valid ID
   useEffect(() => {
+    if (!id) {
+      setError("No valid channel ID found. Please go back to dashboard and try again.");
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    // Only proceed with token exchange if we have a valid ID
+    if (!id) return;
+
     const getAccessToken = async () => {
       try {
         // Get the code from URL search params
@@ -39,14 +51,18 @@ const Connected = ({ params }) => {
             }).toString(),
           }
         );
+
         if (!response.ok) {
-          throw new Error("Failed to get access token");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Failed to get access token: ${errorData.error?.message || response.statusText}`);
         }
 
         const data = await response.json();
 
         // Update the project document with the access token
-        await updateDoc(doc(db, "project", id), {
+        // Make sure path follows collection/document pattern
+        const projectRef = doc(db, "project", id);
+        await updateDoc(projectRef, {
           FacebookConnected: true,
           facebookAccessToken: data.access_token,
         });
@@ -65,11 +81,7 @@ const Connected = ({ params }) => {
   }, [id, router]);
 
   if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-b from-[#212121] to-black text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
