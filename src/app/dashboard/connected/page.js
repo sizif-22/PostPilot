@@ -13,7 +13,7 @@ const Connected = ({ params }) => {
   const [error, setError] = useState(null);
   const urlParams = new URLSearchParams(window.location.search);
   const [popupOpen, setPopupOpen] = useState(true);
-  const [selectedPage, setSelectedPage] = useState("");
+  const [selectedPage, setSelectedPage] = useState({ name: "", id: "" });
   const [pages, setPages] = useState([]);
 
   const id = Cookies.get("currentChannelId");
@@ -121,7 +121,8 @@ const Connected = ({ params }) => {
           setPopupOpen(false);
           const projectRef = doc(db, "project", id);
           await updateDoc(projectRef, {
-            pageName: selectedPage,
+            pageName: selectedPage.name,
+            pageId: selectedPage.id,
           });
           router.replace(`/dashboard/${id}`);
         }}
@@ -153,10 +154,11 @@ const PopUp = ({ selectedPage, setSelectedPage, isOpen, onClose, pages }) => {
               selectedPage == value.name && "border"
             } p-5 my-2 transition-all rounded hover:shadow hover:shadow-white`}
             onClick={() => {
-              setSelectedPage(value.name);
+              setSelectedPage({ name: value.name, id: value.id });
             }}
           >
-            {value.name}
+            <h1 className="text-3xl">{value.name}</h1>
+            <p className="text-xl">{value.id}</p>
           </div>
         ))}
         {selectedPage && (
