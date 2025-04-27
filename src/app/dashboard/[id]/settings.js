@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const SettingSection = () => {
+  console.log(window.location.pathname);
   const socialMediaPlatforms = [{ name: "Facebook" }, { name: "Instagram" }];
   return (
-    <div className=" h-[90vh] py-10 px-[80px] overflow-y-auto grid grid-cols-3 gap-2">
+    <div className="h-[90vh] py-10 px-[80px] overflow-y-auto grid grid-cols-3 gap-2">
       <div className="">
         <a href="#general">General</a>
         <br />
@@ -43,7 +44,10 @@ const SettingSection = () => {
                 className="text-black"
                 onClick={() => {
                   if (value.name == "Facebook") {
-                    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=2475636742798573&redirect_uri=https://postpilot-22.vercel.app&scope=pages_manage_posts,pages_show_list&response_type=code`;
+                    const redirectUri = encodeURIComponent(
+                      `https://postpilot-22.vercel.app/${window.location.pathname}/connected`
+                    );
+                    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=2475636742798573&redirect_uri=${redirectUri}&scope=pages_manage_posts,pages_show_list&response_type=code&state=yourCustomStateValue`;
                   }
                 }}
               >
