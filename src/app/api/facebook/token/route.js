@@ -10,7 +10,7 @@ export async function GET(request) {
   }
 
   try {
-    const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&redirect_uri=https://postpilot-22.vercel.app/dashboard/connected&code=${code}`;
+    const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET}&redirect_uri=https://postpilot-22.vercel.app/dashboard/connected&code=${code}`;
 
     const response = await fetch(tokenUrl);
     const data = await response.json();
