@@ -1,17 +1,14 @@
 // src/app/api/createPost/route.js
 export async function POST(request) {
   try {
-    const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-    const PAGE_ID = process.env.PAGE_ID;
-
     // Parse the request body
     const body = await request.json();
     const { message, scheduled_publish_time, published,accessToken ,pageId } = body;
 
     // Base URL and params
-    const url = `https://graph.facebook.com/v18.0/${PAGE_ID}/feed`;
+    const url = `https://graph.facebook.com/v18.0/${pageId}/feed`;
     const params = {
-      access_token: ACCESS_TOKEN,
+      access_token: accessToken,
       message,
     };
 
