@@ -1,11 +1,11 @@
 import { IconType } from "react-icons";
 import {
-  FiDollarSign,
   FiHome,
-  FiLink,
   FiCalendar,
   FiSettings,
   FiUsers,
+  FiFacebook,
+  FiInstagram,
 } from "react-icons/fi";
 
 export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: string) => void, route: string}) => {
@@ -23,13 +23,13 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
       title: "Calender",
     },
     {
-      Icon: FiLink,
-      title: "Integrations",
+      Icon: FiFacebook,
+      title: "Facebook-(Page title)",
     },
     {
-      Icon: FiDollarSign,
-      title: "Finance",
-    },
+      Icon: FiInstagram,
+      title: "Instagram-(Page title)",
+    }
   ];
   return (
     <div className="space-y-1">

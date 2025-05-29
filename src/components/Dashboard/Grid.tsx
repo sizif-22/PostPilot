@@ -14,4 +14,3 @@ export const Grid = () => {
     </div>
   );
 };
-"customize the grid"

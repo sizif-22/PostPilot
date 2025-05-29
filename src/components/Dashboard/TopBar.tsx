@@ -6,7 +6,7 @@ import { useState } from "react";
 export const TopBar = () => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b px-4 mb-4 py-3 border-stone-200 sticky top-0 bg-white">
+    <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 bg-white">
       <div className="flex items-center justify-between p-0.5">
         <div>
           <span className="text-sm font-bold block">🚀 Good morning, Tom!</span>
