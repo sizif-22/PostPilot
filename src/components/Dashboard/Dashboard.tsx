@@ -4,7 +4,7 @@ import { Grid } from "./Grid";
 
 export const Dashboard = () => {
   return (
-    <div className="bg-white rounded-lg pb-4 shadow">
+    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
       <TopBar />
       <Grid />
     </div>
