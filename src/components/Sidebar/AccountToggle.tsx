@@ -3,8 +3,8 @@ import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 export const AccountToggle = () => {
   return (
-    <div className="border-b h-16 flex items-center mb-4  pb-4 border-stone-300">
-      <button className="flex p-0.5 hover:bg-stone-200 rounded transition-colors relative gap-2 w-full items-center">
+    <div className="border-b h-16 flex items-center mb-4 border-stone-300">
+      <button className="flex px-2 py-1 hover:bg-stone-200 rounded transition-colors relative gap-2 w-full items-center">
         <img
           src="https://api.dicebear.com/9.x/notionists/svg"
           alt="avatar"

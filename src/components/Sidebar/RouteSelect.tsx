@@ -6,6 +6,7 @@ import {
   FiUsers,
   FiFacebook,
   FiInstagram,
+  FiImage,
 } from "react-icons/fi";
 
 export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: string) => void, route: string}) => {
@@ -15,13 +16,18 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
       title: "Dashboard",
     },
     {
-      Icon: FiUsers,
-      title: "Team",
+      Icon: FiImage,
+      title: "Media",
     },
     {
       Icon: FiCalendar,
-      title: "Calender",
+      title: "Calendar",
     },
+    {
+      Icon: FiUsers,
+      title: "Team",
+    },
+    
     {
       Icon: FiFacebook,
       title: "Facebook-(Page title)",

@@ -6,7 +6,7 @@ import { useState } from "react";
 export const TopBar = () => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 bg-white">
+    <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 z-50 bg-white">
       <div className="flex items-center justify-between p-0.5">
         <div>
           <span className="text-sm font-bold block">🚀 Good morning, Tom!</span>
@@ -17,7 +17,7 @@ export const TopBar = () => {
 
         <button onClick={() => setOpen(true)} className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
           
-          <FiCalendar />
+          <FiCalendar className="text-violet-500" />
           <span>Schedule Post</span>
         </button>
         <CPDialog open={open} setOpen={setOpen} />

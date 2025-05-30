@@ -35,13 +35,10 @@ export const Configuration = () => {
 
   return (
     <div className='bg-white  h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow'>
-      <div className='flex p-3 h-16 justify-between items-center border-b border-stone-200'>
-      <div className="flex items-center justify-between px-4">
+      <div className='flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200'>
         <div>
         <h2 className="font-bold">Configuration</h2>
         </div>
-      
-      </div>
       </div>
       <div className='px-8'>
       <div className="p-6 space-y-6">
@@ -58,7 +55,7 @@ export const Configuration = () => {
                   <h2 className='text-lg font-medium'>Connect to {item.name}</h2>
                   <h3 className='text-sm text-stone-500'>Connect your {item.name} account to enable posting</h3>
                 </div>
-                <button onClick={item.connect} className=' text-sm bg font-bold duration-300 bg-white hover:text-black text-black/70 transition-colors rounded-lg border hover:bg-stone-100 border-red-200/50 px-4 py-2'>Connect</button>
+                <button onClick={item.connect} className=' text-sm bg font-bold duration-300 bg-white hover:text-black text-black/70 transition-colors rounded-lg border hover:bg-stone-200 border-stone-200 px-4 py-2'>Connect</button>
               </div>
               {index != socialMedia.length-1 && <hr className='w-full border-stone-200'/>}
               

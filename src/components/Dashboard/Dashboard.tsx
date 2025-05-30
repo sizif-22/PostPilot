@@ -1,12 +1,21 @@
 import React from "react";
 import { TopBar } from "./TopBar";
 import { Grid } from "./Grid";
+interface ScheduledPost {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  platforms: string[];  
+  content: string;
+  imageUrl?: string[];
+} 
 
-export const Dashboard = () => {
+export const Dashboard = ( {dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]} ) => {
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
+    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
       <TopBar />
-      <Grid />
+      <Grid dummyScheduledPosts={dummyScheduledPosts} />
     </div>
   );
 };
