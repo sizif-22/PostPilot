@@ -36,8 +36,8 @@ export default function Home(): JSX.Element {
     {
       id: '2',
       title: 'LoL',
-      start: new Date(2025, 4, 15, 14, 0, 0),
-      end: new Date(2025, 4, 15, 15, 0, 0),
+      start: new Date(2025, 4, 15, 11, 0, 0),
+      end: new Date(2025, 4, 15, 11, 0, 0),
       platforms: ['facebook', 'instagram'],
       content: 'Check out our latest updates!',
       imageUrl: [

@@ -18,7 +18,11 @@ interface ScheduledPost {
 
 export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]}) => {
   const [selectedEvent, setSelectedEvent] = useState<ScheduledPost | null>(null);
-  const groupedPosts = dummyScheduledPosts.reduce((acc, post) => {
+  
+  // First sort all posts by date and time
+  const sortedPosts = [...dummyScheduledPosts].sort((a, b) => a.start.getTime() - b.start.getTime());
+  
+  const groupedPosts = sortedPosts.reduce((acc, post) => {
     const date = post.start.getDate();
     const day = post.start.toLocaleString('en-us', { weekday: 'short' });
     const month = post.start.toLocaleString('en-us', { month: 'short' });
@@ -34,12 +38,21 @@ export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPos
     return acc;
   }, {} as Record<number, { date: number; day: string; month: string; posts: ScheduledPost[] }>);
 
+  // Convert to array and sort by date
+  const sortedGroupedPosts = Object.values(groupedPosts)
+    .sort((a, b) => {
+      // Create dates using the current year and month for proper comparison
+      const dateA = new Date(new Date().getFullYear(), new Date().getMonth(), a.date);
+      const dateB = new Date(new Date().getFullYear(), new Date().getMonth(), b.date);
+      return dateA.getTime() - dateB.getTime();
+    });
+
   return (
     <div className="col-span-2 row-span-3 border shadow-sm rounded-lg h-[81vh] bg-white ">
       <div className="flex sticky z-10 top-0 items-center bg-white justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-2">
           <FiCalendar className="w-5 h-5 text-violet-500" />
-          <h1 className='text-xl font-bold'>Agenda</h1>
+          <h1 className='text-xl font-bold'>Upcoming</h1>
         </div>
         <div className="text-sm text-gray-500">
           {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -47,7 +60,7 @@ export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPos
       </div>
       
       <div className="flex flex-col gap-8 p-6 overflow-y-auto max-h-[calc(81vh-5rem)] agenda-container mr-1">
-        {Object.values(groupedPosts).map(({date, day, month, posts}) => (
+        {sortedGroupedPosts.map(({date, day, month, posts}) => (
           <div key={date} className="flex gap-6 relative">
             <div className="sticky top-0 flex flex-col items-center min-w-[4rem] pt-2 h-fit">
               <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2">

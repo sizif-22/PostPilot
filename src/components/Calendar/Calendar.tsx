@@ -1,25 +1,7 @@
-import React, { useState } from 'react';
-import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format } from 'date-fns';
-import { parse } from 'date-fns';
-import { startOfWeek } from 'date-fns';
-import { getDay } from 'date-fns';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FiChevronLeft, FiChevronRight, FiCalendar } from 'react-icons/fi';
-import { enUS } from 'date-fns/locale';
+'use client';
+import React, { useState, useMemo } from 'react';
+import { ContinuousCalendar } from './ContinuousCalendar';
 import { DetailsDialog } from './DetailsDialog';
-
-const locales = {
-  'en-US': enUS,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
 
 interface ScheduledPost {
   id: string;
@@ -31,86 +13,64 @@ interface ScheduledPost {
   imageUrl?: string[];
 }
 
-// Dummy data for demonstration
+interface HighlightedDate {
+  day: number;
+  month: number;
+  year: number;
+  posts: ScheduledPost[];
+}
 
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-export const Calendar = ( {dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]} ) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+export const Calendar = ({ dummyScheduledPosts }: { dummyScheduledPosts: ScheduledPost[] }) => {
   const [selectedEvent, setSelectedEvent] = useState<ScheduledPost | null>(null);
 
-  const handleNavigate = (action: 'PREV' | 'NEXT' | 'TODAY') => {
-    const newDate = new Date(currentDate);
-    if (action === 'PREV') {
-      newDate.setMonth(newDate.getMonth() - 1);
-    } else if (action === 'NEXT') {
-      newDate.setMonth(newDate.getMonth() + 1);
-    } else {
-      newDate.setTime(new Date().getTime());
-    }
-    setCurrentDate(newDate);
-  };
+  // Get highlighted dates for the calendar
+  const highlightedDates = useMemo(() => {
+    const dateMap = new Map<string, ScheduledPost[]>();
+    
+    dummyScheduledPosts.forEach(post => {
+      const date = new Date(post.start);
+      const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      if (!dateMap.has(key)) {
+        dateMap.set(key, []);
+      }
+      dateMap.get(key)!.push(post);
+    });
 
-  const handleSelectEvent = (event: ScheduledPost) => {
-    setSelectedEvent(event);
-  };
+    return Array.from(dateMap).map(([key, posts]) => {
+      const [year, month, day] = key.split('-').map(Number);
+      return {
+        day,
+        month,
+        year,
+        posts
+      };
+    });
+  }, [dummyScheduledPosts]);
 
-  const eventStyleGetter = (event: ScheduledPost) => {
-    return {
-      style: {
-        backgroundColor: '#8b5cf6',
-        borderRadius: '4px',
-        opacity: 0.8,
-        color: 'white',
-        border: '0px',
-        display: 'block',
-      },
-    };
+  // Get upcoming events (today and future)
+  const upcomingEvents = dummyScheduledPosts
+    .filter(post => post.start >= new Date())
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .slice(0, 5);
+
+  const handleEventSelect = (post: ScheduledPost) => {
+    setSelectedEvent(post);
   };
 
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
-      <div className='flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200'>
-        <div>
-          <h2 className="font-bold">Calendar</h2>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleNavigate('PREV')}
-            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
-          >
-            <FiChevronLeft className="text-stone-600" />
-          </button>
-          <button
-            onClick={() => handleNavigate('TODAY')}
-            className="px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <FiCalendar className="text-stone-400" />
-            Today
-          </button>
-          <button
-            onClick={() => handleNavigate('NEXT')}
-            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
-          >
-            <FiChevronRight className="text-stone-600" />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 pt-4">
-        <BigCalendar
-          localizer={localizer}
-          events={dummyScheduledPosts}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: 'calc(100vh - 8rem)'}}
-          date={currentDate}
-          onNavigate={(date: Date) => setCurrentDate(date)}
-          eventPropGetter={eventStyleGetter}
-          onSelectEvent={handleSelectEvent}
-          views={['month', 'week', 'day']}
-        />
-      </div>
-      <DetailsDialog selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} open={!!selectedEvent} setOpen={setSelectedEvent} />
-    </div>
+    <>
+      <ContinuousCalendar 
+        highlightedDates={highlightedDates}
+        onEventSelect={handleEventSelect}
+      />
+      <DetailsDialog
+        selectedEvent={selectedEvent}
+        setSelectedEvent={setSelectedEvent}
+        open={!!selectedEvent}
+        setOpen={setSelectedEvent}
+      />
+    </>
   );
 };

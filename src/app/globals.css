@@ -13,7 +13,13 @@
      background-color: #6e4ea1;
      color: #fff;
 }
-
+select {
+     -webkit-appearance: none;
+     -moz-appearance: none;
+     appearance: none;
+     text-indent: 1px;
+     text-overflow: '';
+   }
 @layer base {
   :root {
           --background: 0 0% 100%;
