@@ -3,7 +3,7 @@ import React, { useState , useEffect } from 'react'
 import { FaUpload } from 'react-icons/fa'
 
 export const Media = () => {
-  const [cols , setCols] = useState<number>(4);
+  const [cols , setCols] = useState<number>(3);
   const photos = [
     'https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8',
     'https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg',
@@ -40,16 +40,18 @@ export const Media = () => {
           </button>
         </div>
       </div>
-      <div className={`grid grid-cols-${cols} px-8 py-4 gap-4 h-full`}>
+      <div className={`grid ${cols === 2 ? 'grid-cols-2' : cols === 3 ? 'grid-cols-3' : 'grid-cols-4'} px-8 py-4 gap-4 h-full`}>
         {[...Array(cols)].map((_, colIndex) => (
           <div key={colIndex} className="w-full h-fit pb-16 rounded-lg">
             {getColumnPhotos(colIndex).map((photo, index) => (
-              <img 
-                key={index} 
-                src={photo} 
-                alt="photo" 
-                className="w-full h-fit max-h-[50vh] md:max-h-[65vh] lg:max-h-[80vh] min-h-[100px] mb-4 shadow-md hover:shadow-xl transition-all hover:scale-[1.005] object-cover rounded-lg" 
-              />
+              <div key={index} className="relative group mb-4 rounded-lg overflow-hidden">
+                <img 
+                  src={photo} 
+                  alt="photo" 
+                  className="w-full h-fit max-h-[40vh]  lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] shadow-md transition-all duration-300 object-cover rounded-lg" 
+                />
+                <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </div>
             ))}
           </div>
         ))}
