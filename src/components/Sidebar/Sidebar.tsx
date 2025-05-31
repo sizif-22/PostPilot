@@ -1,6 +1,6 @@
 import React from "react";
 import { AccountToggle } from "./AccountToggle";
-// import { Search } from "./Search";
+import { Search } from "./Search";
 import { RouteSelect } from "./RouteSelect";
 import { SettingsSection } from "./RouteSelect";
 

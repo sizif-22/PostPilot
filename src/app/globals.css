@@ -13,13 +13,15 @@
      background-color: #6e4ea1;
      color: #fff;
 }
-select {
+.calendar-select{
      -webkit-appearance: none;
      -moz-appearance: none;
      appearance: none;
      text-indent: 1px;
      text-overflow: '';
-   }
+     position: relative;
+}
+
 @layer base {
   :root {
           --background: 0 0% 100%;

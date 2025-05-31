@@ -40,7 +40,7 @@ export const Configuration = () => {
         <h2 className="font-bold">Configuration</h2>
         </div>
       </div>
-      <div className='px-8'>
+      <div className='px-8 md:px-16'>
       <div className="p-6 space-y-6">
         {/* Section Title */}
         <div className="pb-4">

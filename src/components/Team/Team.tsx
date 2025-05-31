@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FiPlus, FiEdit2, FiTrash2, FiMail, FiCheck, FiX, FiUserPlus, FiClock, FiRefreshCw } from 'react-icons/fi'
 import { Command } from 'cmdk'
+import { Select } from '../Calendar/ContinuousCalendar';
 
 interface TeamMember {
   id: string;
@@ -87,9 +88,8 @@ const MemberDialog = ({ open, onOpenChange, member, onSubmit, title }: MemberDia
               value={formData.role || ''}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as TeamMember['role'] })}
             >
-              <option value="">Select Role</option>
-              <option value="contributor">Contributor</option>
               <option value="inspector">Inspector</option>
+              <option value="contributor">Contributor</option>
             </select>
           </div>
         </div>

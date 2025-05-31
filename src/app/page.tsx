@@ -54,7 +54,6 @@ export default function Home(): JSX.Element {
       end: new Date(2025, 4, 29),
       platforms: ['facebook'],
       content: 'Check out our latest updates!',
-      imageUrl: ['https://example.com/image.jpg'],
     },
     // Add more dummy posts as needed
   ];
