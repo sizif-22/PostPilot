@@ -9,11 +9,29 @@
      font-family: 'PlaywriteHU';
      src: url('/PlaywriteHU.ttf');
 }
+@font-face {
+     font-family: 'AncizarSans';
+     src: url('/AncizarSans.ttf');
+     font-size:larger ;
+}
+@font-face {
+     font-family: 'RobotoMono';
+     src: url('/RobotoMono.ttf');
+     font-size:larger ;
+}
 ::selection {
      background-color: #6e4ea1;
      color: #fff;
 }
 .calendar-select{
+     -webkit-appearance: none;
+     -moz-appearance: none;
+     appearance: none;
+     text-indent: 1px;
+     text-overflow: '';
+     position: relative;
+}
+select{
      -webkit-appearance: none;
      -moz-appearance: none;
      appearance: none;

@@ -7,7 +7,7 @@ export const TopBar = () => {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 z-50 bg-white">
-      <div className="flex items-center justify-between p-0.5">
+      <div className="flex items-center justify-between py-0.5">
         <div>
           <span className="text-sm font-bold block">🚀 Good morning, Tom!</span>
           <span className="text-xs block text-stone-500">

@@ -1,16 +1,8 @@
 import React from "react";
-import { AccountToggle } from "./AccountToggle";
-import { Search } from "../Channel/Search";
-import { RouteSelect } from "./RouteSelect";
-import { SettingsSection } from "./RouteSelect";
-
-export const Sidebar = ({
-  Callbackfunc,
-  route,
-}: {
-  Callbackfunc: (route: string) => void;
-  route: string;
-}) => {
+import { AccountToggle } from "../Sidebar/AccountToggle";
+import { FiPlus } from "react-icons/fi";
+import { Search } from "./Search";
+export const Sidebar = () => {
   return (
     <div>
       <div className="overflow-y-scroll sticky h-[calc(100vh-32px-48px)]">
@@ -20,11 +12,11 @@ export const Sidebar = ({
           </h1>
         </div>
         <AccountToggle />
-        {/* <Search /> */}
-        <RouteSelect Callbackfunc={Callbackfunc} route={route} />
+        <Search />
+        {/* TODO: Filter component... */}
+        {/* TODO: Details Component... */}
+        
       </div>
-
-      <SettingsSection route={route} Callbackfunc={Callbackfunc} />
     </div>
   );
 };

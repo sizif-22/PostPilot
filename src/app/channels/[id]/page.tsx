@@ -8,7 +8,6 @@ import { Calendar } from "@/components/Calendar/Calendar";
 import { Media } from "@/components/Media/Media";
 export default function Home( {params}: {params: {id: string}} ): JSX.Element {
   const {id} = params;
-  console.log(id);
   const [route, setRoute] = useState("Dashboard");
   const Navigation = (route: string) => {
     setRoute(route);

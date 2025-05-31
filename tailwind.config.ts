@@ -17,7 +17,15 @@ const config: Config = {
   			PlaywriteHU: [
   				'PlaywriteHU',
   				'sans-serif'
-  			]
+  			],
+			  AncizarSans: [
+				'AncizarSans',
+				'sans-serif'
+			  ],
+			  RobotoMono:[
+				'RobotoMono',
+				'sans-serif'
+			  ]
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
