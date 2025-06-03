@@ -7,8 +7,9 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import Cookies from "js-cookie";
+import { addUser, User } from "@/firebase/user.firestore";
 
-const addUser = async () => {
+const addUserWithGoogle = async () => {
      const provider = new GoogleAuthProvider();
      try {
        const result = await signInWithPopup(auth, provider);
@@ -25,18 +26,22 @@ const addUser = async () => {
    
        // Check if the user already exists in Firestore
        const userQuery = query(
-         collection(db, "user"),
+         collection(db, "Users"),
          where("email", "==", user.email)
        );
        const querySnapshot = await getDocs(userQuery);
-   
+       
        if (querySnapshot.empty) {
+         const userData: User = {
+           name: user.displayName || '',
+           email: user.email || '',
+           photoURL: user.photoURL || '',
+           isLoggedIn: true,
+           isVerified: user.emailVerified,
+           channels: []
+         };
          // If no user exists, add a new document
-         await addDoc(collection(db, "user"), {
-           email: user.email,
-           name: user.displayName,
-           projects: [],
-         });
+         await addUser(userData);
          console.log("New user added to Firestore.");
          window.location.reload();
        } else {
@@ -49,6 +54,7 @@ const addUser = async () => {
        const credential = GoogleAuthProvider.credentialFromError(error);
        console.error("Error during sign-in:", errorCode, errorMessage, email);
      }  
+     window.location.href = "/";
 };
 
 const addUserWithFacebook = async () => {
@@ -68,18 +74,22 @@ const addUserWithFacebook = async () => {
    
        // Check if the user already exists in Firestore
        const userQuery = query(
-         collection(db, "user"),
+         collection(db, "Users"),
          where("email", "==", user.email)
        );
        const querySnapshot = await getDocs(userQuery);
    
        if (querySnapshot.empty) {
          // If no user exists, add a new document
-         await addDoc(collection(db, "user"), {
-           email: user.email,
-           name: user.displayName,
-           projects: [],
-         });
+         const userData: User = {
+           name: user.displayName || '',
+           email: user.email || '',
+           photoURL: user.photoURL || '',
+           isLoggedIn: true,
+           isVerified: user.emailVerified,
+           channels: []
+         };
+         await addUser(userData);
          console.log("New user added to Firestore.");
          window.location.reload();
        } else {
@@ -97,23 +107,30 @@ const addUserWithFacebook = async () => {
          email
        );
      }
-     
+     window.location.href = "/"; 
 };
 
-   const checkLoggedIn = async () => {
+   const checkLoggedIn = async (): Promise<User | null> => {
      const token = Cookies?.get("postPilotUserCookie");
      if (token) {
        return new Promise((resolve) => {
          onAuthStateChanged(auth, (user) => {
            if (user) {
-             resolve(true);
+             resolve({
+               name: user.displayName || '',
+               email: user.email || '',
+               photoURL: user.photoURL || '',
+               isLoggedIn: true,
+               isVerified: user.emailVerified,
+               channels: []
+             } as User);
            } else {
-             resolve(false);
+             resolve(null);
            }
          });
        });
      } else {
-       return false;
+       return null;
      }
 };
-export { addUser, checkLoggedIn, addUserWithFacebook };
+export { addUserWithGoogle, checkLoggedIn, addUserWithFacebook };

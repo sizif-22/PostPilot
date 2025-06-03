@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-
+import {  addUserWithFacebook, addUserWithGoogle } from "@/firebase/auth";
 const Signin = () => {
   return (
     <main className="h-screen flex justify-center items-center">
@@ -100,13 +100,13 @@ const Oauth = () => {
       <hr className="my-4" />
       <h2 className="text-sm font-medium">Or continue with</h2>
       <div className="flex gap-2 mt-4">
-        <Button className="flex-1 transition-all duration-200 hover:opacity-95">
+        <Button className="flex-1 transition-all duration-200 hover:opacity-95" onClick={() => addUserWithGoogle()}>
           <span className="mr-2">
             <FaGoogle />
           </span>
           Google
         </Button>
-        <Button className="flex-1 transition-all duration-200 hover:opacity-95">
+        <Button className="flex-1 transition-all duration-200 hover:opacity-95" onClick={() => addUserWithFacebook()}>
           <span className="mr-2">
             <FaFacebook />
           </span>

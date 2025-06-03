@@ -7,7 +7,6 @@ const uploadImage = async ({ dir, file }: { dir: string, file: File }) => {
     const storageRef = FireStorage.ref(
       storage,
       `${dir}/${randomString.generate(10)}`
-      // `test/${randomString.generate(10)}`
     );
     const uploadTask = await FireStorage.uploadBytes(storageRef, file);
     const photoUrl = await FireStorage.getDownloadURL(uploadTask.ref);

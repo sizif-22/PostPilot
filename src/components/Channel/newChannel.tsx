@@ -1,0 +1,149 @@
+"use client";
+import { useState, useRef } from "react";
+import { FiFacebook, FiInstagram } from "react-icons/fi";
+import { Button } from "../ui/button";
+import { createChannel, Channel } from "@/firebase/channel.firestore";
+import { useUser } from "@/context/UserContext";
+export const NewChannel = ({
+  setCreateNewChannel,
+}: {
+  setCreateNewChannel: (value: boolean) => void;
+}) => {
+  const { user } = useUser();
+  const [channelName, setChannelName] = useState("");
+  const [channelDescription, setChannelDescription] = useState("");
+  const handleCreateChannel = async () => {
+    if (channelName) {
+      const channel: Channel = {
+        id: "",
+        name: channelName,
+        description: channelDescription,
+        socialMedia: {
+          facebook: "",
+          instagram: "",
+        },
+      };
+      if (user?.email) {
+        await createChannel(channel, user?.email);
+        setCreateNewChannel(false);
+      }
+    }
+  };
+  const handleCancel = () => {
+    setCreateNewChannel(false);
+  };
+  const handleFacebookConnect = () => {
+    console.log("Connecting to Facebook...");
+  };
+
+  const handleInstagramConnect = () => {
+    console.log("Connecting to Instagram...");
+  };
+
+  const socialMedia = [
+    {
+      name: "Facebook",
+      icon: FiFacebook,
+      connect: handleFacebookConnect,
+    },
+    {
+      name: "Instagram",
+      icon: FiInstagram,
+      connect: handleInstagramConnect,
+    },
+  ];
+  return (
+    <main className="p-4 md:px-24 grid-cols-[220px,_1fr]">
+      <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow pb-10">
+        {/* Top Bar */}
+        <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white px-4 border-b border-stone-200 z-10">
+          <h2 className="font-bold">Create New Channel</h2>
+        </div>
+        <div className="px-8 md:px-16">
+          <div className="p-6 space-y-6">
+            <div className="pb-4">
+              <h2 className="text-xl border-b border-stone-200 pb-4 mb-2 font-semibold">
+                Channel Details
+              </h2>
+              <p className="text-sm text-stone-500">
+                Create a new channel to start posting to your social media
+                accounts.
+              </p>
+              <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
+                <div className="flex flex-col items-start w-full py-2 gap-2">
+                  <h2 className="text-lg font-medium">Channel Name</h2>
+                  <input
+                    value={channelName}
+                    onChange={(e) => setChannelName(e.target.value)}
+                    type="text"
+                    className="w-1/2 border-2 border-stone-200 rounded-lg px-4 py-2"
+                  />
+                  <hr className="w-full border-stone-200 my-2" />
+                  <h2 className="text-lg font-medium">Channel Description</h2>
+                  <textarea
+                    value={channelDescription}
+                    onChange={(e) => setChannelDescription(e.target.value)}
+                    className="w-full border-2 min-h-24 border-stone-200 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Section Title */}
+            <div className="py-6 border-t">
+              <h2 className="text-xl border-b border-stone-200 pb-4 mb-2 font-semibold">
+                Social Media Connections
+              </h2>
+              <p className="text-sm text-stone-500">
+                Connect your social media accounts to enable posting
+              </p>
+              <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
+                {socialMedia.map((item, index) => (
+                  <>
+                    <div className="flex justify-between py-2 items-center w-full gap-2">
+                      <div>
+                        <h2 className="text-lg font-medium">
+                          Connect to {item.name}
+                        </h2>
+                        <h3 className="text-sm text-stone-500">
+                          Connect your {item.name} account to enable posting
+                        </h3>
+                      </div>
+                      <button
+                        onClick={item.connect}
+                        className=" text-sm bg font-bold duration-300 bg-white hover:text-black text-black/70 transition-colors rounded-lg border hover:bg-stone-200 border-stone-200 px-4 py-2"
+                      >
+                        Connect
+                      </button>
+                    </div>
+                    {index != socialMedia.length - 1 && (
+                      <hr className="w-full border-stone-200" />
+                    )}
+                  </>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                onClick={handleCancel}
+                variant={"outline"}
+                className="text-sm  hover:bg-stone-200 duration-300 rounded-lg px-4 py-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateChannel}
+                className={`text-sm ${
+                  channelName
+                    ? "bg-violet-700 hover:bg-violet-800"
+                    : "bg-stone-300 text-stone-500 hover:bg-stone-300 cursor-not-allowed"
+                } duration-300 rounded-lg px-4 py-2`}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
