@@ -1,19 +1,7 @@
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
+import { User } from "@/interfaces/User";
 
-export type Authority = "Owner" | "Inspector" | "Contributor";
-export interface UserChannel {
-    id: string;
-    authority: Authority;
-}
-export interface User {
-    name: string;
-    email: string;
-    photoURL: string;
-    isLoggedIn: boolean;
-    isVerified: boolean;
-    channels: UserChannel[];
-}
 
 const addUser = async (user: User) => {
   const userRef = fs.doc(fs.collection(db, "Users"), user.email);

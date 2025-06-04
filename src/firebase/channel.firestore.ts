@@ -1,21 +1,9 @@
 import  { db } from "@/firebase/config";
+import { ChannelBrief , Channel } from "@/interfaces/Channel";
+import { UserChannel } from "@/interfaces/User";
 import * as fs from "firebase/firestore";
-import { Authority , UserChannel } from "./user.firestore";
-const channelRef = fs.collection(db, "Channels");
 
-export interface ChannelBrief {
-    id: string;
-    name: string;
-    description: string;
-    authority: Authority;
-    createdAt: fs.Timestamp;    
-}
-export interface Channel extends ChannelBrief {
-    socialMedia: {
-        facebook: string;
-        instagram: string;
-    }
-}
+const channelRef = fs.collection(db, "Channels");
 
 const getChannelBriefs = async (channels: UserChannel[]) => {
     if(channels.length === 0) return [];

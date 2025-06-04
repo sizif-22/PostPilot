@@ -5,12 +5,21 @@ import {
   FiTrash2,
   FiAlertCircle,
 } from "react-icons/fi";
-
+import { useParams } from "next/navigation";
+import Cookies from "js-cookie";
 export const Configuration = () => {
+  const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleFacebookConnect = () => {
-    console.log("Connecting to Facebook...");
+    Cookies.set("currentChannel", id as string);
+    const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
+    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection";
+    const SCOPE = "pages_manage_posts,pages_read_engagement";
+
+    const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
+
+    window.location.href = authUrl;
   };
 
   const handleInstagramConnect = () => {
