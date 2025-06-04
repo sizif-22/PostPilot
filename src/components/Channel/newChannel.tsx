@@ -4,6 +4,7 @@ import { FiFacebook, FiInstagram } from "react-icons/fi";
 import { Button } from "../ui/button";
 import { createChannel, Channel } from "@/firebase/channel.firestore";
 import { useUser } from "@/context/UserContext";
+import { Timestamp } from "firebase/firestore";
 export const NewChannel = ({
   setCreateNewChannel,
 }: {
@@ -18,6 +19,8 @@ export const NewChannel = ({
         id: "",
         name: channelName,
         description: channelDescription,
+        authority:"Owner",
+        createdAt: Timestamp.now(),
         socialMedia: {
           facebook: "",
           instagram: "",

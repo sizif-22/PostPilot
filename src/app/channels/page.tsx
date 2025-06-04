@@ -7,10 +7,11 @@ import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
 import { NewChannel } from "@/components/Channel/newChannel";
+import { UserChannel } from "@/firebase/user.firestore";
 const ChannelsComponent = ({
   channels,
 }: {
-  channels: string[];
+  channels: UserChannel[];
 }): JSX.Element => {
   const [channelBriefs, setChannelBriefs] = useState<ChannelBrief[]>([]);
   useEffect(() => {
@@ -28,21 +29,28 @@ const ChannelsComponent = ({
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group relative bg-white hover:bg-stone-50 transition-colors rounded-lg p-4 my-4 border border-stone-200 hover:border-stone-300"
+            className="group bg-white grid grid-cols-1 justify-items-center hover:bg-stone-50 transition-colors rounded-lg p-4 my-4 border border-stone-200 hover:border-stone-300"
           >
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
+            <div className="flex justify-between flex-col w-full items-start">
+              <div className="space-y-2 w-full">
+                <div className="flex items-center w-full gap-3 justify-between">
                   <Link href={`/channels/${channel.id}`}>
                     <h3 className="font-bold text-xl hover:text-violet-700 transition-colors">
                       {channel.name}
                     </h3>
                   </Link>
+                  <div className="text-sm bg-stone-100 px-2 rounded-md flex items-center gap-1 cursor-default group-hover:bg-stone-200 transition-colors">
+                    {channel.authority === "Owner" ? <span className="text-lg pb-1">👑</span> : 
+                    channel.authority === "Inspector" ? <span className="text-lg pb-1">🔍</span> :  <span className="text-lg pb-1">✒️</span> }
+                    {channel.authority}
+                  </div>
                 </div>
                 <p className="text-sm text-stone-600">{channel.description}</p>
                 <div className="flex items-center gap-4 text-sm text-stone-500">
                   <span>•</span>
-                  {/* <span>Updated {channel.updatedAt}</span> */}
+                  <span>
+                    CreatedAt: {channel.createdAt.toDate().toUTCString()}
+                  </span>
                 </div>
               </div>
             </div>

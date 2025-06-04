@@ -29,7 +29,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } else {
         setUser(null);
-      }
+      }  
     };
 
     checkAuth();
