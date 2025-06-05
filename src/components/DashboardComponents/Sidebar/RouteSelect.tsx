@@ -8,8 +8,9 @@ import {
   FiInstagram,
   FiImage,
 } from "react-icons/fi";
-
+import { useChannel } from "@/context/ChannelContext";
 export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: string) => void, route: string}) => {
+  const channel = useChannel();
   const Button = [
     {
       Icon: FiHome,
@@ -27,15 +28,6 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
       Icon: FiUsers,
       title: "Team",
     },
-    
-    {
-      Icon: FiFacebook,
-      title: "Facebook-(Page title)",
-    },
-    {
-      Icon: FiInstagram,
-      title: "Instagram-(Page title)",
-    }
   ];
   return (
     <div className="space-y-1">
@@ -48,10 +40,25 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
           Callbackfunc={Callbackfunc}
         />
       ))}
+      {channel?.channel?.socialMedia?.facebook && (
+        <Route
+          Icon={FiFacebook}
+          title={`Facebook-(${channel.channel.socialMedia.facebook.name})`}
+          route={route}
+          Callbackfunc={Callbackfunc} 
+        />
+      )}
+      {channel?.channel?.socialMedia?.instagram && (
+        <Route
+          Icon={FiInstagram}
+          title={channel.channel.socialMedia.instagram.name}
+          route={route}
+          Callbackfunc={Callbackfunc}
+        />
+      )}
     </div>
   );
 };
-
 export const Route = ({
   Icon,
   title,

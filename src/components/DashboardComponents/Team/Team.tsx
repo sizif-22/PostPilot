@@ -277,15 +277,15 @@ export const Team = () => {
 
   return (
     <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
-      <div className="flex p-3 h-16 justify-between items-center px-6 border-b border-stone-200">
+      <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200">
         <div>
           <h2 className="font-bold text-xl">Team Members</h2>
         </div>
         <button
           onClick={() => setIsAddingMember(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+          className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
         >
-          <FiUserPlus className="w-4 h-4" />
+          <FiUserPlus className="text-violet-500" />
           <span>Add Member</span>
         </button>
       </div>

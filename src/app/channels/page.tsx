@@ -1,13 +1,14 @@
 "use client";
-import { Sidebar } from "@/components/Channel/Sidebar";
+import { Sidebar } from "@/components/ChannelComponents/Sidebar";
 import Link from "next/link";
 import { FiPlus } from "react-icons/fi";
-import { getChannelBriefs, ChannelBrief } from "@/firebase/channel.firestore";
+import { getChannelBriefs } from "@/firebase/channel.firestore";
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
-import { NewChannel } from "@/components/Channel/newChannel";
-import { UserChannel } from "@/firebase/user.firestore";
+import { NewChannel } from "@/components/ChannelComponents/newChannel";
+import { ChannelBrief } from "@/interfaces/Channel";
+import { UserChannel } from "@/interfaces/User";
 const ChannelsComponent = ({
   channels,
 }: {
@@ -40,8 +41,13 @@ const ChannelsComponent = ({
                     </h3>
                   </Link>
                   <div className="text-sm bg-stone-100 px-2 rounded-md flex items-center gap-1 cursor-default group-hover:bg-stone-200 transition-colors">
-                    {channel.authority === "Owner" ? <span className="text-lg pb-1">👑</span> : 
-                    channel.authority === "Inspector" ? <span className="text-lg pb-1">🔍</span> :  <span className="text-lg pb-1">✒️</span> }
+                    {channel.authority === "Owner" ? (
+                      <span className="text-lg pb-1">👑</span>
+                    ) : channel.authority === "Inspector" ? (
+                      <span className="text-lg pb-1">🔍</span>
+                    ) : (
+                      <span className="text-lg pb-1">✒️</span>
+                    )}
                     {channel.authority}
                   </div>
                 </div>

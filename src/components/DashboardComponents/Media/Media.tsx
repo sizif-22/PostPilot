@@ -33,7 +33,7 @@ export const Media = () => {
     <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
       <div className='flex p-3 h-16 sticky top-0 z-10 bg-white justify-between items-center px-4 border-b border-stone-200'>
         <div className="flex  justify-between items-center w-full">
-          <h2 className="font-bold">Media</h2>
+          <h2 className="font-bold text-xl">Media</h2>
           <button className='flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded'>
             <FaUpload className="text-violet-500"/>
             <span>Upload</span>

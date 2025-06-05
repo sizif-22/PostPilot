@@ -6,7 +6,7 @@ import { db } from "@/firebase/config";
 import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
-import { Page } from "@/interfaces/Page";
+import { Page } from "@/interfaces/Channel";
 
 const Connection = () => {
   const router = useRouter();
@@ -16,7 +16,7 @@ const Connection = () => {
   const [pages, setPages] = useState<Page[]>([]);
 
   const id = Cookies.get("currentChannel");
-  
+
   useEffect(() => {
     if (!id) {
       setError(
@@ -50,7 +50,7 @@ const Connection = () => {
           throw new Error(data.error || "Failed to get access token");
         }
 
-        const projectRef = doc(db, "project", id);
+        const projectRef = doc(db, "Channels", id as string);
         await updateDoc(projectRef, {
           FacebookConnected: true,
           facebookAccessToken: data.access_token,

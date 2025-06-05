@@ -50,7 +50,7 @@ export const Configuration = () => {
   return (
     <div className="bg-white  h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
       <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200">
-        <h2 className="font-bold">Configuration</h2>
+        <h2 className="font-bold text-xl">Configuration</h2>
       </div>
       <div className="px-8 md:px-16">
         <div className="p-6 space-y-6">

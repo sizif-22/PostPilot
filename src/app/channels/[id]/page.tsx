@@ -1,13 +1,15 @@
 "use client";
-import { Dashboard } from "@/components/Dashboard/Dashboard";
-import { Sidebar } from "@/components/Sidebar/Sidebar";
+import { Dashboard } from "@/components/DashboardComponents/Dashboard/Dashboard";
+import { Sidebar } from "@/components/DashboardComponents/Sidebar/Sidebar";
 import { useState } from "react";
-import { Team } from "@/components/Team/Team";
-import { Configuration } from "@/components/Configuration/configuration";
-import { Calendar } from "@/components/Calendar/Calendar";
-import { Media } from "@/components/Media/Media";
+import { Team } from "@/components/DashboardComponents/Team/Team";
+import { Configuration } from "@/components/DashboardComponents/Configuration/configuration";
+import { Calendar } from "@/components/DashboardComponents/Calendar/Calendar";
+import { Media } from "@/components/DashboardComponents/Media/Media";
 import { ChannelContextProvider } from "@/context/ChannelContext";
 import { useUser } from "@/context/UserContext";
+import { Post } from "@/interfaces/Channel";
+import { UserChannel } from "@/interfaces/User";
 export default function Home({
   params,
 }: {
@@ -15,22 +17,13 @@ export default function Home({
 }): JSX.Element {
   const { id } = params;
   const { user } = useUser();
-  const userChannel = user?.channels.find((channel) => channel.id === id);
+  const userChannel = user?.channels.find((channel: UserChannel) => channel.id === id);
   const [route, setRoute] = useState("Dashboard");
   const Navigation = (route: string) => {
     setRoute(route);
   };
-  interface ScheduledPost {
-    id: string;
-    title: string;
-    start: Date;
-    end: Date;
-    platforms: string[];
-    content: string;
-    imageUrl?: string[];
-  }
 
-  const dummyScheduledPosts: ScheduledPost[] = [
+  const dummyScheduledPosts: Post[] = [
     {
       id: "1",
       title: "Post 1",

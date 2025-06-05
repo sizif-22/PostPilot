@@ -7,7 +7,8 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import Cookies from "js-cookie";
-import { addUser, User } from "@/firebase/user.firestore";
+import { addUser } from "@/firebase/user.firestore";
+import { User } from "@/interfaces/User";
 
 const addUserWithGoogle = async () => {
      const provider = new GoogleAuthProvider();

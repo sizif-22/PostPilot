@@ -1,10 +1,8 @@
 "use client";
-import { auth } from "@/firebase/config";
-import { onAuthStateChanged } from "firebase/auth";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { checkLoggedIn } from "@/firebase/auth";
-import { getUser, User } from "@/firebase/user.firestore";
-
+import { getUser } from "@/firebase/user.firestore";
+import { User } from "@/interfaces/User";
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;

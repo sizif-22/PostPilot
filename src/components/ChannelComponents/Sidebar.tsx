@@ -1,5 +1,5 @@
 import React from "react";
-import { AccountToggle } from "../Sidebar/AccountToggle";
+import { AccountToggle } from "../DashboardComponents/Sidebar/AccountToggle";
 // import { FiPlus } from "react-icons/fi";
 import { Search } from "./Search";
 import Link from "next/link";
