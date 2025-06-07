@@ -11,11 +11,11 @@ interface ScheduledPost {
   imageUrl?: string[];
 } 
 
-export const Dashboard = ( {dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]} ) => {
+export const Dashboard = ( {dummyScheduledPosts, storageLimit, storageUsed, filesCount}: {dummyScheduledPosts: ScheduledPost[], storageLimit: number, storageUsed: number, filesCount: number} ) => {
   return (
     <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
       <TopBar />
-      <Grid dummyScheduledPosts={dummyScheduledPosts} />
+      <Grid dummyScheduledPosts={dummyScheduledPosts} storageLimit={storageLimit} storageUsed={storageUsed} filesCount={filesCount} />
     </div>
   );
 };

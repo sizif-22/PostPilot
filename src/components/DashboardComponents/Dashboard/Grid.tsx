@@ -15,7 +15,7 @@ interface ScheduledPost {
   content: string;
   imageUrl?: string[];
 }
-export const Grid = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]}) => {
+export const Grid = ({dummyScheduledPosts, storageLimit, storageUsed, filesCount}: {dummyScheduledPosts: ScheduledPost[], storageLimit: number, storageUsed: number, filesCount: number}) => {
   return (
     <div className="px-4 grid gap-y-[1vh] gap-x-3 grid-cols-3">
       {/* <StatCards />
@@ -24,7 +24,7 @@ export const Grid = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[
       <RecentTransactions /> */}
       <Agenda dummyScheduledPosts={dummyScheduledPosts} />      
       <Platforms />
-      <Storage />
+      <Storage storageLimit={storageLimit} storageUsed={storageUsed} filesCount={filesCount} />
       {/* <div className="col-span-3 row-span-1 border shadow-sm rounded-lg p-4 h-[15vh] ">box5</div> */}
     </div>
   );

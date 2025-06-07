@@ -65,7 +65,7 @@ export const Configuration = () => {
             <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
               {socialMedia.map((item, index) => (
                 <>
-                  <div className="flex justify-between py-2 items-center w-full gap-2">
+                  <div className="flex justify-between flex-col gap-4 md:flex-row py-2 items-center w-full md:gap-2">
                     <div>
                       <h2 className="text-lg font-medium">
                         Connect to {item.name}
@@ -96,7 +96,7 @@ export const Configuration = () => {
             </h3>
             <div className="border-2 border-red-500/50 rounded-lg p-4">
               <div className="flex items-center justify-between">
-                <div className="flex justify-between items-center w-full gap-2">
+                <div className="flex justify-between flex-col gap-4 md:flex-row items-center w-full md:gap-2">
                   <div>
                     <h2 className="text-lg font-medium">Delete Channel</h2>
                     <h3 className="text-sm text-stone-500">
@@ -106,7 +106,7 @@ export const Configuration = () => {
                   </div>
                   <button
                     onClick={handleDeleteChannel}
-                    className="text-red-600 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 px-4 py-2"
+                    className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2"
                   >
                     Delete Channel
                   </button>
