@@ -32,6 +32,13 @@ export const CPDialog = ({
   const [imageUrl, setImageUrl] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
+
+  // Convert local datetime to Unix timestamp
+  const getUnixTimestamp = (dateTimeString: string): number => {
+    const date = new Date(dateTimeString);
+    return Math.floor(date.getTime() / 1000);
+  };
+
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
@@ -54,7 +61,9 @@ export const CPDialog = ({
         accessToken: channel?.socialMedia.facebook.accessToken,
         pageId: channel?.socialMedia.facebook.id,
         message: postText,
-        scheduledDate: scheduledDate || undefined,
+        scheduledDate: scheduledDate
+          ? getUnixTimestamp(scheduledDate)
+          : undefined,
         published,
       };
 

@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const { accessToken, pageId, message, scheduledDate, published, imageUrls } = await request.json();
     interface PData{
-      scheduled_publish_time?: string;
+      scheduled_publish_time?: number;
       published: boolean;
       message: string;
       caption?: string;
