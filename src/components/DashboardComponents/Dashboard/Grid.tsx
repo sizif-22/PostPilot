@@ -6,16 +6,9 @@ import { RecentTransactions } from "./RecentTransactions";
 import { Agenda } from "./Agenda";
 import { Storage } from "./Storage";
 import { Platforms } from "./Platforms";
-interface ScheduledPost {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  platforms: string[];
-  content: string;
-  imageUrl?: string[];
-}
-export const Grid = ({dummyScheduledPosts, storageLimit, storageUsed, filesCount}: {dummyScheduledPosts: ScheduledPost[], storageLimit: number, storageUsed: number, filesCount: number}) => {
+import { Post } from "@/interfaces/Channel";
+
+export const Grid = ({dummyScheduledPosts, storageLimit, storageUsed, filesCount}: {dummyScheduledPosts: Post[], storageLimit: number, storageUsed: number, filesCount: number}) => {
   return (
     <div className="px-4 grid gap-y-[1vh] gap-x-3 grid-cols-3">
       {/* <StatCards />

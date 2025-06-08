@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaUpload, FaPlay, FaSync } from "react-icons/fa";
 import MediaDialog from "./addMediaDialog";
 import ImagePopup from "./imagePopup";
@@ -29,48 +29,12 @@ export const Media = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const STORAGE_LIMIT_MB = 500; // 500MB total storage limit
-
-  // const mediaItems: MediaItem[] = [
-  //   {
-  //     url: "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FUJuPu4QGhf?alt=media&token=b6b69fdc-ba57-4e10-a9a1-e9caed2659b5",
-  //     name: "Event Image 1",
-  //     isVideo: true,
-  //   },
-  //   {
-  //     url: "https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg",
-  //     name: "Event Image 2",
-  //     isVideo: false,
-  //   },
-  //   {
-  //     url: "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8",
-  //     name: "Event Image 3",
-  //     isVideo: false,
-  //   },
-  //   {
-  //     url: "https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg",
-  //     name: "Event Image 4",
-  //     isVideo: false,
-  //   },
-  //   {
-  //     url: "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8",
-  //     name: "Event Image 5",
-  //     isVideo: false,
-  //   },
-  //   {
-  //     url: "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FeRL0cLWK0q?alt=media&token=92094ae8-ee14-4cdc-ad55-7ddd728c95b7",
-  //     name: "Event Image 6",
-  //     isVideo: false,
-  //   },
-  //   {
-  //     url: "https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg",
-  //     name: "Event Image 7",
-  //     isVideo: false,
-  //   },
-  // ];
-
-  const getColumnMediaItems = (colIndex: number) => {
-    return media.filter((_, index) => index % cols === colIndex);
-  };
+  const getColumnMediaItems = useMemo(
+    () => (colIndex: number) => {
+      return media.filter((_, index) => index % cols === colIndex);
+    },
+    [media, cols]
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -87,7 +51,7 @@ export const Media = ({
     setIsPopupOpen(true);
   };
 
-  const MediaThumbnail = ({
+  const MediaThumbnail = useCallback(({
     item,
     onClick,
   }: {
@@ -108,8 +72,8 @@ export const Media = ({
               <source src={item.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-            <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center">
-              <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/20 hover:bg-black/50  transition-all duration-300 flex items-center justify-center">
+              <div className="w-12 h-12  rounded-full flex  items-center justify-center">
                 <FaPlay size={24} className="text-white" />
               </div>
             </div>
@@ -131,7 +95,7 @@ export const Media = ({
         <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </div>
     );
-  };
+  }, [media]);
 
   return (
     <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">

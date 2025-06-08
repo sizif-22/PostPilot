@@ -5,27 +5,18 @@ import { DetailsDialog } from '../Calendar/DetailsDialog';
 import { useState } from 'react';
 import { FiFacebook } from 'react-icons/fi';
 import Image from 'next/image';
+import { Post } from '@/interfaces/Channel';
 
-interface ScheduledPost {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  platforms: string[];
-  content: string;
-  imageUrl?: string[];
-}
-
-export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPost[]}) => {
-  const [selectedEvent, setSelectedEvent] = useState<ScheduledPost | null>(null);
+export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: Post[]}) => {
+  const [selectedEvent, setSelectedEvent] = useState<Post | null>(null);
   
   // First sort all posts by date and time
-  const sortedPosts = [...dummyScheduledPosts].sort((a, b) => a.start.getTime() - b.start.getTime());
+  const sortedPosts = [...dummyScheduledPosts].sort((a, b) => a.date.getTime() - b.date.getTime());
   
   const groupedPosts = sortedPosts.reduce((acc, post) => {
-    const date = post.start.getDate();
-    const day = post.start.toLocaleString('en-us', { weekday: 'short' });
-    const month = post.start.toLocaleString('en-us', { month: 'short' });
+    const date = post.date.getDate();
+    const day = post.date.toLocaleString('en-us', { weekday: 'short' });
+    const month = post.date.toLocaleString('en-us', { month: 'short' });
     if (!acc[date]) {
       acc[date] = {
         date,
@@ -36,7 +27,7 @@ export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPos
     }
     acc[date].posts.push(post);
     return acc;
-  }, {} as Record<number, { date: number; day: string; month: string; posts: ScheduledPost[] }>);
+  }, {} as Record<number, { date: number; day: string; month: string; posts: Post[] }>);
 
   // Convert to array and sort by date
   const sortedGroupedPosts = Object.values(groupedPosts)
@@ -80,7 +71,7 @@ export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: ScheduledPos
                     <div className="flex items-center text-gray-500">
                       <FiClock className="w-4 h-4 mr-1" />
                       <span className="text-sm">
-                        {post.start.toLocaleTimeString('en-US', { 
+                        {post.date.toLocaleTimeString('en-US', { 
                           hour: 'numeric',
                           minute: 'numeric',
                           hour12: true 

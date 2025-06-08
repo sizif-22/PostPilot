@@ -8,13 +8,11 @@ export interface ChannelBrief {
      authority: Authority;
      createdAt: Timestamp;    
  }
-
  export interface Page {
     name: string;
     access_token: string;
     id: string;
 }
- 
 export interface facebookChannel{
      name: string;
      id: string;
@@ -27,13 +25,12 @@ export interface Channel extends ChannelBrief {
      }
      posts: Post[];
 }
-
 export interface Post {
     id: string;
     title: string;
-    start: Date;
-    end: Date;
+    date: Date;
     platforms: string[];
     content: string;
     imageUrl?: string[];
+    published: boolean;
 }

@@ -2,16 +2,7 @@ import React from 'react'
 import { Command } from 'cmdk'
 import { format } from 'date-fns';
 import { FiX, FiMoreHorizontal, FiFacebook, FiInstagram, FiGlobe, FiClock } from 'react-icons/fi';
-
-interface ScheduledPost {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  platforms: string[];
-  content: string;
-  imageUrl?: string[];
-}
+import { Post } from '@/interfaces/Channel';
 
 export const DetailsDialog = ({
   selectedEvent,
@@ -19,8 +10,8 @@ export const DetailsDialog = ({
   open,
   setOpen
 }: {
-  selectedEvent: ScheduledPost | null,
-  setSelectedEvent: (event: ScheduledPost | null) => void,
+  selectedEvent: Post | null,
+  setSelectedEvent: (event: Post | null) => void,
   open: boolean,
   setOpen: any
 }) => {
@@ -75,7 +66,7 @@ export const DetailsDialog = ({
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <div className="flex items-center gap-1">
                         <FiClock className="text-stone-400" />
-                        {format(selectedEvent.start, 'PPP')} at {format(selectedEvent.start, 'p')}
+                        {format(selectedEvent.date, 'PPP')} at {format(selectedEvent.date, 'p')}
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
@@ -139,7 +130,7 @@ export const DetailsDialog = ({
                   <span className="font-medium">Scheduled</span>
                   <span className="text-stone-500">•</span>
                   <span className="text-stone-500">
-                    Will be posted on {format(selectedEvent.start, 'PPP')} at {format(selectedEvent.start, 'p')}
+                    Will be posted on {format(selectedEvent.date, 'PPP')} at {format(selectedEvent.date, 'p')}
                   </span>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 "use client";
-import { Channel, getChannel } from "@/firebase/channel.firestore";
-import { UserChannel } from "@/firebase/user.firestore";
-import React, { useContext, useState, use, useEffect } from "react";
+import { getChannel } from "@/firebase/channel.firestore";
+import React, { useContext, useState, useEffect } from "react";
+import { Channel } from "@/interfaces/Channel";
+import { UserChannel } from "@/interfaces/User";
 import { createContext } from "react";
 
 const ChannelContext = createContext<{

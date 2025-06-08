@@ -6,7 +6,6 @@ export interface MediaItem {
      type?: string;
      thumbnailUrl?: string;
 }
-
 export interface ImagePopupProps {
      isOpen: boolean;
      onClose: () => void;

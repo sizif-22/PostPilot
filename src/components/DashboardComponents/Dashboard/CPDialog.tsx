@@ -1,6 +1,16 @@
-import React, { useState } from 'react'
-import { Command } from 'cmdk'
-import { FiFacebook, FiInstagram, FiImage, FiX, FiCalendar, FiClock, FiRefreshCcw } from 'react-icons/fi'
+import React, { useState } from "react";
+import { Command } from "cmdk";
+import {
+  FiFacebook,
+  FiInstagram,
+  FiImage,
+  FiX,
+  FiCalendar,
+  FiClock,
+  FiRefreshCcw,
+} from "react-icons/fi";
+import { useUser } from "@/context/UserContext";
+import { useChannel } from "@/context/ChannelContext";
 
 interface Platform {
   id: string;
@@ -9,57 +19,73 @@ interface Platform {
   color: string;
 }
 
-const platforms: Platform[] = [
-  { id: 'facebook', name: 'Facebook', icon: FiFacebook, color: '#1877F2' },
-  { id: 'instagram', name: 'Instagram', icon: FiInstagram, color: '#E4405F' },
-];
-
-export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolean) => void}) => {
+export const CPDialog = ({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) => {
+  const { channel } = useChannel();
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [postText, setPostText] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [postText, setPostText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledDate, setScheduledDate] = useState("");
   const handlePlatformToggle = (platformId: string) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platformId) 
-        ? prev.filter(id => id !== platformId)
+    setSelectedPlatforms((prev) =>
+      prev.includes(platformId)
+        ? prev.filter((id) => id !== platformId)
         : [...prev, platformId]
     );
   };
 
   const resetForm = () => {
-    setPostText('');
-    setImageUrl('');
+    setPostText("");
+    setImageUrl("");
     setSelectedPlatforms([]);
-    setScheduledDate('');
+    setScheduledDate("");
   };
 
-  const handlePost = async (immediate: boolean = true) => {
+  const handlePost = async (published: boolean = true) => {
     setIsPosting(true);
     try {
       const postData = {
-        platforms: selectedPlatforms,
-        content: postText,
-        image: imageUrl,
-        ...(immediate ? { immediate: true } : {
-          scheduledDate,        })
+        accessToken: channel?.socialMedia.facebook.accessToken,
+        pageId: channel?.socialMedia.facebook.id,
+        message: postText,
+        scheduledDate: scheduledDate || undefined,
+        published,
       };
-      
-      console.log('Posting:', postData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setOpen(false);
-      // Reset form
+
+      const response = await fetch("/api/facebook/createpost", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create post");
+      }
+
+      // Only reset and close if post was successful
       resetForm();
-    } catch (error) {
-      console.error('Error posting:', error);
+      setOpen(false);
+    } catch (error: any) {
+      console.error("Error posting:", error);
+      // Here you might want to show an error message to the user
+      alert(error.message || "Failed to create post");
     } finally {
       setIsPosting(false);
     }
   };
 
-  const isFormValid = (postText.trim() || imageUrl.trim()) && selectedPlatforms.length > 0;
+  const isFormValid =
+    (postText.trim() || imageUrl.trim()) && selectedPlatforms.length > 0;
   const canSchedule = isFormValid && scheduledDate;
 
   return (
@@ -77,7 +103,7 @@ export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolea
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-stone-200">
           <h2 className="text-lg font-semibold">Create New Post</h2>
-          <button 
+          <button
             onClick={() => setOpen(false)}
             className="p-1 hover:bg-stone-100 rounded-full transition-colors"
           >
@@ -89,31 +115,46 @@ export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolea
         <div className="p-4 space-y-4">
           {/* Platform Selection */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">Select Platforms</label>
+            <label className="block text-sm font-medium text-stone-700">
+              Select Platforms
+            </label>
             <div className="flex gap-2">
-              {platforms.map(platform => (
+              {channel?.socialMedia.facebook && (
                 <button
-                  key={platform.id}
-                  onClick={() => handlePlatformToggle(platform.id)}
+                  onClick={() => handlePlatformToggle("facebook")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedPlatforms.includes(platform.id)
-                      ? 'border-stone-300 bg-stone-100'
-                      : 'border-stone-200 hover:border-stone-300'
+                    selectedPlatforms.includes("facebook")
+                      ? "border-stone-300 bg-stone-100"
+                      : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
-                  <platform.icon 
-                    style={{ color: platform.color }} 
-                    className="text-lg"
-                  />
-                  <span className="text-sm">{platform.name}</span>
+                  <FiFacebook className="text-lg" />
+                  <span className="text-sm">
+                    {channel?.socialMedia.facebook.name}
+                  </span>
                 </button>
-              ))}
+              )}
+              {channel?.socialMedia.instagram && (
+                <button
+                  onClick={() => handlePlatformToggle("instagram")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                    selectedPlatforms.includes("instagram")
+                      ? "border-stone-300 bg-stone-100"
+                      : "border-stone-200 hover:border-stone-300"
+                  }`}
+                >
+                  <FiInstagram className="text-lg" />
+                  <span className="text-sm">Instagram</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* Post Content */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">Post Content</label>
+            <label className="block text-sm font-medium text-stone-700">
+              Post Content
+            </label>
             <textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
@@ -124,7 +165,9 @@ export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolea
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">Add Image</label>
+            <label className="block text-sm font-medium text-stone-700">
+              Add Image
+            </label>
             <div className="flex gap-2 items-center">
               <input
                 type="text"
@@ -141,22 +184,24 @@ export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolea
 
           {/* Schedule Options */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">Schedule (Optional)</label>
-            
-              <div className="space-y-2">
-                <label className="block text-xs text-stone-500">
-                  <span className="flex items-center gap-2">
-                    <FiCalendar className="text-stone-400" />
-                    Date
-                  </span>
-                </label>
-                <input
-                  type="datetime-local"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                />
-              </div>
+            <label className="block text-sm font-medium text-stone-700">
+              Schedule (Optional)
+            </label>
+
+            <div className="space-y-2">
+              <label className="block text-xs text-stone-500">
+                <span className="flex items-center gap-2">
+                  <FiCalendar className="text-stone-400" />
+                  Date
+                </span>
+              </label>
+              <input
+                type="datetime-local"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="w-full px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              />
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -169,55 +214,79 @@ export const CPDialog = ({open, setOpen}: {open: boolean, setOpen: (open: boolea
             >
               Reset
             </button>
-            <div className='flex justify-end gap-2'>
-
-            {(
+            <div className="flex justify-end gap-2">
+              {
+                <button
+                  onClick={() => handlePost(false)}
+                  disabled={isPosting || !canSchedule}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                    isPosting || !canSchedule
+                      ? "cursor-not-allowed text-stone-400"
+                      : "text-violet-600 hover:bg-violet-50"
+                  }`}
+                >
+                  {isPosting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Scheduling...</span>
+                    </>
+                  ) : (
+                    <span>Schedule Post</span>
+                  )}
+                </button>
+              }
               <button
-                onClick={() => handlePost(false)}
-                disabled={isPosting || !canSchedule}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                  isPosting || !canSchedule ? 'cursor-not-allowed text-stone-400' : 'text-violet-600 hover:bg-violet-50'
+                onClick={() => handlePost(true)}
+                disabled={!isFormValid || isPosting}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2 ${
+                  isFormValid && !isPosting
+                    ? "bg-violet-500 hover:bg-violet-600"
+                    : "bg-stone-300 cursor-not-allowed"
                 }`}
               >
                 {isPosting ? (
                   <>
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
-                    <span>Scheduling...</span>
+                    <span>Posting...</span>
                   </>
                 ) : (
-                  <span>Schedule Post</span>
+                  <span>Post Now</span>
                 )}
               </button>
-            )}
-            <button
-              onClick={() => handlePost(true)}
-              disabled={!isFormValid || isPosting}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2 ${
-                isFormValid && !isPosting
-                  ? 'bg-violet-500 hover:bg-violet-600'
-                  : 'bg-stone-300 cursor-not-allowed'
-              }`}
-            >
-              {isPosting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Posting...</span>
-                </>
-              ) : (
-                <span>Post Now</span>
-              )}
-            </button>
-              </div>
+            </div>
           </div>
         </div>
       </div>
     </Command.Dialog>
   );
 };
-
