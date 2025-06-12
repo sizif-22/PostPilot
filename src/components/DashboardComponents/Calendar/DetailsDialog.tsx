@@ -1,25 +1,34 @@
-import React from 'react'
-import { Command } from 'cmdk'
-import { format } from 'date-fns';
-import { FiX, FiMoreHorizontal, FiFacebook, FiInstagram, FiGlobe, FiClock } from 'react-icons/fi';
-import { Post } from '@/interfaces/Channel';
+import React from "react";
+import { Command } from "cmdk";
+import { format } from "date-fns";
+import {
+  FiX,
+  FiMoreHorizontal,
+  FiFacebook,
+  FiInstagram,
+  FiGlobe,
+  FiClock,
+} from "react-icons/fi";
+import { Post } from "@/interfaces/Channel";
+import { useChannel } from "@/context/ChannelContext";
 
 export const DetailsDialog = ({
   selectedEvent,
   setSelectedEvent,
   open,
-  setOpen
+  setOpen,
 }: {
-  selectedEvent: Post | null,
-  setSelectedEvent: (event: Post | null) => void,
-  open: boolean,
-  setOpen: any
+  selectedEvent: Post | null;
+  setSelectedEvent: (event: Post | null) => void;
+  open: boolean;
+  setOpen: any;
 }) => {
+  const { channel } = useChannel();
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'facebook':
+      case "facebook":
         return <FiFacebook className="text-[#1877F2]" />;
-      case 'instagram':
+      case "instagram":
         return <FiInstagram className="text-[#E4405F]" />;
       default:
         return <FiGlobe className="text-stone-600" />;
@@ -66,7 +75,8 @@ export const DetailsDialog = ({
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <div className="flex items-center gap-1">
                         <FiClock className="text-stone-400" />
-                        {format(selectedEvent.date, 'PPP')} at {format(selectedEvent.date, 'p')}
+                        {format(selectedEvent.date, "PPP")} at{" "}
+                        {format(selectedEvent.date, "p")}
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
@@ -86,34 +96,44 @@ export const DetailsDialog = ({
 
               {/* Post Content */}
               <div className="space-y-3">
-                <p className="text-[15px] whitespace-pre-wrap">{selectedEvent.content}</p>
+                <p className="text-[15px] whitespace-pre-wrap">
+                  {selectedEvent.content}
+                </p>
                 {selectedEvent.imageUrl && (
-                  <div className={`rounded-lg overflow-hidden border border-stone-200 grid gap-1 ${
-                    selectedEvent.imageUrl.length === 1 ? 'grid-cols-1' :
-                    'grid-cols-2'
-                  }`}>
+                  <div
+                    className={`rounded-lg overflow-hidden border border-stone-200 grid gap-1 ${
+                      selectedEvent.imageUrl.length === 1
+                        ? "grid-cols-1"
+                        : "grid-cols-2"
+                    }`}
+                  >
                     {selectedEvent.imageUrl.slice(0, 3).map((image, index) => {
-                      const isLastImage = index === 2 && selectedEvent.imageUrl!.length > 3;
+                      const isLastImage =
+                        index === 2 && selectedEvent.imageUrl!.length > 3;
                       const remainingCount = selectedEvent.imageUrl!.length - 3;
-                      
+
                       return (
-                        <div 
+                        <div
                           key={index}
                           className={`relative ${
-                            selectedEvent.imageUrl!.length >= 3 && index === 0 ? 'row-span-2' : ''
+                            selectedEvent.imageUrl!.length >= 3 && index === 0
+                              ? "row-span-2"
+                              : ""
                           }`}
                         >
                           <img
                             src={image}
                             alt={`Post image ${index + 1}`}
                             className={`w-full h-full object-cover ${
-                              isLastImage ? 'brightness-50 blur-[2px]' : ''
+                              isLastImage ? "brightness-50 blur-[2px]" : ""
                             }`}
-                            style={{ minHeight: '200px' }}
+                            style={{ minHeight: "200px" }}
                           />
                           {isLastImage && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-white text-3xl font-bold">+{remainingCount}</span>
+                              <span className="text-white text-3xl font-bold">
+                                +{remainingCount}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -130,7 +150,8 @@ export const DetailsDialog = ({
                   <span className="font-medium">Scheduled</span>
                   <span className="text-stone-500">•</span>
                   <span className="text-stone-500">
-                    Will be posted on {format(selectedEvent.date, 'PPP')} at {format(selectedEvent.date, 'p')}
+                    Will be posted on {format(selectedEvent.date, "PPP")} at{" "}
+                    {format(selectedEvent.date, "p")}
                   </span>
                 </div>
               </div>
@@ -141,12 +162,41 @@ export const DetailsDialog = ({
           <div className="px-4 flex items-center w-full border-t border-stone-200 bg-stone-50 h-[9vh]">
             <div className="flex justify-end gap-2 w-full">
               <button
+                onClick={() => {
+                  fetch(`/api/facebook/deletepost`, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    method: "DELETE",
+                    body: JSON.stringify({
+                      postId: selectedEvent.id,
+                      channelId: channel?.id as string,
+                    }),
+                  });
+                  setOpen(false);
+                  setSelectedEvent(null);
+                }}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
               >
                 Delete Post
               </button>
               <button
                 className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors"
+                onClick={() => {
+                  fetch(`/api/facebook/editpost`, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    method: "PUT",
+                    body: JSON.stringify({
+                      postId: selectedEvent.id,
+                      channelId: channel?.id as string,
+                      post: selectedEvent,
+                    }),
+                  });
+                  setOpen(false);
+                  setSelectedEvent(null);
+                }}
               >
                 Edit Post
               </button>

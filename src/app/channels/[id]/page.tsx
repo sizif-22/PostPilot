@@ -188,7 +188,6 @@ export default function Home({
             <Sidebar Callbackfunc={Navigation} route={route} />
             {route === "Dashboard" ? (
               <Dashboard
-                dummyScheduledPosts={dummyScheduledPosts}
                 storageLimit={500}
                 storageUsed={storageUsed}
                 filesCount={media.length}
@@ -196,7 +195,7 @@ export default function Home({
             ) : route === "Team" ? (
               <Team />
             ) : route === "Calendar" ? (
-              <Calendar dummyScheduledPosts={dummyScheduledPosts} />
+              <Calendar />
             ) : route === "Media" ? (
               <Media
                 media={media}

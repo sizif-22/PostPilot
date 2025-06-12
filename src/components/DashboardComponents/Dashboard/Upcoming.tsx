@@ -6,13 +6,15 @@ import { useState } from 'react';
 import { FiFacebook } from 'react-icons/fi';
 import Image from 'next/image';
 import { Post } from '@/interfaces/Channel';
+import { useChannel } from '@/context/ChannelContext';
 
-export const Agenda = ({dummyScheduledPosts}: {dummyScheduledPosts: Post[]}) => {
+export const Upcoming = () => {
   const [selectedEvent, setSelectedEvent] = useState<Post | null>(null);
+  const {channel} = useChannel();
   
   // First sort all posts by date and time
-  const sortedPosts = [...dummyScheduledPosts].sort((a, b) => a.date.getTime() - b.date.getTime());
-  
+  const sortedPosts = [...(channel?.posts || [])].filter((post) => post.published).sort((a, b) => a.date.getTime() - b.date.getTime());
+
   const groupedPosts = sortedPosts.reduce((acc, post) => {
     const date = post.date.getDate();
     const day = post.date.toLocaleString('en-us', { weekday: 'short' });

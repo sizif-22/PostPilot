@@ -1,5 +1,5 @@
 import  { db } from "@/firebase/config";
-import { ChannelBrief , Channel } from "@/interfaces/Channel";
+import { ChannelBrief , Channel, Post } from "@/interfaces/Channel";
 import { UserChannel } from "@/interfaces/User";
 import * as fs from "firebase/firestore";
 
@@ -33,6 +33,12 @@ const getChannel = (channel: UserChannel , callback: (channel: Channel | null) =
     });
 };
 
+const createPost = async (post: Post , channelId: string) => {
+    await fs.updateDoc(fs.doc(db, "Channels", channelId), {
+        posts: fs.arrayUnion(post),
+    });
+};
+
 const createChannel = async (channel: Channel , userId: string) => {
     const {id , authority , ...channelWithoutIdAndAuthority} = channel;
     const newChannel = await fs.addDoc(fs.collection(db, "Channels"), channelWithoutIdAndAuthority);
@@ -40,4 +46,20 @@ const createChannel = async (channel: Channel , userId: string) => {
         channels: fs.arrayUnion({id: newChannel.id, authority: "Owner"}),
     });
 };    
-export { getChannelBriefs, getChannel, createChannel };
+
+const deletePost = async (postId: string, channelId: string) => {
+    const postRef = fs.doc(db, "Channels", channelId);
+    await fs.updateDoc(postRef, {
+        posts: fs.arrayRemove(postId),
+    });
+
+};
+
+const editPost = async (postId: string, channelId: string, post: Post) => {
+    const postRef = fs.doc(db, "Channels", channelId);
+    await fs.updateDoc(postRef, {
+        posts: fs.arrayRemove(postId),
+    });
+};
+
+export { getChannelBriefs, getChannel, createChannel, createPost, deletePost, editPost };

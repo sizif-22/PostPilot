@@ -23,7 +23,7 @@ export interface Channel extends ChannelBrief {
          facebook: facebookChannel;
          instagram: string;
      }
-     posts: Post[];
+    posts: Post[];
 }
 export interface Post {
     id: string;
@@ -33,4 +33,5 @@ export interface Post {
     content: string;
     imageUrl?: string[];
     published: boolean;
+    scheduledDate?: number;
 }

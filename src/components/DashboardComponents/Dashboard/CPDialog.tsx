@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { useUser } from "@/context/UserContext";
 import { useChannel } from "@/context/ChannelContext";
+import { createPost } from "@/firebase/channel.firestore";
 
 interface Platform {
   id: string;
@@ -61,9 +62,9 @@ export const CPDialog = ({
         accessToken: channel?.socialMedia.facebook.accessToken,
         pageId: channel?.socialMedia.facebook.id,
         message: postText,
-        scheduledDate: scheduledDate
-          ? getUnixTimestamp(scheduledDate)
-          : undefined,
+        scheduledDate: scheduledDate ? getUnixTimestamp(scheduledDate) : undefined,
+        platforms: selectedPlatforms,
+        imageUrl: imageUrl ? [imageUrl] : undefined,
         published,
       };
 
@@ -80,7 +81,8 @@ export const CPDialog = ({
       if (!response.ok) {
         throw new Error(data.error || "Failed to create post");
       }
-
+      // Add Post to the db
+      createPost(data, channel?.id as string);
       // Only reset and close if post was successful
       resetForm();
       setOpen(false);
