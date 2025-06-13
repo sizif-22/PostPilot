@@ -92,6 +92,7 @@ export const CPDialog = ({
   };
 
   const handleImageSelect = (image: MediaItem) => {
+    console.log(image.url);
     setSelectedImages((prev) => {
       if (prev.some((img) => img.url === image.url)) {
         return prev.filter((img) => img.url !== image.url);
@@ -103,6 +104,27 @@ export const CPDialog = ({
   const handlePost = async (published: boolean = true) => {
     setIsPosting(true);
     try {
+      // Validate media types
+      if (selectedImages.length > 0) {
+        const hasVideos = selectedImages.some((item) => item.isVideo);
+        const hasImages = selectedImages.some((item) => !item.isVideo);
+        const videoCount = selectedImages.filter((item) => item.isVideo).length;
+
+        // Check for mixed media
+        if (hasVideos && hasImages) {
+          throw new Error(
+            "Cannot mix videos and images in the same post. Please select either all videos or all images."
+          );
+        }
+
+        // Check for multiple videos
+        if (videoCount > 1) {
+          throw new Error(
+            "Cannot post multiple videos at once. Please select only one video."
+          );
+        }
+      }
+
       // Prepare the scheduled timestamp
       let scheduledTimestamp: number | undefined;
       if (scheduledDate) {

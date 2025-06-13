@@ -27,6 +27,29 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate media types
+    if (imageUrls && imageUrls.length > 0) {
+      const hasVideos = imageUrls.some(item => item.isVideo);
+      const hasImages = imageUrls.some(item => !item.isVideo);
+      const videoCount = imageUrls.filter(item => item.isVideo).length;
+
+      // Check for mixed media
+      if (hasVideos && hasImages) {
+        return NextResponse.json(
+          { error: 'Cannot mix videos and images in the same post. Please select either all videos or all images.' },
+          { status: 400 }
+        );
+      }
+
+      // Check for multiple videos
+      if (videoCount > 1) {
+        return NextResponse.json(
+          { error: 'Cannot post multiple videos at once. Please select only one video.' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get the proper page access token (if not already a page token)
     let pageAccessToken = accessToken;
     
@@ -323,3 +346,7 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
+// "693659263455323"
+// "1044016901237834"
