@@ -1,3 +1,4 @@
+import { MediaItem } from "./Media";
 import { Authority } from "./User";
 import { Timestamp } from "firebase/firestore";
 
@@ -26,12 +27,17 @@ export interface Channel extends ChannelBrief {
     posts: Post[];
 }
 export interface Post {
-    id: string;
-    title: string;
-    date: Date;
-    platforms: string[];
-    content: string;
-    imageUrl?: string[];
+    id?: string;
+    title?: string;
+    date?: Date;
+    platforms?: string[];
+    content?: string;
+    imageUrls?: MediaItem[];
     published: boolean;
     scheduledDate?: number;
+    accessToken?: string;
+    pageId?: string;
+    message?: string;
+    channelId?: string;
+    clientTimeZone?: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Command } from "cmdk";
 import {
   FiFacebook,
@@ -8,37 +8,73 @@ import {
   FiCalendar,
   FiClock,
   FiRefreshCcw,
+  FiGlobe,
 } from "react-icons/fi";
 import { useUser } from "@/context/UserContext";
 import { useChannel } from "@/context/ChannelContext";
 import { createPost } from "@/firebase/channel.firestore";
-
-interface Platform {
-  id: string;
-  name: string;
-  icon: typeof FiFacebook;
-  color: string;
-}
+import { Post } from "@/interfaces/Channel";
+import {
+  convertLocalDateTimeToUnixTimestamp,
+  getCurrentTimeInTimezone,
+  getMinScheduleDateTime,
+  getSortedTimezones,
+  isValidScheduleTime,
+} from "@/lib/utils";
+import { MediaItem } from "@/interfaces/Media";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
+import { FaPlay } from "react-icons/fa";
 
 export const CPDialog = ({
   open,
   setOpen,
+  media,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
+  media: MediaItem[];
 }) => {
   const { channel } = useChannel();
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [postText, setPostText] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [selectedImages, setSelectedImages] = useState<MediaItem[]>([]);
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
+  const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
+    return (
+      localStorage.getItem("userTimeZone") ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+  });
+  const [currentTime, setCurrentTime] = useState<string>("");
 
-  // Convert local datetime to Unix timestamp
-  const getUnixTimestamp = (dateTimeString: string): number => {
-    const date = new Date(dateTimeString);
-    return Math.floor(date.getTime() / 1000);
-  };
+  // Get sorted timezones for better UX
+  const sortedTimezones = getSortedTimezones();
+
+  // Save timezone preference when it changes
+  useEffect(() => {
+    localStorage.setItem("userTimeZone", selectedTimeZone);
+  }, [selectedTimeZone]);
+
+  // Update current time display every minute
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      setCurrentTime(getCurrentTimeInTimezone(selectedTimeZone));
+    };
+
+    updateCurrentTime();
+    const interval = setInterval(updateCurrentTime, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [selectedTimeZone]);
 
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
@@ -50,21 +86,47 @@ export const CPDialog = ({
 
   const resetForm = () => {
     setPostText("");
-    setImageUrl("");
+    setSelectedImages([]);
     setSelectedPlatforms([]);
     setScheduledDate("");
+  };
+
+  const handleImageSelect = (image: MediaItem) => {
+    setSelectedImages((prev) => {
+      if (prev.some((img) => img.url === image.url)) {
+        return prev.filter((img) => img.url !== image.url);
+      }
+      return [...prev, image];
+    });
   };
 
   const handlePost = async (published: boolean = true) => {
     setIsPosting(true);
     try {
-      const postData = {
+      // Prepare the scheduled timestamp
+      let scheduledTimestamp: number | undefined;
+      if (scheduledDate) {
+        scheduledTimestamp = convertLocalDateTimeToUnixTimestamp(
+          scheduledDate,
+          selectedTimeZone
+        );
+
+        // Validate the scheduled time
+        if (!isValidScheduleTime(scheduledTimestamp)) {
+          throw new Error(
+            "Scheduled time must be at least 13 minutes in the future"
+          );
+        }
+      }
+
+      const postData: Post = {
         accessToken: channel?.socialMedia.facebook.accessToken,
         pageId: channel?.socialMedia.facebook.id,
         message: postText,
-        scheduledDate: scheduledDate ? getUnixTimestamp(scheduledDate) : undefined,
+        scheduledDate: scheduledTimestamp,
+        clientTimeZone: scheduledDate ? selectedTimeZone : undefined,
         platforms: selectedPlatforms,
-        imageUrl: imageUrl ? [imageUrl] : undefined,
+        imageUrls: selectedImages,
         published,
       };
 
@@ -81,14 +143,19 @@ export const CPDialog = ({
       if (!response.ok) {
         throw new Error(data.error || "Failed to create post");
       }
+
+      // Prepare post data for Firestore
+      const firestorePostData = { ...postData };
+      firestorePostData.id = data.id;
+
       // Add Post to the db
-      createPost(data, channel?.id as string);
+      await createPost(firestorePostData, channel?.id as string);
+
       // Only reset and close if post was successful
       resetForm();
       setOpen(false);
     } catch (error: any) {
       console.error("Error posting:", error);
-      // Here you might want to show an error message to the user
       alert(error.message || "Failed to create post");
     } finally {
       setIsPosting(false);
@@ -96,178 +163,256 @@ export const CPDialog = ({
   };
 
   const isFormValid =
-    (postText.trim() || imageUrl.trim()) && selectedPlatforms.length > 0;
+    (postText.trim() || selectedImages.length > 0) &&
+    selectedPlatforms.length > 0;
   const canSchedule = isFormValid && scheduledDate;
 
   return (
-    <Command.Dialog
-      open={open}
-      onOpenChange={setOpen}
-      label="Create Post"
-      className="fixed inset-0 bg-stone-950/50 outline-0 z-50"
-      onClick={() => setOpen(false)}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[90%] max-w-2xl bg-white rounded-lg shadow-xl"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-stone-200">
-          <h2 className="text-lg font-semibold">Create New Post</h2>
-          <button
-            onClick={() => setOpen(false)}
-            className="p-1 hover:bg-stone-100 rounded-full transition-colors"
-          >
-            <FiX className="text-stone-500" />
-          </button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Create Post</DialogTitle>
+        </DialogHeader>
+
+        {/* Platform Selection */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-stone-700">
+            Select Platforms
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {channel?.socialMedia.facebook && (
+              <button
+                onClick={() => handlePlatformToggle("facebook")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                  selectedPlatforms.includes("facebook")
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}
+              >
+                <FiFacebook className="text-lg" />
+                <span className="text-sm">
+                  {channel?.socialMedia.facebook.name}
+                </span>
+              </button>
+            )}
+            {channel?.socialMedia.instagram && (
+              <button
+                onClick={() => handlePlatformToggle("instagram")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                  selectedPlatforms.includes("instagram")
+                    ? "border-pink-300 bg-pink-50 text-pink-700"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}
+              >
+                <FiInstagram className="text-lg" />
+                <span className="text-sm">Instagram</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Platform Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">
-              Select Platforms
-            </label>
-            <div className="flex gap-2">
-              {channel?.socialMedia.facebook && (
-                <button
-                  onClick={() => handlePlatformToggle("facebook")}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedPlatforms.includes("facebook")
-                      ? "border-stone-300 bg-stone-100"
-                      : "border-stone-200 hover:border-stone-300"
-                  }`}
-                >
-                  <FiFacebook className="text-lg" />
-                  <span className="text-sm">
-                    {channel?.socialMedia.facebook.name}
-                  </span>
-                </button>
-              )}
-              {channel?.socialMedia.instagram && (
-                <button
-                  onClick={() => handlePlatformToggle("instagram")}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedPlatforms.includes("instagram")
-                      ? "border-stone-300 bg-stone-100"
-                      : "border-stone-200 hover:border-stone-300"
-                  }`}
-                >
-                  <FiInstagram className="text-lg" />
-                  <span className="text-sm">Instagram</span>
-                </button>
-              )}
-            </div>
-          </div>
+        <div className="py-4">
+          <textarea
+            value={postText}
+            onChange={(e) => setPostText(e.target.value)}
+            placeholder="What's on your mind?"
+            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+            rows={4}
+          />
 
-          {/* Post Content */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">
-              Post Content
-            </label>
-            <textarea
-              value={postText}
-              onChange={(e) => setPostText(e.target.value)}
-              placeholder="What would you like to share?"
-              className="w-full h-32 p-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
-            />
-          </div>
-
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">
-              Add Image
-            </label>
-            <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Enter image URL"
-                className="flex-1 px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-              <button className="p-2 text-stone-500 hover:bg-stone-100 rounded-lg transition-colors">
-                <FiImage className="text-lg" />
-              </button>
-            </div>
-          </div>
-
-          {/* Schedule Options */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-stone-700">
-              Schedule (Optional)
-            </label>
-
-            <div className="space-y-2">
-              <label className="block text-xs text-stone-500">
-                <span className="flex items-center gap-2">
-                  <FiCalendar className="text-stone-400" />
-                  Date
-                </span>
-              </label>
-              <input
-                type="datetime-local"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between items-center gap-2 pt-4">
+          <div className="flex gap-2 items-center mt-4">
             <button
-              onClick={resetForm}
               type="button"
-              className="p-2 text-red-500 hover:bg-stone-100 rounded-lg transition-colors"
-              title="Reset form"
+              className="p-2 text-stone-500 hover:bg-stone-100 rounded-lg transition-colors"
+              title="Select images"
+              onClick={() => setIsMediaDialogOpen(true)}
             >
-              Reset
+              <FiImage className="text-lg" />
             </button>
-            <div className="flex justify-end gap-2">
-              {
-                <button
-                  onClick={() => handlePost(false)}
-                  disabled={isPosting || !canSchedule}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                    isPosting || !canSchedule
-                      ? "cursor-not-allowed text-stone-400"
-                      : "text-violet-600 hover:bg-violet-50"
-                  }`}
-                >
-                  {isPosting ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Scheduling...</span>
-                    </>
-                  ) : (
-                    <span>Schedule Post</span>
-                  )}
-                </button>
-              }
+            <div className="flex gap-2 flex-wrap">
+              {selectedImages.map((item) =>
+                !item.isVideo ? (
+                  <div key={item.url} className="relative group">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden">
+                      <Image
+                        src={item.url}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleImageSelect(item)}
+                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <div key={item.url} className="relative group">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden">
+                      <video
+                        className="object-cover w-full aspect-square"
+                        preload="metadata"
+                      >
+                        <source src={item.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute inset-0 bg-black/20 hover:bg-black/50  transition-all duration-300 flex items-center justify-center">
+                        <div className="w-12 h-12  rounded-full flex  items-center justify-center">
+                          <FaPlay size={12} className="text-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleImageSelect(item)}
+                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Media Selection Dialog */}
+        <Dialog open={isMediaDialogOpen} onOpenChange={setIsMediaDialogOpen}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>Select Images</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              <div className="grid grid-cols-4 gap-4">
+                {media
+                  .filter((item) => !item.isVideo)
+                  .map((item) => (
+                    <div
+                      key={item.url}
+                      className={`relative group cursor-pointer rounded-lg overflow-hidden ${
+                        selectedImages.some((img) => img.url === item.url)
+                          ? "ring-2 ring-violet-500"
+                          : ""
+                      }`}
+                      onClick={() => handleImageSelect(item)}
+                    >
+                      <Image
+                        src={item.url}
+                        alt={item.name}
+                        width={200}
+                        height={200}
+                        className="object-cover w-full aspect-square"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  ))}
+                {media
+                  .filter((item) => item.isVideo)
+                  .map((item) => (
+                    <div
+                      key={item.url}
+                      className={`relative group cursor-pointer rounded-lg overflow-hidden ${
+                        selectedImages.some((img) => img.url === item.url)
+                          ? "ring-2 ring-violet-500"
+                          : ""
+                      }`}
+                      onClick={() => handleImageSelect(item)}
+                    >
+                      <video
+                        className="object-cover w-full aspect-square"
+                        preload="metadata"
+                      >
+                        <source src={item.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-black/20 hover:bg-black/50  transition-all duration-300 flex items-center justify-center">
+                        <div className="w-12 h-12  rounded-full flex  items-center justify-center">
+                          <FaPlay size={24} className="text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Schedule Options */}
+        <div className="space-y-4 border-t border-stone-200 pt-4">
+          <label className="block text-sm font-medium text-stone-700">
+            Schedule (Optional)
+          </label>
+
+          {/* Timezone Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <FiGlobe className="text-stone-400 flex-shrink-0" />
+              <select
+                value={selectedTimeZone}
+                onChange={(e) => setSelectedTimeZone(e.target.value)}
+                className="text-sm text-stone-700 bg-white border border-stone-200 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1"
+              >
+                {sortedTimezones.map(({ name, offset }) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-stone-500 ml-6">
+              <FiClock className="text-stone-400" />
+              <span>Current time: {currentTime}</span>
+            </div>
+          </div>
+
+          {/* Date and Time Input */}
+          <div className="space-y-2">
+            <label className="block text-xs text-stone-500">
+              <span className="flex items-center gap-2">
+                <FiCalendar className="text-stone-400" />
+                Schedule Date and Time
+              </span>
+            </label>
+            <input
+              type="datetime-local"
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              min={getMinScheduleDateTime(selectedTimeZone)}
+              className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+            />
+            <p className="text-xs text-stone-500">
+              📅 Posts must be scheduled at least 13 minutes in advance
+              <br />
+              🌐 Time shown above is in <strong>{selectedTimeZone}</strong>
+            </p>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center gap-2 pt-4 border-t border-stone-200">
+          <button
+            onClick={resetForm}
+            type="button"
+            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
+            title="Reset form"
+          >
+            <FiRefreshCcw size={16} />
+            Reset
+          </button>
+
+          <div className="flex gap-2">
+            {/* Schedule Button - only show if date is selected */}
+            {scheduledDate && (
               <button
-                onClick={() => handlePost(true)}
-                disabled={!isFormValid || isPosting}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2 ${
-                  isFormValid && !isPosting
-                    ? "bg-violet-500 hover:bg-violet-600"
-                    : "bg-stone-300 cursor-not-allowed"
+                onClick={() => handlePost(false)}
+                disabled={isPosting || !canSchedule}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  isPosting || !canSchedule
+                    ? "cursor-not-allowed text-stone-400 bg-stone-100"
+                    : "text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200"
                 }`}
               >
                 {isPosting ? (
@@ -288,16 +433,54 @@ export const CPDialog = ({
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    <span>Posting...</span>
+                    <span>Scheduling...</span>
                   </>
                 ) : (
-                  <span>Post Now</span>
+                  <>
+                    <FiCalendar size={16} />
+                    <span>Schedule Post</span>
+                  </>
                 )}
               </button>
-            </div>
+            )}
+
+            {/* Post Now Button */}
+            <button
+              onClick={() => handlePost(true)}
+              disabled={!isFormValid || isPosting}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isFormValid && !isPosting
+                  ? "bg-violet-500 hover:bg-violet-600 text-white"
+                  : "bg-stone-300 cursor-not-allowed text-stone-500"
+              }`}
+            >
+              {isPosting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Posting...</span>
+                </>
+              ) : (
+                <span>Post Now</span>
+              )}
+            </button>
           </div>
         </div>
-      </div>
-    </Command.Dialog>
+      </DialogContent>
+    </Dialog>
   );
 };

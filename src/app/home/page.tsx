@@ -82,7 +82,7 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
                     <Link
-                      href={user ? "/channels" : "/signin"}
+                      href={user?.isLoggedIn ? "/channels" : "/signin"}
                       className="group px-6 sm:px-8 py-3 sm:py-4 dark:bg-violet-600 bg-violet-700 text-white rounded-full font-semibold transition-all duration-300 relative overflow-hidden text-sm sm:text-base"
                     >
                       <span className="absolute inset-0 dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-500 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>

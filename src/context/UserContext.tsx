@@ -7,14 +7,21 @@ interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
 }
-
 export const UserContext = createContext<UserContextType | undefined>(
   undefined
 );
-
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
+  const dummyUser = {
+    isLoggedIn: false,
+    isVerified: false,
+    email: "",
+    username: "",
+    profilePicture: "",
+    name: "",
+    photoURL: "",
+    channels: [],
+  }
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
@@ -26,7 +33,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(userData);
         });
       } else {
-        setUser(null);
+        setUser(dummyUser);
       }  
     };
 

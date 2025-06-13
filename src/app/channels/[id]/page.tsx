@@ -8,9 +8,10 @@ import { Calendar } from "@/components/DashboardComponents/Calendar/Calendar";
 import { Media } from "@/components/DashboardComponents/Media/Media";
 import { ChannelContextProvider } from "@/context/ChannelContext";
 import { useUser } from "@/context/UserContext";
-import { Post } from "@/interfaces/Channel";
+import { MediaItem } from "@/interfaces/Media";
 import { UserChannel } from "@/interfaces/User";
 import Loading from "@/components/ui/Loading";
+
 export default function Home({
   params,
 }: {
@@ -19,7 +20,7 @@ export default function Home({
   const { id } = params;
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
-  const [media, setMedia] = useState([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [storageUsed, setStorageUsed] = useState(0);
   const [route, setRoute] = useState("Dashboard");
 
@@ -133,45 +134,6 @@ export default function Home({
     }
   }, [id, fetchImgs]);
 
-  const dummyScheduledPosts: Post[] = [
-    {
-      id: "1",
-      title: "Post 1",
-      date: new Date(2025, 4, 15, 14, 0, 0),
-      platforms: ["instagram"],
-      content: `Check out our latest updates!
-  #latestupdates #newproducts #exclusiveoffer
-  https://www.example.com/latest-updates`,
-      imageUrl: [
-        "https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg",
-      ],
-      published: false,
-    },
-    {
-      id: "2",
-      title: "LoL",
-      date: new Date(2025, 4, 15, 11, 0, 0),
-      platforms: ["facebook", "instagram"],
-      content: "Check out our latest updates!",
-      imageUrl: [
-        "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8",
-        "https://d11p0alxbet5ud.cloudfront.net/Pictures/1024x536/4/8/2/1417482_img_243663.jpg",
-        "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8",
-        "https://firebasestorage.googleapis.com/v0/b/eventy-22.appspot.com/o/Se7jYhf6ITwaXMbIO7pG%2FcnW2SrwMlL?alt=media&token=7bb4222f-16a8-4822-82d3-761ae6d29bb8",
-      ],
-      published: false,
-    },
-    {
-      id: "3",
-      title: "Facebook & Instagram Post",
-      date: new Date(2025, 4, 29),
-      platforms: ["facebook"],
-      content: "Check out our latest updates!",
-      published: false,
-    },
-    // Add more dummy posts as needed
-  ];
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -189,6 +151,7 @@ export default function Home({
             {route === "Dashboard" ? (
               <Dashboard
                 storageLimit={500}
+                media={media}
                 storageUsed={storageUsed}
                 filesCount={media.length}
               />

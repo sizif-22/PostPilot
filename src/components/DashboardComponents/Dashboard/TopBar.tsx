@@ -3,7 +3,8 @@ import React from "react";
 import { FiCalendar } from "react-icons/fi";
 import { CPDialog } from "./CPDialog";
 import { useState } from "react";
-export const TopBar = () => {
+import { MediaItem } from "@/interfaces/Media";
+export const TopBar = ({ media }: { media: MediaItem[] }) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 z-50 bg-white">
@@ -15,12 +16,14 @@ export const TopBar = () => {
           </span>
         </div>
 
-        <button onClick={() => setOpen(true)} className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
-          
+        <button
+          onClick={() => setOpen(true)}
+          className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
+        >
           <FiCalendar className="text-violet-500" />
           <span>Schedule Post</span>
         </button>
-        <CPDialog open={open} setOpen={setOpen} />
+        <CPDialog open={open} setOpen={setOpen} media={media} />
       </div>
     </div>
   );

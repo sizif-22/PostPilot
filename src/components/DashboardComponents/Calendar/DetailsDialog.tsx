@@ -11,6 +11,8 @@ import {
 } from "react-icons/fi";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
+const timeZones = Intl.supportedValuesOf("timeZone");
+import { formatDateInTimezone } from "@/lib/utils";
 
 export const DetailsDialog = ({
   selectedEvent,
@@ -75,12 +77,16 @@ export const DetailsDialog = ({
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <div className="flex items-center gap-1">
                         <FiClock className="text-stone-400" />
-                        {format(selectedEvent.date, "PPP")} at{" "}
-                        {format(selectedEvent.date, "p")}
+                        {selectedEvent.scheduledDate &&
+                          formatDateInTimezone(
+                            selectedEvent.scheduledDate,
+                            "Africa/Cairo"
+                          ).time}{" "}
+                        at {/* {format(selectedEvent.date, "p")} */}
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
-                        {selectedEvent.platforms.map((platform, index) => (
+                        {selectedEvent?.platforms?.map((platform, index) => (
                           <span key={platform} className="flex items-center">
                             {getPlatformIcon(platform)}
                           </span>
@@ -97,32 +103,33 @@ export const DetailsDialog = ({
               {/* Post Content */}
               <div className="space-y-3">
                 <p className="text-[15px] whitespace-pre-wrap">
-                  {selectedEvent.content}
+                  {selectedEvent.content || selectedEvent.message}
                 </p>
-                {selectedEvent.imageUrl && (
+                {selectedEvent.imageUrls && (
                   <div
                     className={`rounded-lg overflow-hidden border border-stone-200 grid gap-1 ${
-                      selectedEvent.imageUrl.length === 1
+                      selectedEvent.imageUrls.length === 1
                         ? "grid-cols-1"
                         : "grid-cols-2"
                     }`}
                   >
-                    {selectedEvent.imageUrl.slice(0, 3).map((image, index) => {
+                    {selectedEvent.imageUrls.slice(0, 3).map((image, index) => {
                       const isLastImage =
-                        index === 2 && selectedEvent.imageUrl!.length > 3;
-                      const remainingCount = selectedEvent.imageUrl!.length - 3;
+                        index === 2 && selectedEvent.imageUrls!.length > 3;
+                      const remainingCount =
+                        selectedEvent.imageUrls!.length - 3;
 
                       return (
                         <div
                           key={index}
                           className={`relative ${
-                            selectedEvent.imageUrl!.length >= 3 && index === 0
+                            selectedEvent.imageUrls!.length >= 3 && index === 0
                               ? "row-span-2"
                               : ""
                           }`}
                         >
                           <img
-                            src={image}
+                            src={image.url}
                             alt={`Post image ${index + 1}`}
                             className={`w-full h-full object-cover ${
                               isLastImage ? "brightness-50 blur-[2px]" : ""
@@ -150,8 +157,26 @@ export const DetailsDialog = ({
                   <span className="font-medium">Scheduled</span>
                   <span className="text-stone-500">•</span>
                   <span className="text-stone-500">
-                    Will be posted on {format(selectedEvent.date, "PPP")} at{" "}
-                    {format(selectedEvent.date, "p")}
+                    Will be posted on{" "}
+                    {selectedEvent.scheduledDate &&
+                      selectedEvent.clientTimeZone &&
+                      formatDateInTimezone(
+                        selectedEvent.scheduledDate,
+                        selectedEvent.clientTimeZone
+                      ).date}{" "}
+                    {selectedEvent.scheduledDate &&
+                      selectedEvent.clientTimeZone &&
+                      formatDateInTimezone(
+                        selectedEvent.scheduledDate,
+                        selectedEvent.clientTimeZone
+                      ).month}
+                    {" "} at {" "}
+                    {selectedEvent.scheduledDate &&
+                      selectedEvent.clientTimeZone &&
+                      formatDateInTimezone(
+                        selectedEvent.scheduledDate,
+                        selectedEvent.clientTimeZone
+                      ).time}
                   </span>
                 </div>
               </div>
