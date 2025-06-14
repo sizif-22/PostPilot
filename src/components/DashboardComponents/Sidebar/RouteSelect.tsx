@@ -40,22 +40,22 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
           Callbackfunc={Callbackfunc}
         />
       ))}
-      {channel?.channel?.socialMedia?.facebook && (
+      {/* {channel?.channel?.socialMedia?.facebook && (
         <Route
           Icon={FiFacebook}
           title={`Facebook-(${channel.channel.socialMedia.facebook.name})`}
           route={route}
           Callbackfunc={Callbackfunc} 
         />
-      )}
-      {channel?.channel?.socialMedia?.instagram && (
+      )} */}
+      {/* {channel?.channel?.socialMedia?.instagram && (
         <Route
           Icon={FiInstagram}
           title={channel.channel.socialMedia.instagram.name}
           route={route}
           Callbackfunc={Callbackfunc}
         />
-      )}
+      )} */}
     </div>
   );
 };

@@ -142,8 +142,8 @@ export const CPDialog = ({
       }
 
       const postData: Post = {
-        accessToken: channel?.socialMedia.facebook.accessToken,
-        pageId: channel?.socialMedia.facebook.id,
+        accessToken: channel?.socialMedia?.facebook.accessToken,
+        pageId: channel?.socialMedia?.facebook.id,
         message: postText,
         scheduledDate: scheduledTimestamp,
         clientTimeZone: scheduledDate ? selectedTimeZone : undefined,
@@ -202,7 +202,7 @@ export const CPDialog = ({
             Select Platforms
           </label>
           <div className="flex gap-2 flex-wrap">
-            {channel?.socialMedia.facebook && (
+            {channel?.socialMedia?.facebook && (
               <button
                 onClick={() => handlePlatformToggle("facebook")}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
@@ -217,7 +217,7 @@ export const CPDialog = ({
                 </span>
               </button>
             )}
-            {channel?.socialMedia.instagram && (
+            {channel?.socialMedia?.instagram && (
               <button
                 onClick={() => handlePlatformToggle("instagram")}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${

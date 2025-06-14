@@ -1,5 +1,5 @@
 import { MediaItem } from "./Media";
-import { Authority } from "./User";
+import { Authority,TeamMember } from "./User";
 import { Timestamp } from "firebase/firestore";
 
 export interface ChannelBrief {
@@ -20,11 +20,12 @@ export interface facebookChannel{
      accessToken: string;
 }
 export interface Channel extends ChannelBrief {
-     socialMedia: {
+     socialMedia?: {
          facebook: facebookChannel;
          instagram: string;
      }
     posts: Post[];
+    TeamMembers:TeamMember[];
 }
 export interface Post {
     id?: string;

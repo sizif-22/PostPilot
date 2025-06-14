@@ -35,7 +35,6 @@ export const Upcoming = () => {
   useEffect(() => {
     localStorage.setItem("userTimeZone", selectedTimeZone);
   }, [selectedTimeZone]);
-  console.log(Date.now());
   // First sort all posts by date and time
   const sortedPosts = [...(channel?.posts || [])]
     .filter((post) => {

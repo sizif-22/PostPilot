@@ -2,9 +2,10 @@
 import { useState, useRef } from "react";
 import { FiFacebook, FiInstagram } from "react-icons/fi";
 import { Button } from "../ui/button";
-import { createChannel, Channel } from "@/firebase/channel.firestore";
+import { createChannel } from "@/firebase/channel.firestore";
 import { useUser } from "@/context/UserContext";
 import { Timestamp } from "firebase/firestore";
+import { Channel } from "@/interfaces/Channel";
 export const NewChannel = ({
   setCreateNewChannel,
 }: {
@@ -14,22 +15,25 @@ export const NewChannel = ({
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
   const handleCreateChannel = async () => {
-    if (channelName) {
+    if (channelName && user?.email && user.name) {
       const channel: Channel = {
         id: "",
         name: channelName,
         description: channelDescription,
-        authority:"Owner",
+        authority: "Owner",
         createdAt: Timestamp.now(),
-        socialMedia: {
-          facebook: "",
-          instagram: "",
-        },
+        posts: [],
+        TeamMembers: [
+          {
+            name: user?.name,
+            email: user?.email,
+            role: "Owner",
+            status: "active",
+          },
+        ],
       };
-      if (user?.email) {
-        await createChannel(channel, user?.email);
-        setCreateNewChannel(false);
-      }
+      await createChannel(channel, user);
+      setCreateNewChannel(false);
     }
   };
   const handleCancel = () => {

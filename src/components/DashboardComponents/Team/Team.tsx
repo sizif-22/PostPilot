@@ -1,33 +1,28 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  FiPlus,
   FiEdit2,
   FiTrash2,
   FiMail,
-  FiCheck,
-  FiX,
   FiUserPlus,
   FiClock,
   FiRefreshCw,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { Command } from "cmdk";
-import { Select } from "../Calendar/ContinuousCalendar";
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "owner" | "contributor" | "inspector";
-  status: "active" | "pending";
-  invitedAt?: Date;
-  avatarUrl?: string;
-}
+import { Authority, TeamMember, TMBrief } from "@/interfaces/User";
+import { getTeamMembers } from "@/firebase/user.firestore";
+import { useUser } from "@/context/UserContext";
+import {
+  sendNotification,
+  updateRole,
+  deleteTeamMember,
+} from "@/firebase/channel.firestore";
+import { useChannel } from "@/context/ChannelContext";
 
 interface MemberDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   member?: TeamMember;
-  onSubmit: (member: Partial<TeamMember>) => void;
   title: string;
 }
 
@@ -35,30 +30,62 @@ const MemberDialog = ({
   open,
   onOpenChange,
   member,
-  onSubmit,
   title,
 }: MemberDialogProps) => {
-  const [formData, setFormData] = useState<Partial<TeamMember>>(member || {});
+  interface formDateInterface {
+    email?: string;
+    name?: string;
+    role: Authority;
+  }
+  const [formData, setFormData] = useState<formDateInterface>(
+    member || { role: "Inspector" }
+  );
+  console.log("member: " + member);
+  const [searchResult, setSearchResult] = useState<TMBrief[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMember, setSelectedMember] = useState<TMBrief | null>(null);
+  const { user } = useUser();
+  const { channel } = useChannel();
 
   // Reset form data when member changes or dialog opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (member) {
       setFormData({
-        name: member.name,
         email: member.email,
         role: member.role,
       });
     } else {
-      setFormData({});
+      setFormData({ role: "Inspector" });
     }
   }, [member, open]);
 
-  const handleSubmit = () => {
-    if (formData.name && formData.email && formData.role) {
-      onSubmit(formData);
-      onOpenChange(false);
-      setFormData({});
+  const handleSubmit = async (state: "update" | "add") => {
+    if (state == "add") {
+      if (selectedMember && channel && user && formData.role) {
+        await sendNotification(selectedMember, formData.role, channel, user);
+      }
+    } else {
+      if (member && channel && member.role != formData.role)
+        await updateRole(member, formData.role, channel);
     }
+    setSelectedMember(null);
+    onOpenChange(false);
+    setFormData({ role: "Inspector" });
+  };
+
+  const handleMemberSelect = (member: TMBrief) => {
+    setFormData({
+      ...formData,
+      email: member.email,
+      name: member.name,
+    });
+    setSelectedMember(member);
+    setSearchQuery("");
+    setSearchResult([]);
+  };
+
+  const handleMemberRemove = () => {
+    setSelectedMember(null);
   };
 
   return (
@@ -78,30 +105,93 @@ const MemberDialog = ({
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Name</label>
-            <input
-              type="text"
-              placeholder="Enter name"
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
-              value={formData?.name || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <label className="text-sm font-medium text-stone-700">Email</label>
-            <input
-              type="email"
-              placeholder="Enter email"
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
-              value={formData.email || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
+            <div className="relative">
+              {selectedMember || member ? (
+                <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
+                  <div>
+                    <span className="text-sm font-semibold block">
+                      {selectedMember?.name || member?.name}
+                    </span>
+                    <span className="text-xs block text-gray-500">
+                      {selectedMember?.email || member?.email}
+                    </span>
+                  </div>
+                  {!member && (
+                    <button
+                      onClick={handleMemberRemove}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.length > 3) {
+                      getTeamMembers(e.target.value).then((res) => {
+                        setSearchResult(
+                          res.filter(
+                            (tm) =>
+                              !channel?.TeamMembers.some(
+                                (channelTM) => channelTM.email === tm.email
+                              )
+                          )
+                        );
+                      });
+                    } else {
+                      setSearchResult([]);
+                    }
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="Search by email"
+                />
+              )}
+              <div
+                className={`absolute bg-white w-full rounded-lg py-1 top-full z-10 shadow-lg border border-gray-700 ${
+                  searchQuery.length < 4 && "hidden"
+                }`}
+              >
+                {searchResult.length > 0 ? (
+                  searchResult.map((tm) => (
+                    <div
+                      key={tm.email}
+                      className="p-3 hover:bg-[#eee] rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 last:border-b-0"
+                      onClick={() => handleMemberSelect(tm)}
+                    >
+                      <div className="text-start">
+                        <span className="text-sm font-semibold block">
+                          {tm.name}
+                        </span>
+                        <span className="text-xs block text-gray-400 mt-0.5">
+                          {tm.email}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-center py-1 text-black/70 font-bold text-sm">
+                    There is no any email like that ...
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -117,8 +207,8 @@ const MemberDialog = ({
                   })
                 }
               >
-                <option value="inspector">Inspector</option>
-                <option value="contributor">Contributor</option>
+                <option value="Inspector">Inspector</option>
+                <option value="Contributor">Contributor</option>
               </select>
               <span className="pointer-events-none top-0 absolute inset-y-0 right-0 ml-3 flex items-center pr-1">
                 <svg
@@ -146,9 +236,8 @@ const MemberDialog = ({
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(member ? "update" : "add")}
             className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors"
-            disabled={!formData.name || !formData.email || !formData.role}
           >
             {member ? "Update" : "Add"} Member
           </button>
@@ -159,88 +248,29 @@ const MemberDialog = ({
 };
 
 export const Team = () => {
-  const [members, setMembers] = useState<TeamMember[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "owner",
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "contributor",
-      status: "active",
-    },
-    {
-      id: "3",
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      role: "inspector",
-      status: "active",
-    },
-    {
-      id: "4",
-      name: "Sarah Wilson",
-      email: "sarah@example.com",
-      role: "contributor",
-      status: "pending",
-      invitedAt: new Date(),
-    },
-  ]);
-
+  const { channel } = useChannel();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [memberOnDelete, setMemberOnDelete] = useState<TeamMember | null>(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-
-  const handleAddMember = (newMember: Partial<TeamMember>) => {
-    setMembers([
-      ...members,
-      {
-        id: Date.now().toString(),
-        name: newMember.name!,
-        email: newMember.email!,
-        role: newMember.role!,
-        status: "pending",
-        invitedAt: new Date(),
-      },
-    ]);
-  };
-
-  const handleUpdateMember = (updatedMember: Partial<TeamMember>) => {
-    if (editingMember) {
-      setMembers(
-        members.map((member) =>
-          member.id === editingMember.id
-            ? { ...member, ...updatedMember }
-            : member
-        )
+  const handleDeleteMember = async () => {
+    if (channel) {
+      const memberToDelete = channel.TeamMembers.find(
+        (m) => m.email === memberOnDelete?.email
       );
-      setEditingMember(null);
+      if (memberToDelete) {
+        await deleteTeamMember(memberToDelete, channel);
+      }
     }
+    setShowDeleteConfirm(false);
   };
-
-  const handleDeleteMember = (id: string) => {
-    setMembers(members.filter((member) => member.id !== id));
-  };
-
-  const handleResendInvite = (id: string) => {
-    // Here you would typically make an API call to resend the invitation
-    setMembers(
-      members.map((member) =>
-        member.id === id ? { ...member, invitedAt: new Date() } : member
-      )
-    );
-  };
-
   const getRoleBadgeColor = (role: TeamMember["role"]) => {
     switch (role) {
-      case "owner":
+      case "Owner":
         return "bg-violet-100 text-violet-800";
-      case "contributor":
+      case "Contributor":
         return "bg-blue-100 text-blue-800";
-      case "inspector":
+      case "Inspector":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -313,13 +343,13 @@ export const Team = () => {
               </tr>
             </thead>
             <tbody>
-              {members.map((member) => (
-                <tr key={member.id} className="border-b border-stone-200">
+              {channel?.TeamMembers.map((member) => (
+                <tr key={member.email} className="border-b border-stone-200">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
                         <span className="text-violet-700 font-medium">
-                          {member.name.charAt(0)}
+                          {member.name?.charAt(0)}
                         </span>
                       </div>
                       <span
@@ -352,21 +382,11 @@ export const Team = () => {
                       {member.role}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    {getStatusBadge(member.status, member.invitedAt)}
-                  </td>
+                  <td className="py-3 px-4">{getStatusBadge(member.status)}</td>
                   <td className="py-3 px-4 text-right">
-                    {member.role !== "owner" && (
+                    {member.role !== "Owner" && (
                       <div className="flex items-center justify-end gap-2">
-                        {member.status === "pending" ? (
-                          <button
-                            onClick={() => handleResendInvite(member.id)}
-                            className="flex items-center gap-1 px-2 py-1 text-amber-600 hover:bg-amber-50 rounded text-sm"
-                          >
-                            <FiRefreshCw className="w-3 h-3" />
-                            <span>Resend</span>
-                          </button>
-                        ) : (
+                        {member.status === "active" && (
                           <>
                             <button
                               onClick={() => setEditingMember(member)}
@@ -375,7 +395,10 @@ export const Team = () => {
                               <FiEdit2 className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDeleteMember(member.id)}
+                              onClick={() => {
+                                setMemberOnDelete(member);
+                                setShowDeleteConfirm(true);
+                              }}
                               className="p-1 text-red-600 hover:bg-red-50 rounded"
                             >
                               <FiTrash2 className="w-4 h-4" />
@@ -392,10 +415,44 @@ export const Team = () => {
         </div>
       </div>
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-stone-950/50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-start gap-4">
+              <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Delete TeamMember
+                </h3>
+                <p className="text-stone-600 mb-4">
+                  Are you sure you want to delete this Team Member? This action
+                  cannot be undone.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMember()}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded"
+                  >
+                    Delete TeamMember
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MemberDialog
         open={isAddingMember}
         onOpenChange={setIsAddingMember}
-        onSubmit={handleAddMember}
+        // onSubmit={handleAddMember}
         title="Add New Member"
       />
 
@@ -403,7 +460,7 @@ export const Team = () => {
         open={!!editingMember}
         onOpenChange={(open) => !open && setEditingMember(null)}
         member={editingMember || undefined}
-        onSubmit={handleUpdateMember}
+        // onSubmit={handleUpdateMember}
         title="Edit Member"
       />
     </div>

@@ -1,8 +1,7 @@
 import { db } from "@/firebase/config";
 import { ChannelBrief, Channel, Post } from "@/interfaces/Channel";
-import { UserChannel } from "@/interfaces/User";
+import { TeamMember, User, UserChannel,TMBrief, Authority,Notification } from "@/interfaces/User";
 import * as fs from "firebase/firestore";
-
 const channelRef = fs.collection(db, "Channels");
 
 const getChannelBriefs = async (channels: UserChannel[]) => {
@@ -69,10 +68,10 @@ const createPost = async (post: Post, channelId: string) => {
     });
 };
 
-const createChannel = async (channel: Channel, userId: string) => {
+const createChannel = async (channel: Channel, user: User) => {
     const { id, authority, ...channelWithoutIdAndAuthority } = channel;
-    const newChannel = await fs.addDoc(fs.collection(db, "Channels"), channelWithoutIdAndAuthority);
-    await fs.updateDoc(fs.doc(db, "Users", userId), {
+    const newChannel = await fs.addDoc(fs.collection(db, "Channels"), {...channelWithoutIdAndAuthority}as Channel);
+    await fs.updateDoc(fs.doc(db, "Users", user.email), {
         channels: fs.arrayUnion({ id: newChannel.id, authority: "Owner" }),
     });
 };    
@@ -132,4 +131,34 @@ const editPost = async (postId: string, channelId: string, updatedPost: Partial<
         posts: updatedPosts,
     });
 };
+
+export const sendNotification = async (tm:TMBrief , role:Authority , channel:Channel , user:User)=>{
+    await fs.updateDoc(fs.doc(db,"Channels",channel.id),{
+        TeamMembers:fs.arrayUnion({...tm , role ,status:"pending" } as TeamMember)
+    });
+    await fs.updateDoc(fs.doc(db,"Users", tm.email),{
+        notifications: fs.arrayUnion({
+            Type:'Ask',
+            owner:user.email,
+            channelName:channel.name,
+            channelDescription:channel.description,
+            channelId:channel.id
+        } as Notification)
+    })
+}
+
+export const deleteTeamMember = async (tm:TeamMember , channel:Channel)=>{
+    await fs.updateDoc(fs.doc(db,"Channels",channel.id),{TeamMembers:fs.arrayRemove(tm)});
+    await fs.updateDoc(fs.doc(db,"Users",tm.email),{channels:fs.arrayRemove({authority:tm.role,id:channel.id} as UserChannel)});
+  }
+  
+export const updateRole = async (tm:TeamMember, newRole:Authority, channel:Channel)=>{
+    await fs.updateDoc(fs.doc(db,"Channels",channel.id),{TeamMembers:fs.arrayRemove(tm)});
+    await fs.updateDoc(fs.doc(db,"Users",tm.email),{channels:fs.arrayRemove({authority:tm.role,id:channel.id} as UserChannel)});
+    tm.role = newRole;
+    await fs.updateDoc(fs.doc(db,"Channels",channel.id),{TeamMembers:fs.arrayUnion(tm)});
+    await fs.updateDoc(fs.doc(db,"Users",tm.email),{channels:fs.arrayUnion({authority:tm.role,id:channel.id} as UserChannel)});
+}
+
+
 export { getChannelBriefs,getChannel, createPost, createChannel, deletePost, editPost } 

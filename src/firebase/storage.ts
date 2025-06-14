@@ -1,6 +1,7 @@
 import * as FireStorage from "firebase/storage";
 import * as randomString from "randomstring";
 import { storage } from "./config";
+import { ref, deleteObject } from "firebase/storage";
 
 interface UploadResult {
   url: string;
@@ -25,18 +26,10 @@ const uploadImage = async ({ dir, file }: { dir: string; file: File }): Promise<
     let thumbnailUrl: string | undefined;
 
     if (isVideo) {
-      // For videos, we should generate and upload a thumbnail
-      // This is a placeholder - you might want to implement actual video thumbnail generation
-      // For now, we'll use a default thumbnail or the first frame
       const thumbnailStorageRef = FireStorage.ref(
         storage,
         `${dir}/${fileId}_thumb`
       );
-      
-      // Here you would typically:
-      // 1. Generate a thumbnail from the video (e.g., using canvas or a server-side function)
-      // 2. Upload that thumbnail
-      // For now, we'll skip this step
     }
 
     return {
@@ -48,6 +41,19 @@ const uploadImage = async ({ dir, file }: { dir: string; file: File }): Promise<
   } catch (err) {
     console.error("Error uploading file:", err);
     throw err;
+  }
+};
+
+export const deleteMedia = async (url: string): Promise<void> => {
+  try {
+    // Extract the path from the URL
+    const urlObj = new URL(url);
+    const path = decodeURIComponent(urlObj.pathname.split('/o/')[1].split('?')[0]);
+    const mediaRef = ref(storage, path);
+    await deleteObject(mediaRef);
+  } catch (error) {
+    console.error("Error deleting media:", error);
+    throw error;
   }
 };
 

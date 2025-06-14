@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { FaUpload, FaPlay, FaSync } from "react-icons/fa";
+import { FaPlay, FaSync, FaTrash, FaTimes } from "react-icons/fa";
 import MediaDialog from "./addMediaDialog";
 import ImagePopup from "./imagePopup";
 import { MediaItem } from "@/interfaces/Media";
@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { deleteMedia } from "@/firebase/storage";
 
 interface MediaProps {
   media: MediaItem[];
@@ -18,6 +19,79 @@ interface MediaProps {
   storageUsed: number;
   isLoading?: boolean;
 }
+
+// Move MediaThumbnail outside and memoize it properly with stable props
+const MediaThumbnail = React.memo(
+  ({
+    item,
+    onImageClick,
+    isSelected,
+    isSelectMode,
+    globalIndex,
+  }: {
+    item: MediaItem;
+    onImageClick: (index: number) => void;
+    isSelected: boolean;
+    isSelectMode: boolean;
+    globalIndex: number;
+  }) => {
+    const handleClick = useCallback(() => {
+      onImageClick(globalIndex);
+    }, [onImageClick, globalIndex]);
+
+    if (item.isVideo) {
+      return (
+        <div
+          className={`relative group mb-4 rounded-lg overflow-hidden cursor-pointer ${
+            isSelected ? "ring-2 ring-violet-500" : ""
+          }`}
+          onClick={handleClick}
+        >
+          <div className="w-full h-fit media-section bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
+            <video
+              className="w-full h-auto max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] object-cover"
+              preload="metadata"
+            >
+              <source src={item.url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <FaPlay size={24} className="text-white" />
+              </div>
+            </div>
+            {isSelected && (
+              <div className="absolute top-2 right-2 w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">✓</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`relative group mb-4 rounded-lg overflow-hidden cursor-pointer ${
+          isSelected ? "ring-2 ring-violet-500" : ""
+        }`}
+        onClick={handleClick}
+      >
+        <img
+          src={item.url}
+          alt={item.name}
+          className="w-full h-fit max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] shadow-md transition-all duration-300 object-cover rounded-lg"
+        />
+        <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        {isSelected && (
+          <div className="absolute top-2 right-2 w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm">✓</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 
 export const Media = ({
   media,
@@ -28,7 +102,10 @@ export const Media = ({
   const [cols, setCols] = useState<number>(3);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const STORAGE_LIMIT_MB = 500; // 500MB total storage limit
+
   const getColumnMediaItems = useMemo(
     () => (colIndex: number) => {
       return media.filter((_, index) => index % cols === colIndex);
@@ -46,56 +123,42 @@ export const Media = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleImageClick = (index: number) => {
-    setSelectedImageIndex(index);
-    setIsPopupOpen(true);
+  // Memoize the click handler to prevent re-renders
+  const handleImageClick = useCallback((index: number) => {
+    if (isSelectMode) {
+      const item = media[index];
+      setSelectedItems((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(item.url)) {
+          newSet.delete(item.url);
+        } else {
+          newSet.add(item.url);
+        }
+        return newSet;
+      });
+    } else {
+      setSelectedImageIndex(index);
+      setIsPopupOpen(true);
+    }
+  }, [isSelectMode, media]);
+
+  const handleDeleteSelected = async () => {
+    try {
+      const selectedMedia = media.filter((item) => selectedItems.has(item.url));
+      await Promise.all(selectedMedia.map((item) => deleteMedia(item.url)));
+      setSelectedItems(new Set());
+      setIsSelectMode(false);
+      onRefresh();
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      // You might want to show an error toast here
+    }
   };
 
-  const MediaThumbnail = useCallback(({
-    item,
-    onClick,
-  }: {
-    item: MediaItem;
-    onClick: () => void;
-  }) => {
-    if (item.isVideo) {
-      return (
-        <div
-          className="relative group mb-4 rounded-lg overflow-hidden cursor-pointer"
-          onClick={onClick}
-        >
-          <div className="w-full h-fit media-section bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
-            <video
-              className="w-full h-auto max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] object-cover"
-              preload="metadata"
-            >
-              <source src={item.url} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <div className="absolute inset-0 bg-black/20 hover:bg-black/50  transition-all duration-300 flex items-center justify-center">
-              <div className="w-12 h-12  rounded-full flex  items-center justify-center">
-                <FaPlay size={24} className="text-white" />
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        className="relative group mb-4 rounded-lg overflow-hidden cursor-pointer"
-        onClick={onClick}
-      >
-        <img
-          src={item.url}
-          alt={item.name}
-          className="w-full h-fit max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] shadow-md transition-all duration-300 object-cover rounded-lg"
-        />
-        <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      </div>
-    );
-  }, [media]);
+  const handleCancelSelection = () => {
+    setSelectedItems(new Set());
+    setIsSelectMode(false);
+  };
 
   return (
     <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
@@ -136,11 +199,42 @@ export const Media = ({
               {" / "}
               <span>{STORAGE_LIMIT_MB}MB used</span>
             </div>
-            <MediaDialog
-              storageUsed={storageUsed}
-              storageLimit={STORAGE_LIMIT_MB}
-              onUploadComplete={onRefresh}
-            />
+            {!isSelectMode ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsSelectMode(true)}
+                  className="h-8"
+                >
+                  Select
+                </Button>
+                <MediaDialog
+                  storageUsed={storageUsed}
+                  storageLimit={STORAGE_LIMIT_MB}
+                  onUploadComplete={onRefresh}
+                />
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedItems.size === 0}
+                  className="h-8"
+                >
+                  <FaTrash className="h-4 w-4 mr-2" />
+                  Delete ({selectedItems.size})
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelSelection}
+                  className="h-8"
+                >
+                  <FaTimes className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -169,9 +263,12 @@ export const Media = ({
                 const globalIndex = index * cols + colIndex;
                 return (
                   <MediaThumbnail
-                    key={index}
+                    key={item.url}
                     item={item}
-                    onClick={() => handleImageClick(globalIndex)}
+                    onImageClick={handleImageClick}
+                    isSelected={selectedItems.has(item.url)}
+                    isSelectMode={isSelectMode}
+                    globalIndex={globalIndex}
                   />
                 );
               })}

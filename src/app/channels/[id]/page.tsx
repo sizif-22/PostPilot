@@ -40,7 +40,6 @@ export default function Home({
 
   // Fixed calculateStorageUsed with proper dependencies
   const calculateStorageUsed = useCallback(async (items: any) => {
-    console.log("start calculating storage used");
     try {
       const { ref, getMetadata } = await import("firebase/storage");
       const { storage } = await import("@/firebase/config");
@@ -71,7 +70,6 @@ export default function Home({
   }, []);
 
   const fetchImgs = useCallback(async () => {
-    console.log("start fetchImgs");
     setIsLoading(true);
     try {
       const { ref, listAll, getDownloadURL, getMetadata } = await import(

@@ -180,7 +180,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
           );
           const postsForDay =
             dateData?.posts.sort(
-              (a, b) => a.date.getTime() - b.date.getTime()
+              (a, b) => (a.scheduledDate || 0) - (b.scheduledDate || 0)
             ) || [];
           const hasEvents = postsForDay.length > 0;
 
@@ -221,9 +221,19 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                       key={post.id}
                       onClick={() => onEventSelect?.(post)}
                       className="w-full text-left px-1.5 py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 hover:bg-violet-200 text-violet-700 transition-colors"
-                      title={`${format(post.date, "h:mm a")} - ${post.content}`}
+                      title={`${
+                        post.scheduledDate
+                          ? format(
+                              new Date(post.scheduledDate * 1000),
+                              "h:mm a"
+                            )
+                          : ""
+                      } - ${post.content}`}
                     >
-                      {format(post.date, "h:mm a")} - {post.content}
+                      {post.scheduledDate
+                        ? format(new Date(post.scheduledDate * 1000), "h:mm a")
+                        : ""}{" "}
+                      - {post.content}
                     </button>
                   ))}
                 </div>
