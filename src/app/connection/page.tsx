@@ -6,7 +6,7 @@ import { db } from "@/firebase/config";
 import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
-import { Page } from "@/interfaces/Channel";
+import { facebookChannel, Page } from "@/interfaces/Channel";
 
 const Connection = () => {
   const router = useRouter();
@@ -89,8 +89,12 @@ const Connection = () => {
         return;
       }
       const projectRef = doc(db, "Channels", id as string);
+      const { access_token, ...rest } = selectedPage;
       await updateDoc(projectRef, {
-        "socialMedia.facebook": selectedPage,
+        "socialMedia.facebook": {
+          accessToken: access_token,
+          ...rest,
+        } as facebookChannel,
       });
       router.replace(`/channels/${id}`);
     } catch (err) {

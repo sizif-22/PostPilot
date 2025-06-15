@@ -4,15 +4,18 @@ import { FiCalendar } from "react-icons/fi";
 import { CPDialog } from "./CPDialog";
 import { useState } from "react";
 import { MediaItem } from "@/interfaces/Media";
+import { useChannel } from "@/context/ChannelContext";
 export const TopBar = ({ media }: { media: MediaItem[] }) => {
+  const { channel } = useChannel();
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 z-50 bg-white">
       <div className="flex items-center justify-between py-0.5">
         <div>
-          <span className="text-sm font-bold block">🚀 Good morning, Tom!</span>
+          <span className="text-sm font-bold block">{channel?.name}</span>
           <span className="text-xs block text-stone-500">
-            Tuesday, Aug 8th 2023
+            {/* Tuesday, Aug 8th 2023 */}
+            {channel?.description}
           </span>
         </div>
 

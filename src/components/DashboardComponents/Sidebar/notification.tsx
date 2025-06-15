@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/context/UserContext";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import Link from "next/link";
@@ -8,6 +8,20 @@ import {
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
 const NotificationSection = () => {
+  const notificationRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(e.target as Node)
+      ) {
+        openNotificationBar(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const { user } = useUser();
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   return (
@@ -34,6 +48,7 @@ const NotificationSection = () => {
         ></div>
       </button>
       <div
+        ref={notificationRef}
         className={`absolute top-16 left-[12.8rem] z-[51] w-80 bg-[#1f1f1f]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
           !notificationBar && "hidden"
         }`}
