@@ -38,7 +38,7 @@ const MemberDialog = ({
     role: Authority;
   }
   const [formData, setFormData] = useState<formDateInterface>(
-    member || { role: "Inspector" }
+    member || { role: "Reviewer" }
   );
   console.log("member: " + member);
   const [searchResult, setSearchResult] = useState<TMBrief[]>([]);
@@ -55,7 +55,7 @@ const MemberDialog = ({
         role: member.role,
       });
     } else {
-      setFormData({ role: "Inspector" });
+      setFormData({ role: "Reviewer" });
     }
   }, [member, open]);
 
@@ -70,7 +70,7 @@ const MemberDialog = ({
     }
     setSelectedMember(null);
     onOpenChange(false);
-    setFormData({ role: "Inspector" });
+    setFormData({ role: "Reviewer" });
   };
 
   const handleMemberSelect = (member: TMBrief) => {
@@ -207,7 +207,7 @@ const MemberDialog = ({
                   })
                 }
               >
-                <option value="Inspector">Inspector</option>
+                <option value="Reviewer">Reviewer</option>
                 <option value="Contributor">Contributor</option>
               </select>
               <span className="pointer-events-none top-0 absolute inset-y-0 right-0 ml-3 flex items-center pr-1">
@@ -270,7 +270,7 @@ export const Team = () => {
         return "bg-violet-100 text-violet-800";
       case "Contributor":
         return "bg-blue-100 text-blue-800";
-      case "Inspector":
+      case "Reviewer":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";

@@ -43,7 +43,7 @@ const ChannelsComponent = ({
                   <div className="text-sm bg-stone-100 px-2 rounded-md flex items-center gap-1 cursor-default group-hover:bg-stone-200 transition-colors">
                     {channel.authority === "Owner" ? (
                       <span className="text-lg pb-1">👑</span>
-                    ) : channel.authority === "Inspector" ? (
+                    ) : channel.authority === "Reviewer" ? (
                       <span className="text-lg pb-1">🔍</span>
                     ) : (
                       <span className="text-lg pb-1">✒️</span>

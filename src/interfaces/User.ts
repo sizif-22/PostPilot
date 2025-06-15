@@ -1,4 +1,4 @@
-export type Authority = "Owner" | "Inspector" | "Contributor";
+export type Authority = "Owner" | "Reviewer" | "Contributor";
 
 export interface UserChannel {
     id: string;
