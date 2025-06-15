@@ -42,7 +42,7 @@ const Connection = () => {
         }
 
         const response = await fetch(
-          `/api/facebook/token?code=${code.split("&")[0]}`
+          `/api/facebook/connect?code=${code.split("&")[0]}`
         );
         const data = await response.json();
 
