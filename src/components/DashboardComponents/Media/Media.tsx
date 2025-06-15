@@ -93,6 +93,8 @@ const MediaThumbnail = React.memo(
   }
 );
 
+MediaThumbnail.displayName = "MediaThumbnail";
+
 export const Media = ({
   media,
   onRefresh,
@@ -124,23 +126,26 @@ export const Media = ({
   }, []);
 
   // Memoize the click handler to prevent re-renders
-  const handleImageClick = useCallback((index: number) => {
-    if (isSelectMode) {
-      const item = media[index];
-      setSelectedItems((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(item.url)) {
-          newSet.delete(item.url);
-        } else {
-          newSet.add(item.url);
-        }
-        return newSet;
-      });
-    } else {
-      setSelectedImageIndex(index);
-      setIsPopupOpen(true);
-    }
-  }, [isSelectMode, media]);
+  const handleImageClick = useCallback(
+    (index: number) => {
+      if (isSelectMode) {
+        const item = media[index];
+        setSelectedItems((prev) => {
+          const newSet = new Set(prev);
+          if (newSet.has(item.url)) {
+            newSet.delete(item.url);
+          } else {
+            newSet.add(item.url);
+          }
+          return newSet;
+        });
+      } else {
+        setSelectedImageIndex(index);
+        setIsPopupOpen(true);
+      }
+    },
+    [isSelectMode, media]
+  );
 
   const handleDeleteSelected = async () => {
     try {

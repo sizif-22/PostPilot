@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ContinuousCalendar } from "@/components/DashboardComponents/Calendar/ContinuousCalendar";
+import { Post } from "@/interfaces/Channel";
 
 const monthNames = [
   "January",
@@ -18,19 +19,11 @@ const monthNames = [
   "December",
 ];
 
-interface ScheduledPost {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  platforms: string[];
-  content: string;
-  imageUrl?: string[];
-}
-
 export default function DemoWrapper() {
-  const handleEventSelect = (post: ScheduledPost) => {
-    console.log(`Selected post: ${post.title} at ${post.start}`);
+  const handleEventSelect = (post: Post) => {
+    console.log(
+      `Selected post: ${post.title || post.message} at ${post.scheduledDate}`
+    );
   };
 
   return (
