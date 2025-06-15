@@ -4,8 +4,6 @@ import { ContinuousCalendar } from "./ContinuousCalendar";
 import { DetailsDialog } from "./DetailsDialog";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
-import { formatDateInTimezone, getCurrentTimeInTimezone } from "@/lib/utils";
-
 const monthNames = [
   "January",
   "February",
@@ -20,41 +18,41 @@ const monthNames = [
   "November",
   "December",
 ];
-
 export const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState<Post | null>(null);
   const { channel } = useChannel();
+
   // Get highlighted dates for the calendar
   const highlightedDates = useMemo(() => {
     const dateMap = new Map<string, Post[]>();
-    channel?.posts &&
-      channel?.posts
-        .filter((post) => post.published)
-        .forEach((post) => {
-          if (post.scheduledDate) {
-            const date = new Date(
-              formatDateInTimezone(post.scheduledDate, "Africa/Cairo").date
-            );
-            const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-            if (!dateMap.has(key)) {
-              dateMap.set(key, []);
-            }
-            dateMap.get(key)!.push(post);
-          }
-        });
+
+    channel?.posts?.forEach((post) => {
+      if (post.scheduledDate) {
+        // Convert Unix timestamp to Date object
+        const date = new Date(post.scheduledDate * 1000);
+
+        // Create a consistent key format for the date
+        const key = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}`;
+
+        if (!dateMap.has(key)) {
+          dateMap.set(key, []);
+        }
+        dateMap.get(key)!.push(post);
+      }
+    });
 
     return Array.from(dateMap).map(([key, posts]) => {
       const [year, month, day] = key.split("-").map(Number);
       return {
         day,
-        month,
+        month: month - 1, // Convert to 0-based month index
         year,
         posts,
       };
     });
   }, [channel?.posts]);
-
-  // Get upcoming events (today and future)
 
   const handleEventSelect = (post: Post) => {
     setSelectedEvent(post);

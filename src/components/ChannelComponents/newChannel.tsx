@@ -96,7 +96,7 @@ export const NewChannel = ({
               </div>
             </div>
             {/* Section Title */}
-            <div className="py-6 border-t">
+            {/* <div className="py-6 border-t">
               <h2 className="text-xl border-b border-stone-200 pb-4 mb-2 font-semibold">
                 Social Media Connections
               </h2>
@@ -128,7 +128,7 @@ export const NewChannel = ({
                   </>
                 ))}
               </div>
-            </div>
+            </div> */}
             <div className="flex justify-end gap-2">
               <Button
                 onClick={handleCancel}
