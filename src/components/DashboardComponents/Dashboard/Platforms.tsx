@@ -1,6 +1,5 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
-import { Channel } from "@/interfaces/Channel";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 export const Platforms = () => {
