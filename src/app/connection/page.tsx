@@ -8,12 +8,34 @@ import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { facebookChannel, Page } from "@/interfaces/Channel";
 
+interface BusinessAccount {
+  id: string;
+  name: string;
+  pages: Page[];
+}
+
+interface StandalonePage {
+  id: string;
+  name: string;
+  access_token: string;
+  instagram_id?: string;
+}
+
+interface EnhancedPage {
+  id: string;
+  name: string;
+  access_token: string;
+  instagram_id?: string;
+  businessAccountName?: string;
+  isStandalone?: boolean;
+}
+
 const Connection = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPage, setSelectedPage] = useState<Page | null>(null);
-  const [pages, setPages] = useState<Page[]>([]);
+  const [selectedPage, setSelectedPage] = useState<EnhancedPage | null>(null);
+  const [allPages, setAllPages] = useState<EnhancedPage[]>([]);
 
   const id = Cookies.get("currentChannel");
 
@@ -56,20 +78,46 @@ const Connection = () => {
           facebookAccessToken: data.access_token,
         });
 
-        const pagesResponse = await fetch(
-          `/api/facebook/pages?access_token=${data.access_token}`
-        );
+        // Process the enhanced response with business accounts and standalone pages
+        const processedPages: EnhancedPage[] = [];
 
-        if (!pagesResponse.ok) {
-          throw new Error("Failed to fetch user pages");
+        // Add business account pages
+        if (data.business_accounts && Array.isArray(data.business_accounts)) {
+          data.business_accounts.forEach((business: BusinessAccount) => {
+            business.pages.forEach((page: Page) => {
+              processedPages.push({
+                id: page.id,
+                name: page.name,
+                access_token: page.access_token,
+                instagram_id: page.instagram_id,
+                businessAccountName: business.name,
+                isStandalone: false,
+              });
+            });
+          });
         }
 
-        const pagesData = await pagesResponse.json();
+        // Add standalone pages
+        if (data.standalone_pages && Array.isArray(data.standalone_pages)) {
+          data.standalone_pages.forEach((page: StandalonePage) => {
+            // For standalone pages, we need to get their access tokens
+            // This would require an additional API call, but for now we'll use the main access token
+            processedPages.push({
+              id: page.id,
+              name: page.name,
+              access_token: page.access_token, // Using the page's own access token
+              instagram_id: page.instagram_id,
+              isStandalone: true,
+            });
+          });
+        }
 
-        if (pagesData.data && Array.isArray(pagesData.data)) {
-          setPages(pagesData.data);
-        } else {
-          throw new Error("Invalid page data received");
+        setAllPages(processedPages);
+
+        if (processedPages.length === 0) {
+          throw new Error(
+            "No pages found. Please make sure you have access to at least one Facebook page."
+          );
         }
       } catch (err: any) {
         console.error("Error getting access token:", err);
@@ -89,10 +137,11 @@ const Connection = () => {
         return;
       }
       const projectRef = doc(db, "Channels", id as string);
-      const { access_token, ...rest } = selectedPage;
+      const { businessAccountName, isStandalone, instagram_id, ...rest } =
+        selectedPage;
       await updateDoc(projectRef, {
         "socialMedia.facebook": {
-          accessToken: access_token,
+          accessToken: rest.access_token,
           ...rest,
         } as facebookChannel,
       });
@@ -127,8 +176,8 @@ const Connection = () => {
           </p>
         </div>
         <div className="flex flex-col gap-3 overflow-y-auto min-h-[50vh] max-h-[70vh] pr-2">
-          {pages.length > 0 ? (
-            pages.map((page) => (
+          {allPages.length > 0 ? (
+            allPages.map((page) => (
               <div
                 onClick={() => setSelectedPage(page)}
                 key={page.id}
@@ -136,34 +185,45 @@ const Connection = () => {
                   selectedPage?.id === page.id
                     ? "border-violet-500 bg-violet-50"
                     : "border-gray-200 hover:bg-gray-50"
-                } p-4 rounded-lg`}
-              >
+                } p-4 rounded-lg`}>
                 <div className="flex flex-col gap-1">
                   <h2
                     className={`font-medium ${
                       selectedPage?.id === page.id
                         ? "text-violet-700"
                         : "text-gray-900"
-                    } group-hover:text-violet-700`}
-                  >
+                    } group-hover:text-violet-700`}>
                     {page.name}
                   </h2>
-                  <p className="text-sm text-gray-500">ID: {page.id}</p>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm text-gray-500">ID: {page.id}</p>
+                    {page.businessAccountName && (
+                      <p className="text-xs text-blue-600">
+                        Business: {page.businessAccountName}
+                      </p>
+                    )}
+                    {page.isStandalone && (
+                      <p className="text-xs text-green-600">Standalone Page</p>
+                    )}
+                    {page.instagram_id && (
+                      <p className="text-xs text-purple-600">
+                        Instagram Connected
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     selectedPage?.id === page.id
                       ? "border-violet-500 bg-violet-500"
                       : "border-gray-300"
-                  }`}
-                >
+                  }`}>
                   {selectedPage?.id === page.id && (
                     <svg
                       className="w-3 h-3 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
+                      stroke="currentColor">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -181,8 +241,7 @@ const Connection = () => {
                 className="w-12 h-12 mb-3 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+                stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -205,8 +264,7 @@ const Connection = () => {
               ? "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-not-allowed"
               : "bg-violet-600 text-white hover:bg-violet-700"
           }`}
-          disabled={!selectedPage}
-        >
+          disabled={!selectedPage}>
           Connect Page
         </Button>
       </div>

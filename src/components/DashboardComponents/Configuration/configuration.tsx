@@ -42,7 +42,7 @@ export const Configuration = () => {
     const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection";
     const SCOPE =
-      "pages_manage_posts,pages_read_engagement,pages_manage_metadata,pages_manage_engagement,pages_show_list";
+      "pages_manage_posts,pages_read_engagement,pages_manage_metadata,pages_manage_engagement,pages_show_list,business_management,instagram_basic,instagram_content_publish";
 
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
 

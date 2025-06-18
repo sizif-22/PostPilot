@@ -13,6 +13,7 @@ export interface Page {
   name: string;
   access_token: string;
   id: string;
+  instagram_id?: string;
 }
 export interface facebookChannel {
   name: string;
