@@ -33,7 +33,9 @@ export const Platforms = () => {
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <FaInstagram className="text-pink-600 text-xl" />
               <div>
-                <p className="font-medium">{channel.socialMedia.instagram}</p>
+                <p className="font-medium">
+                  {channel.socialMedia.instagram.pageName}
+                </p>
                 <p className="text-sm text-gray-500">Instagram Account</p>
               </div>
             </div>
