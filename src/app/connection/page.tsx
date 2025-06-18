@@ -35,7 +35,10 @@ const Connection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState<EnhancedPage | null>(null);
-  const [allPages, setAllPages] = useState<EnhancedPage[]>([]);
+  const [businessAccounts, setBusinessAccounts] = useState<BusinessAccount[]>(
+    []
+  );
+  const [standalonePages, setStandalonePages] = useState<StandalonePage[]>([]);
 
   const id = Cookies.get("currentChannel");
 
@@ -78,43 +81,14 @@ const Connection = () => {
           facebookAccessToken: data.access_token,
         });
 
-        // Process the enhanced response with business accounts and standalone pages
-        const processedPages: EnhancedPage[] = [];
+        setBusinessAccounts(data.business_accounts || []);
+        setStandalonePages(data.standalone_pages || []);
 
-        // Add business account pages
-        if (data.business_accounts && Array.isArray(data.business_accounts)) {
-          data.business_accounts.forEach((business: BusinessAccount) => {
-            business.pages.forEach((page: Page) => {
-              processedPages.push({
-                id: page.id,
-                name: page.name,
-                access_token: page.access_token,
-                instagram_id: page.instagram_id,
-                businessAccountName: business.name,
-                isStandalone: false,
-              });
-            });
-          });
-        }
-
-        // Add standalone pages
-        if (data.standalone_pages && Array.isArray(data.standalone_pages)) {
-          data.standalone_pages.forEach((page: StandalonePage) => {
-            // For standalone pages, we need to get their access tokens
-            // This would require an additional API call, but for now we'll use the main access token
-            processedPages.push({
-              id: page.id,
-              name: page.name,
-              access_token: page.access_token, // Using the page's own access token
-              instagram_id: page.instagram_id,
-              isStandalone: true,
-            });
-          });
-        }
-
-        setAllPages(processedPages);
-
-        if (processedPages.length === 0) {
+        if (
+          (data.business_accounts?.length ?? 0) +
+            (data.standalone_pages?.length ?? 0) ===
+          0
+        ) {
           throw new Error(
             "No pages found. Please make sure you have access to at least one Facebook page."
           );
@@ -175,98 +149,171 @@ const Connection = () => {
             Select the page you want to connect to your account
           </p>
         </div>
-        <div className="flex flex-col gap-3 overflow-y-auto min-h-[50vh] max-h-[70vh] pr-2">
-          {allPages.length > 0 ? (
-            allPages.map((page) => (
-              <div
-                onClick={() => setSelectedPage(page)}
-                key={page.id}
-                className={`flex items-center justify-between group cursor-pointer transition-all duration-200 border hover:border-violet-400 ${
-                  selectedPage?.id === page.id
-                    ? "border-violet-500 bg-violet-50"
-                    : "border-gray-200 hover:bg-gray-50"
-                } p-4 rounded-lg`}>
-                <div className="flex flex-col gap-1">
-                  <h2
-                    className={`font-medium ${
-                      selectedPage?.id === page.id
-                        ? "text-violet-700"
-                        : "text-gray-900"
-                    } group-hover:text-violet-700`}>
-                    {page.name}
-                  </h2>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm text-gray-500">ID: {page.id}</p>
-                    {page.businessAccountName && (
-                      <p className="text-xs text-blue-600">
-                        Business: {page.businessAccountName}
-                      </p>
-                    )}
-                    {page.isStandalone && (
-                      <p className="text-xs text-green-600">Standalone Page</p>
-                    )}
-                    {page.instagram_id && (
-                      <p className="text-xs text-purple-600">
-                        Instagram Connected
-                      </p>
-                    )}
+        <div className="flex flex-col gap-6 overflow-y-auto min-h-[50vh] max-h-[70vh] pr-2">
+          {/* Business Accounts Section */}
+          {businessAccounts.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-2 text-blue-700">
+                Business Accounts
+              </h2>
+              {businessAccounts.map((business) => (
+                <div key={business.id} className="mb-4">
+                  <div className="font-medium text-blue-900 mb-1">
+                    {business.name}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {business.pages.map((page) => (
+                      <div
+                        onClick={() =>
+                          setSelectedPage({
+                            ...page,
+                            businessAccountName: business.name,
+                            isStandalone: false,
+                          })
+                        }
+                        key={page.id}
+                        className={`flex items-center justify-between group cursor-pointer transition-all duration-200 border hover:border-violet-400 ${
+                          selectedPage?.id === page.id &&
+                          !selectedPage?.isStandalone
+                            ? "border-violet-500 bg-violet-50"
+                            : "border-gray-200 hover:bg-gray-50"
+                        } p-4 rounded-lg`}>
+                        <div className="flex flex-col gap-1">
+                          <h2
+                            className={`font-medium ${
+                              selectedPage?.id === page.id &&
+                              !selectedPage?.isStandalone
+                                ? "text-violet-700"
+                                : "text-gray-900"
+                            } group-hover:text-violet-700`}>
+                            {page.name}
+                          </h2>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-500">
+                              ID: {page.id}
+                            </span>
+                            {page.instagram_id ? (
+                              <span className="ml-2 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-semibold">
+                                FB + IG
+                              </span>
+                            ) : (
+                              <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                                FB Only
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            selectedPage?.id === page.id &&
+                            !selectedPage?.isStandalone
+                              ? "border-violet-500 bg-violet-500"
+                              : "border-gray-300"
+                          }`}>
+                          {selectedPage?.id === page.id &&
+                            !selectedPage?.isStandalone && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedPage?.id === page.id
-                      ? "border-violet-500 bg-violet-500"
-                      : "border-gray-300"
-                  }`}>
-                  {selectedPage?.id === page.id && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Standalone Pages Section */}
+          {standalonePages.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-2 text-green-700">
+                Standalone Pages
+              </h2>
+              <div className="flex flex-col gap-2">
+                {standalonePages.map((page) => (
+                  <div
+                    onClick={() =>
+                      setSelectedPage({ ...page, isStandalone: true })
+                    }
+                    key={page.id}
+                    className={`flex items-center justify-between group cursor-pointer transition-all duration-200 border hover:border-violet-400 ${
+                      selectedPage?.id === page.id && selectedPage?.isStandalone
+                        ? "border-violet-500 bg-violet-50"
+                        : "border-gray-200 hover:bg-gray-50"
+                    } p-4 rounded-lg`}>
+                    <div className="flex flex-col gap-1">
+                      <h2
+                        className={`font-medium ${
+                          selectedPage?.id === page.id &&
+                          selectedPage?.isStandalone
+                            ? "text-violet-700"
+                            : "text-gray-900"
+                        } group-hover:text-violet-700`}>
+                        {page.name}
+                      </h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-500">
+                          ID: {page.id}
+                        </span>
+                        {page.instagram_id ? (
+                          <span className="ml-2 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-semibold">
+                            FB + IG
+                          </span>
+                        ) : (
+                          <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                            FB Only
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedPage?.id === page.id &&
+                        selectedPage?.isStandalone
+                          ? "border-violet-500 bg-violet-500"
+                          : "border-gray-300"
+                      }`}>
+                      {selectedPage?.id === page.id &&
+                        selectedPage?.isStandalone && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-              <svg
-                className="w-12 h-12 mb-3 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <p className="text-lg font-medium">No pages found</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Please make sure you have admin access to at least one Facebook
-                page
-              </p>
             </div>
           )}
         </div>
-        <Button
-          onClick={handlePageSelection}
-          className={`absolute bottom-6 right-6 transition-all duration-200 ${
-            !selectedPage
-              ? "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-not-allowed"
-              : "bg-violet-600 text-white hover:bg-violet-700"
-          }`}
-          disabled={!selectedPage}>
-          Connect Page
-        </Button>
+        <div className="mt-8 flex justify-end">
+          <Button
+            onClick={handlePageSelection}
+            disabled={!selectedPage}
+            className="w-40 bg-violet-600 text-white py-2 px-4 rounded-lg hover:bg-violet-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            Connect Page
+          </Button>
+        </div>
       </div>
     </div>
   );
