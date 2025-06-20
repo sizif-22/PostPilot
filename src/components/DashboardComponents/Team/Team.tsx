@@ -94,12 +94,10 @@ const MemberDialog = ({
       onOpenChange={onOpenChange}
       onClick={() => onOpenChange(false)}
       label="Member Details"
-      className="fixed inset-0 bg-stone-950/50 flex items-center justify-center z-50"
-    >
+      className="fixed inset-0 bg-stone-950/50 flex items-center justify-center z-50">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg w-full max-w-md mx-4 shadow-xl overflow-hidden"
-      >
+        className="bg-white rounded-lg w-full max-w-md mx-4 shadow-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-stone-200">
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
@@ -121,14 +119,12 @@ const MemberDialog = ({
                   {!member && (
                     <button
                       onClick={handleMemberRemove}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                    >
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 text-gray-500"
                         viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
+                        fill="currentColor">
                         <path
                           fillRule="evenodd"
                           d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -166,15 +162,13 @@ const MemberDialog = ({
               <div
                 className={`absolute bg-white w-full rounded-lg py-1 top-full z-10 shadow-lg border border-gray-700 ${
                   searchQuery.length < 4 && "hidden"
-                }`}
-              >
+                }`}>
                 {searchResult.length > 0 ? (
                   searchResult.map((tm) => (
                     <div
                       key={tm.email}
                       className="p-3 hover:bg-[#eee] rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 last:border-b-0"
-                      onClick={() => handleMemberSelect(tm)}
-                    >
+                      onClick={() => handleMemberSelect(tm)}>
                       <div className="text-start">
                         <span className="text-sm font-semibold block">
                           {tm.name}
@@ -205,8 +199,7 @@ const MemberDialog = ({
                     ...formData,
                     role: e.target.value as TeamMember["role"],
                   })
-                }
-              >
+                }>
                 <option value="Reviewer">Reviewer</option>
                 <option value="Contributor">Contributor</option>
               </select>
@@ -215,8 +208,7 @@ const MemberDialog = ({
                   className="size-4 sm:size-5 text-slate-600"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  aria-hidden="true"
-                >
+                  aria-hidden="true">
                   <path
                     fillRule="evenodd"
                     d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z"
@@ -231,14 +223,12 @@ const MemberDialog = ({
         <div className="px-6 py-4 bg-stone-50 border-t border-stone-200 flex justify-end gap-2">
           <button
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-200 rounded-lg transition-colors"
-          >
+            className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-200 rounded-lg transition-colors">
             Cancel
           </button>
           <button
             onClick={() => handleSubmit(member ? "update" : "add")}
-            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors"
-          >
+            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors">
             {member ? "Update" : "Add"} Member
           </button>
         </div>
@@ -311,13 +301,14 @@ export const Team = () => {
         <div>
           <h2 className="font-bold text-xl">Team Members</h2>
         </div>
-        <button
-          onClick={() => setIsAddingMember(true)}
-          className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
-        >
-          <FiUserPlus className="text-violet-500" />
-          <span>Add Member</span>
-        </button>
+        {channel?.authority == "Owner" && (
+          <button
+            onClick={() => setIsAddingMember(true)}
+            className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
+            <FiUserPlus className="text-violet-500" />
+            <span>Add Member</span>
+          </button>
+        )}
       </div>
 
       <div className="py-6 px-16">
@@ -337,9 +328,11 @@ export const Team = () => {
                 <th className="text-left py-3 px-4 text-sm font-medium text-stone-500">
                   Status
                 </th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-stone-500">
-                  Actions
-                </th>
+                {channel?.authority == "Owner" && (
+                  <th className="text-right py-3 px-4 text-sm font-medium text-stone-500">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -355,8 +348,7 @@ export const Team = () => {
                       <span
                         className={
                           member.status === "pending" ? "text-stone-500" : ""
-                        }
-                      >
+                        }>
                         {member.name}
                       </span>
                     </div>
@@ -367,8 +359,7 @@ export const Team = () => {
                       <span
                         className={
                           member.status === "pending" ? "text-stone-500" : ""
-                        }
-                      >
+                        }>
                         {member.email}
                       </span>
                     </div>
@@ -377,37 +368,36 @@ export const Team = () => {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
                         member.role
-                      )}`}
-                    >
+                      )}`}>
                       {member.role}
                     </span>
                   </td>
                   <td className="py-3 px-4">{getStatusBadge(member.status)}</td>
-                  <td className="py-3 px-4 text-right">
-                    {member.role !== "Owner" && (
-                      <div className="flex items-center justify-end gap-2">
-                        {member.status === "active" && (
-                          <>
-                            <button
-                              onClick={() => setEditingMember(member)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <FiEdit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setMemberOnDelete(member);
-                                setShowDeleteConfirm(true);
-                              }}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <FiTrash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </td>
+                  {channel.authority == "Owner" && (
+                    <td className="py-3 px-4 text-right">
+                      {member.role !== "Owner" && (
+                        <div className="flex items-center justify-end gap-2">
+                          {member.status === "active" && (
+                            <>
+                              <button
+                                onClick={() => setEditingMember(member)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                                <FiEdit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMemberOnDelete(member);
+                                  setShowDeleteConfirm(true);
+                                }}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded">
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -432,14 +422,12 @@ export const Team = () => {
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded"
-                  >
+                    className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded">
                     Cancel
                   </button>
                   <button
                     onClick={() => handleDeleteMember()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded"
-                  >
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded">
                     Delete TeamMember
                   </button>
                 </div>

@@ -101,7 +101,7 @@ export const CPDialog = ({
     });
   };
 
-  const handlePost = async (published: boolean = true) => {
+  const handlePost = async (postImmediately: boolean = true) => {
     setIsPosting(true);
     try {
       // Validate media types
@@ -125,15 +125,12 @@ export const CPDialog = ({
         }
       }
 
-      // Prepare the scheduled timestamp
       let scheduledTimestamp: number | undefined;
-      if (scheduledDate) {
+      if (!postImmediately && scheduledDate) {
         scheduledTimestamp = convertLocalDateTimeToUnixTimestamp(
           scheduledDate,
           selectedTimeZone
         );
-
-        // Validate the scheduled time
         if (!isValidScheduleTime(scheduledTimestamp)) {
           throw new Error(
             "Scheduled time must be at least 13 minutes in the future"
@@ -141,39 +138,62 @@ export const CPDialog = ({
         }
       }
 
-      const postData: Post = {
-        accessToken: channel?.socialMedia?.facebook.accessToken,
-        pageId: channel?.socialMedia?.facebook.id,
-        message: postText,
-        scheduledDate: scheduledTimestamp,
-        clientTimeZone: scheduledDate ? selectedTimeZone : undefined,
-        platforms: selectedPlatforms,
-        imageUrls: selectedImages,
-        published,
-      };
+      const isScheduled = Boolean(scheduledTimestamp) && !postImmediately;
 
-      const response = await fetch("/api/facebook/createpost", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(postData),
-      });
+      for (const platform of selectedPlatforms) {
+        let postData: Post = {
+          message: postText,
+          platforms: [platform],
+          imageUrls: selectedImages,
+          published: !isScheduled, // true if immediate, false if scheduled
+          ...(isScheduled && scheduledTimestamp
+            ? {
+                scheduledDate: scheduledTimestamp,
+                clientTimeZone: selectedTimeZone,
+              }
+            : {}),
+        };
 
-      const data = await response.json();
+        let response, data;
+        if (platform === "facebook" && channel?.socialMedia?.facebook) {
+          postData = {
+            ...postData,
+            accessToken: channel.socialMedia.facebook.accessToken,
+            pageId: channel.socialMedia.facebook.id,
+          };
+          response = await fetch("/api/facebook/createpost", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(postData),
+          });
+          data = await response.json();
+        } else if (
+          platform === "instagram" &&
+          channel?.socialMedia?.instagram
+        ) {
+          postData = {
+            ...postData,
+            accessToken: channel.socialMedia.instagram.pageAccessToken,
+            pageId: channel.socialMedia.instagram.instagramId,
+          };
+          response = await fetch("/api/instagram/createpost", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(postData),
+          });
+          data = await response.json();
+        } else {
+          continue;
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create post");
+        if (!response.ok) {
+          throw new Error(data.error || `Failed to create post on ${platform}`);
+        }
+
+        const firestorePostData = { ...postData, id: data.id };
+        await createPost(firestorePostData, channel?.id as string);
       }
 
-      // Prepare post data for Firestore
-      const firestorePostData = { ...postData };
-      firestorePostData.id = data.id;
-
-      // Add Post to the db
-      await createPost(firestorePostData, channel?.id as string);
-
-      // Only reset and close if post was successful
       resetForm();
       setOpen(false);
     } catch (error: any) {
@@ -209,8 +229,7 @@ export const CPDialog = ({
                   selectedPlatforms.includes("facebook")
                     ? "border-blue-300 bg-blue-50 text-blue-700"
                     : "border-stone-200 hover:border-stone-300"
-                }`}
-              >
+                }`}>
                 <FiFacebook className="text-lg" />
                 <span className="text-sm">
                   {channel?.socialMedia.facebook.name}
@@ -224,8 +243,7 @@ export const CPDialog = ({
                   selectedPlatforms.includes("instagram")
                     ? "border-pink-300 bg-pink-50 text-pink-700"
                     : "border-stone-200 hover:border-stone-300"
-                }`}
-              >
+                }`}>
                 <FiInstagram className="text-lg" />
                 <span className="text-sm">Instagram</span>
               </button>
@@ -247,8 +265,7 @@ export const CPDialog = ({
               type="button"
               className="p-2 text-stone-500 hover:bg-stone-100 rounded-lg transition-colors"
               title="Select images"
-              onClick={() => setIsMediaDialogOpen(true)}
-            >
+              onClick={() => setIsMediaDialogOpen(true)}>
               <FiImage className="text-lg" />
             </button>
             <div className="flex gap-2 flex-wrap">
@@ -266,8 +283,7 @@ export const CPDialog = ({
                     </div>
                     <button
                       onClick={() => handleImageSelect(item)}
-                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
+                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                       ×
                     </button>
                   </div>
@@ -276,8 +292,7 @@ export const CPDialog = ({
                     <div className="w-16 h-16 rounded-lg overflow-hidden">
                       <video
                         className="object-cover w-full aspect-square"
-                        preload="metadata"
-                      >
+                        preload="metadata">
                         <source src={item.url} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
@@ -289,8 +304,7 @@ export const CPDialog = ({
                     </div>
                     <button
                       onClick={() => handleImageSelect(item)}
-                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
+                      className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                       ×
                     </button>
                   </div>
@@ -318,8 +332,7 @@ export const CPDialog = ({
                           ? "ring-2 ring-violet-500"
                           : ""
                       }`}
-                      onClick={() => handleImageSelect(item)}
-                    >
+                      onClick={() => handleImageSelect(item)}>
                       <Image
                         src={item.url}
                         alt={item.name}
@@ -340,12 +353,10 @@ export const CPDialog = ({
                           ? "ring-2 ring-violet-500"
                           : ""
                       }`}
-                      onClick={() => handleImageSelect(item)}
-                    >
+                      onClick={() => handleImageSelect(item)}>
                       <video
                         className="object-cover w-full aspect-square"
-                        preload="metadata"
-                      >
+                        preload="metadata">
                         <source src={item.url} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
@@ -375,8 +386,7 @@ export const CPDialog = ({
               <select
                 value={selectedTimeZone}
                 onChange={(e) => setSelectedTimeZone(e.target.value)}
-                className="text-sm text-stone-700 bg-white border border-stone-200 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1"
-              >
+                className="text-sm text-stone-700 bg-white border border-stone-200 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1">
                 {sortedTimezones.map(({ name, offset }) => (
                   <option key={name} value={name}>
                     {name}
@@ -419,8 +429,7 @@ export const CPDialog = ({
             onClick={resetForm}
             type="button"
             className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
-            title="Reset form"
-          >
+            title="Reset form">
             <FiRefreshCcw size={16} />
             Reset
           </button>
@@ -435,8 +444,7 @@ export const CPDialog = ({
                   isPosting || !canSchedule
                     ? "cursor-not-allowed text-stone-400 bg-stone-100"
                     : "text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200"
-                }`}
-              >
+                }`}>
                 {isPosting ? (
                   <>
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -474,8 +482,7 @@ export const CPDialog = ({
                 isFormValid && !isPosting
                   ? "bg-violet-500 hover:bg-violet-600 text-white"
                   : "bg-stone-300 cursor-not-allowed text-stone-500"
-              }`}
-            >
+              }`}>
               {isPosting ? (
                 <>
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">

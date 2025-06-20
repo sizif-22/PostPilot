@@ -84,7 +84,7 @@ export const Upcoming = () => {
 
   return (
     <div className="col-span-2 row-span-3 border shadow-sm rounded-lg h-[81vh] bg-white ">
-      <div className="flex sticky z-10 top-0 items-center bg-white justify-between px-6 py-4 border-b">
+      <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-2">
           <FiCalendar className="w-5 h-5 text-violet-500" />
           <h1 className="text-xl font-bold">Upcoming</h1>
@@ -95,8 +95,7 @@ export const Upcoming = () => {
             <select
               value={selectedTimeZone}
               onChange={(e) => setSelectedTimeZone(e.target.value)}
-              className="text-sm text-gray-500 bg-transparent border-none focus:ring-0 cursor-pointer"
-            >
+              className="text-sm text-gray-500 bg-transparent border-none focus:ring-0 cursor-pointer">
               {timeZones.map((tz) => (
                 <option key={tz} value={tz}>
                   {tz}
@@ -135,8 +134,7 @@ export const Upcoming = () => {
                 <div
                   key={post.id}
                   className="rounded-lg p-4 hover:bg-gray-50 border border-gray-100 cursor-pointer transition-colors duration-200"
-                  onClick={() => setSelectedEvent(post)}
-                >
+                  onClick={() => setSelectedEvent(post)}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center text-gray-500">
                       <FiClock className="w-4 h-4 mr-1" />
@@ -153,8 +151,7 @@ export const Upcoming = () => {
                       {post.platforms?.map((platform: string) => (
                         <span
                           key={platform}
-                          className="hover:text-gray-700 transition-colors"
-                        >
+                          className="hover:text-gray-700 transition-colors">
                           {platform === "facebook" ? (
                             <FiFacebook className="w-4 h-4" />
                           ) : platform === "instagram" ? (

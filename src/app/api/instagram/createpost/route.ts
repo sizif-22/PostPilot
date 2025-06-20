@@ -4,8 +4,8 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const {
-      pageAccessToken,
-      instagramId,
+      accessToken,
+      pageId,
       message,
       scheduledDate,
       published,
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
       clientTimeZone,
     }: {
       imageUrls: MediaItem[];
-      pageAccessToken: any;
-      instagramId: any;
+      accessToken: any;
+      pageId: any;
       message: any;
       scheduledDate: any;
       published: any;
@@ -22,14 +22,14 @@ export async function POST(request: Request) {
     } = await request.json();
 
     // Validate required parameters
-    if (!pageAccessToken) {
+    if (!accessToken) {
       return NextResponse.json(
         { error: "Page access token is required" },
         { status: 400 }
       );
     }
 
-    if (!instagramId) {
+    if (!pageId) {
       return NextResponse.json(
         { error: "Instagram ID is required" },
         { status: 400 }
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
           media_type: "REELS",
           video_url: imageUrls[0].url,
           caption: message,
-          access_token: pageAccessToken,
+          access_token: accessToken,
         };
 
         // Add scheduling info for video if needed
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
         }
 
         const response = await fetch(
-          `https://graph.facebook.com/v19.0/${instagramId}/media`,
+          `https://graph.facebook.com/v19.0/${pageId}/media`,
           {
             method: "POST",
             headers: {
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
         // If not scheduled, publish immediately
         if (!time.scheduled_publish_time) {
           const publishResponse = await fetch(
-            `https://graph.facebook.com/v19.0/${instagramId}/media_publish`,
+            `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
             {
               method: "POST",
               headers: {
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
               },
               body: new URLSearchParams({
                 creation_id: data.id,
-                access_token: pageAccessToken,
+                access_token: accessToken,
               }),
             }
           );
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
           media_type: "IMAGE",
           image_url: imageUrls[0].url,
           caption: message,
-          access_token: pageAccessToken,
+          access_token: accessToken,
         };
 
         // Add scheduling info for single image if needed
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
         }
 
         const response = await fetch(
-          `https://graph.facebook.com/v19.0/${instagramId}/media`,
+          `https://graph.facebook.com/v19.0/${pageId}/media`,
           {
             method: "POST",
             headers: {
@@ -219,7 +219,7 @@ export async function POST(request: Request) {
         // If not scheduled, publish immediately
         if (!time.scheduled_publish_time) {
           const publishResponse = await fetch(
-            `https://graph.facebook.com/v19.0/${instagramId}/media_publish`,
+            `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
             {
               method: "POST",
               headers: {
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
               },
               body: new URLSearchParams({
                 creation_id: data.id,
-                access_token: pageAccessToken,
+                access_token: accessToken,
               }),
             }
           );
@@ -255,11 +255,11 @@ export async function POST(request: Request) {
             media_type: "REELS",
             video_url: item.url,
             published: "false",
-            access_token: pageAccessToken,
+            access_token: accessToken,
           };
 
           const response = await fetch(
-            `https://graph.facebook.com/v19.0/${instagramId}/media`,
+            `https://graph.facebook.com/v19.0/${pageId}/media`,
             {
               method: "POST",
               headers: {
@@ -281,11 +281,11 @@ export async function POST(request: Request) {
             media_type: "IMAGE",
             image_url: item.url,
             published: "false",
-            access_token: pageAccessToken,
+            access_token: accessToken,
           };
 
           const response = await fetch(
-            `https://graph.facebook.com/v19.0/${instagramId}/media`,
+            `https://graph.facebook.com/v19.0/${pageId}/media`,
             {
               method: "POST",
               headers: {
@@ -310,7 +310,7 @@ export async function POST(request: Request) {
         media_type: "CAROUSEL_ALBUM",
         children: mediaIds.join(","),
         caption: message,
-        access_token: pageAccessToken,
+        access_token: accessToken,
       };
 
       // Add scheduling info
@@ -322,7 +322,7 @@ export async function POST(request: Request) {
       }
 
       const response = await fetch(
-        `https://graph.facebook.com/v19.0/${instagramId}/media`,
+        `https://graph.facebook.com/v19.0/${pageId}/media`,
         {
           method: "POST",
           headers: {
@@ -350,7 +350,7 @@ export async function POST(request: Request) {
       // If not scheduled, publish immediately
       if (!time.scheduled_publish_time) {
         const publishResponse = await fetch(
-          `https://graph.facebook.com/v19.0/${instagramId}/media_publish`,
+          `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
           {
             method: "POST",
             headers: {
@@ -358,7 +358,7 @@ export async function POST(request: Request) {
             },
             body: new URLSearchParams({
               creation_id: data.id,
-              access_token: pageAccessToken,
+              access_token: accessToken,
             }),
           }
         );

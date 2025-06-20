@@ -12,7 +12,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { deleteMedia } from "@/firebase/storage";
-
+import { useChannel } from "@/context/ChannelContext";
 interface MediaProps {
   media: MediaItem[];
   onRefresh: () => void;
@@ -45,13 +45,11 @@ const MediaThumbnail = React.memo(
           className={`relative group mb-4 rounded-lg overflow-hidden cursor-pointer ${
             isSelected ? "ring-2 ring-violet-500" : ""
           }`}
-          onClick={handleClick}
-        >
+          onClick={handleClick}>
           <div className="w-full h-fit media-section bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
             <video
               className="w-full h-auto max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] object-cover"
-              preload="metadata"
-            >
+              preload="metadata">
               <source src={item.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -75,8 +73,7 @@ const MediaThumbnail = React.memo(
         className={`relative group mb-4 rounded-lg overflow-hidden cursor-pointer ${
           isSelected ? "ring-2 ring-violet-500" : ""
         }`}
-        onClick={handleClick}
-      >
+        onClick={handleClick}>
         <img
           src={item.url}
           alt={item.name}
@@ -107,7 +104,7 @@ export const Media = ({
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const STORAGE_LIMIT_MB = 500; // 500MB total storage limit
-
+  const { channel } = useChannel();
   const getColumnMediaItems = useMemo(
     () => (colIndex: number) => {
       return media.filter((_, index) => index % cols === colIndex);
@@ -179,8 +176,7 @@ export const Media = ({
                     size="icon"
                     onClick={onRefresh}
                     disabled={isLoading}
-                    className={`h-8 w-8 ${isLoading ? "animate-spin" : ""}`}
-                  >
+                    className={`h-8 w-8 ${isLoading ? "animate-spin" : ""}`}>
                     <FaSync className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -190,57 +186,56 @@ export const Media = ({
               </Tooltip>
             </TooltipProvider>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-stone-500">
-              <span
-                className={
-                  storageUsed > STORAGE_LIMIT_MB * 0.9
-                    ? "text-red-500 font-medium"
-                    : ""
-                }
-              >
-                {storageUsed.toFixed(1)}MB
-              </span>
-              {" / "}
-              <span>{STORAGE_LIMIT_MB}MB used</span>
-            </div>
-            {!isSelectMode ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsSelectMode(true)}
-                  className="h-8"
-                >
-                  Select
-                </Button>
-                <MediaDialog
-                  storageUsed={storageUsed}
-                  storageLimit={STORAGE_LIMIT_MB}
-                  onUploadComplete={onRefresh}
-                />
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteSelected}
-                  disabled={selectedItems.size === 0}
-                  className="h-8"
-                >
-                  <FaTrash className="h-4 w-4 mr-2" />
-                  Delete ({selectedItems.size})
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleCancelSelection}
-                  className="h-8"
-                >
-                  <FaTimes className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
+          {(channel?.authority == "Owner" ||
+            channel?.authority == "Contributor") && (
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-stone-500">
+                <span
+                  className={
+                    storageUsed > STORAGE_LIMIT_MB * 0.9
+                      ? "text-red-500 font-medium"
+                      : ""
+                  }>
+                  {storageUsed.toFixed(1)}MB
+                </span>
+                {" / "}
+                <span>{STORAGE_LIMIT_MB}MB used</span>
               </div>
-            )}
-          </div>
+              {!isSelectMode ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsSelectMode(true)}
+                    className="h-8">
+                    Select
+                  </Button>
+                  <MediaDialog
+                    storageUsed={storageUsed}
+                    storageLimit={STORAGE_LIMIT_MB}
+                    onUploadComplete={onRefresh}
+                  />
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteSelected}
+                    disabled={selectedItems.size === 0}
+                    className="h-8">
+                    <FaTrash className="h-4 w-4 mr-2" />
+                    Delete ({selectedItems.size})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelSelection}
+                    className="h-8">
+                    <FaTimes className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -260,8 +255,7 @@ export const Media = ({
               : cols === 3
               ? "grid-cols-3"
               : "grid-cols-4"
-          } px-8 py-4 gap-4 h-full`}
-        >
+          } px-8 py-4 gap-4 h-full`}>
           {[...Array(cols)].map((_, colIndex) => (
             <div key={colIndex} className="w-full h-fit pb-16 rounded-lg">
               {getColumnMediaItems(colIndex).map((item, index) => {

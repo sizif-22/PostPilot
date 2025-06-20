@@ -1,6 +1,5 @@
 import React from "react";
 import { Command } from "cmdk";
-import { format } from "date-fns";
 import {
   FiX,
   FiMoreHorizontal,
@@ -44,20 +43,17 @@ export const DetailsDialog = ({
         onOpenChange={setOpen}
         label="Post Details"
         className="fixed inset-0 bg-stone-950/50 flex items-center justify-center z-50"
-        onClick={() => setOpen(false)}
-      >
+        onClick={() => setOpen(false)}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl overflow-hidden"
-        >
+          className="bg-white rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl overflow-hidden">
           {/* Header */}
           <div className="px-4 flex items-center justify-between  border-b border-stone-200 h-[9vh]">
             <div className="flex sticky top-0 justify-between w-full items-center">
               <h3 className="text-lg font-semibold">Scheduled Post Preview</h3>
               <button
                 onClick={() => setSelectedEvent(null)}
-                className="hover:bg-stone-100 p-1 rounded-full transition-colors"
-              >
+                className="hover:bg-stone-100 p-1 rounded-full transition-colors">
                 <FiX className="text-stone-500" />
               </button>
             </div>
@@ -70,10 +66,14 @@ export const DetailsDialog = ({
               <div className="flex items-start justify-between">
                 <div className="flex gap-3">
                   <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
-                    <span className="text-violet-600 font-semibold">P</span>
+                    <span className="text-violet-600 font-semibold">
+                      {channel?.socialMedia?.facebook.name.slice(0, 1)}
+                    </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Your Page Name</h4>
+                    <h4 className="font-semibold">
+                      {channel?.socialMedia?.facebook.name}
+                    </h4>
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <div className="flex items-center gap-1">
                         <FiClock className="text-stone-400" />
@@ -111,8 +111,7 @@ export const DetailsDialog = ({
                       selectedEvent.imageUrls.length === 1
                         ? "grid-cols-1"
                         : "grid-cols-2"
-                    }`}
-                  >
+                    }`}>
                     {selectedEvent.imageUrls.slice(0, 3).map((image, index) => {
                       const isLastImage =
                         index === 2 && selectedEvent.imageUrls!.length > 3;
@@ -126,8 +125,7 @@ export const DetailsDialog = ({
                             selectedEvent.imageUrls!.length >= 3 && index === 0
                               ? "row-span-2"
                               : ""
-                          }`}
-                        >
+                          }`}>
                           <img
                             src={image.url}
                             alt={`Post image ${index + 1}`}
@@ -169,8 +167,8 @@ export const DetailsDialog = ({
                       formatDateInTimezone(
                         selectedEvent.scheduledDate,
                         selectedEvent.clientTimeZone
-                      ).month}
-                    {" "} at {" "}
+                      ).month}{" "}
+                    at{" "}
                     {selectedEvent.scheduledDate &&
                       selectedEvent.clientTimeZone &&
                       formatDateInTimezone(
@@ -184,49 +182,50 @@ export const DetailsDialog = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="px-4 flex items-center w-full border-t border-stone-200 bg-stone-50 h-[9vh]">
-            <div className="flex justify-end gap-2 w-full">
-              <button
-                onClick={() => {
-                  fetch(`/api/facebook/deletepost`, {
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    method: "DELETE",
-                    body: JSON.stringify({
-                      postId: selectedEvent.id,
-                      channelId: channel?.id as string,
-                    }),
-                  });
-                  setOpen(false);
-                  setSelectedEvent(null);
-                }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-              >
-                Delete Post
-              </button>
-              <button
-                className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors"
-                onClick={() => {
-                  fetch(`/api/facebook/editpost`, {
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    method: "PUT",
-                    body: JSON.stringify({
-                      postId: selectedEvent.id,
-                      channelId: channel?.id as string,
-                      post: selectedEvent,
-                    }),
-                  });
-                  setOpen(false);
-                  setSelectedEvent(null);
-                }}
-              >
-                Edit Post
-              </button>
+          {(channel?.authority == "Owner" ||
+            channel?.authority == "Contributor") && (
+            <div className="px-4 flex items-center w-full border-t border-stone-200 bg-stone-50 h-[9vh]">
+              <div className="flex justify-end gap-2 w-full">
+                <button
+                  onClick={() => {
+                    fetch(`/api/facebook/deletepost`, {
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      method: "DELETE",
+                      body: JSON.stringify({
+                        postId: selectedEvent.id,
+                        channelId: channel?.id as string,
+                      }),
+                    });
+                    setOpen(false);
+                    setSelectedEvent(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">
+                  Delete Post
+                </button>
+                <button
+                  className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors"
+                  onClick={() => {
+                    fetch(`/api/facebook/editpost`, {
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      method: "PUT",
+                      body: JSON.stringify({
+                        postId: selectedEvent.id,
+                        channelId: channel?.id as string,
+                        post: selectedEvent,
+                      }),
+                    });
+                    setOpen(false);
+                    setSelectedEvent(null);
+                  }}>
+                  Edit Post
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </Command.Dialog>
     )

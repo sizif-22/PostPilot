@@ -2,40 +2,19 @@ import React, { useState, useEffect } from "react";
 import {
   FiFacebook,
   FiInstagram,
-  FiTrash2,
   FiAlertCircle,
   FiCheck,
 } from "react-icons/fi";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebase/config";
-import { Channel } from "@/interfaces/Channel";
-
+import { useChannel } from "@/context/ChannelContext";
 export const Configuration = () => {
   const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [channel, setChannel] = useState<Channel | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {channel} = useChannel(); 
+  const isFacebookConnected = channel?.socialMedia?.facebook;
+  const isInstagramConnected = channel?.socialMedia?.instagram;
 
-  useEffect(() => {
-    const fetchChannel = async () => {
-      if (!id) return;
-
-      try {
-        const channelDoc = await getDoc(doc(db, "channels", id as string));
-        if (channelDoc.exists()) {
-          setChannel({ id: channelDoc.id, ...channelDoc.data() } as Channel);
-        }
-      } catch (error) {
-        console.error("Error fetching channel:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChannel();
-  }, [id]);
 
   const handleFacebookConnect = () => {
     Cookies.set("currentChannel", id as string);
@@ -70,12 +49,11 @@ export const Configuration = () => {
     setShowDeleteConfirm(false);
   };
 
-  const isFacebookConnected = channel?.socialMedia?.facebook;
-  const isInstagramConnected = channel?.socialMedia?.instagram;
-
   const socialMedia = [
     {
-      name: "Facebook",
+      name: "Facebook (&Instagram)",
+      html: <span>Facebook <span className="text-sm">( &Instagram )</span></span>,
+      description: "Connect your Facebook account to enable posting",
       icon: FiFacebook,
       connect: handleFacebookConnect,
       isConnected: isFacebookConnected,
@@ -83,29 +61,8 @@ export const Configuration = () => {
         ? `Connected to: ${isFacebookConnected.name}`
         : null,
     },
-    {
-      name: "Instagram",
-      icon: FiInstagram,
-      connect: handleInstagramConnect,
-      isConnected: isInstagramConnected,
-      connectedInfo: isInstagramConnected
-        ? `Connected to: @${isInstagramConnected.instagramUsername}`
-        : null,
-    },
   ];
 
-  if (loading) {
-    return (
-      <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
-        <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200">
-          <h2 className="font-bold text-xl">Configuration</h2>
-        </div>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-stone-500">Loading...</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white  h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
@@ -129,7 +86,7 @@ export const Configuration = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h2 className="text-lg font-medium">
-                          Connect to {item.name}
+                          Connect to {item.html}
                         </h2>
                         {item.isConnected && (
                           <div className="flex items-center gap-1 text-green-600 text-sm">
@@ -141,7 +98,7 @@ export const Configuration = () => {
                       <h3 className="text-sm text-stone-500">
                         {item.isConnected
                           ? item.connectedInfo
-                          : `Connect your ${item.name} account to enable posting`}
+                          : item.description}
                       </h3>
                     </div>
                     <button

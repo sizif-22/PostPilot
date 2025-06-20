@@ -2,6 +2,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/interfaces/Channel";
+import {
+  FiFacebook,
+  FiInstagram,
+} from "react-icons/fi";
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
   "January",
@@ -220,7 +224,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                     <button
                       key={post.id}
                       onClick={() => onEventSelect?.(post)}
-                      className="w-full text-left px-1.5 py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 hover:bg-violet-200 text-violet-700 transition-colors"
+                      className="w-full text-left px-1.5 flex justify-between py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 hover:bg-violet-200 text-violet-700 transition-colors"
                       title={`${
                         post.scheduledDate
                           ? format(
@@ -228,12 +232,14 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                               "h:mm a"
                             )
                           : ""
-                      } - ${post.content}`}
+                      }`}
                     >
                       {post.scheduledDate
                         ? format(new Date(post.scheduledDate * 1000), "h:mm a")
                         : ""}{" "}
-                      - {post.content}
+                        <div className="flex gap-1">
+                      {post.platforms?.map((pform , index)=> pform == 'facebook' ? <FiFacebook key={index}/> : <FiInstagram key={index}/>)}
+                        </div>
                     </button>
                   ))}
                 </div>

@@ -18,15 +18,18 @@ export const TopBar = ({ media }: { media: MediaItem[] }) => {
             {channel?.description}
           </span>
         </div>
-
-        <button
-          onClick={() => setOpen(true)}
-          className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
-        >
-          <FiCalendar className="text-violet-500" />
-          <span>Schedule Post</span>
-        </button>
-        <CPDialog open={open} setOpen={setOpen} media={media} />
+        {(channel?.authority == "Contributor" ||
+          channel?.authority == "Owner") && (
+          <>
+            <button
+              onClick={() => setOpen(true)}
+              className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
+              <FiCalendar className="text-violet-500" />
+              <span>Schedule Post</span>
+            </button>
+            <CPDialog open={open} setOpen={setOpen} media={media} />
+          </>
+        )}
       </div>
     </div>
   );
