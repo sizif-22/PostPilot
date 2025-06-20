@@ -11,34 +11,33 @@ import { useChannel } from "@/context/ChannelContext";
 export const Configuration = () => {
   const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const {channel} = useChannel(); 
+  const { channel } = useChannel();
   const isFacebookConnected = channel?.socialMedia?.facebook;
   const isInstagramConnected = channel?.socialMedia?.instagram;
-
 
   const handleFacebookConnect = () => {
     Cookies.set("currentChannel", id as string);
     const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection";
     const SCOPE =
-      "pages_manage_posts,pages_read_engagement,pages_manage_metadata,pages_manage_engagement,pages_show_list,business_management,instagram_basic,instagram_content_publish";
+      "pages_manage_posts,pages_read_engagement,pages_show_list,business_management,instagram_basic,instagram_content_publish";
 
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
 
     window.location.href = authUrl;
   };
 
-  const handleInstagramConnect = () => {
-    Cookies.set("currentChannel", id as string);
-    const INSTAGRAM_APP_ID = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID;
-    const REDIRECT_URI = "https://postpilot-22.vercel.app/instagram";
-    const SCOPE =
-      "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_posts";
+  // const handleInstagramConnect = () => {
+  //   Cookies.set("currentChannel", id as string);
+  //   const INSTAGRAM_APP_ID = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID;
+  //   const REDIRECT_URI = "https://postpilot-22.vercel.app/instagram";
+  //   const SCOPE =
+  //     "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_posts";
 
-    const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
+  //   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
 
-    window.location.href = authUrl;
-  };
+  //   window.location.href = authUrl;
+  // };
 
   const handleDeleteChannel = () => {
     setShowDeleteConfirm(true);
@@ -52,7 +51,11 @@ export const Configuration = () => {
   const socialMedia = [
     {
       name: "Facebook (&Instagram)",
-      html: <span>Facebook <span className="text-sm">( &Instagram )</span></span>,
+      html: (
+        <span>
+          Facebook <span className="text-sm">( &Instagram )</span>
+        </span>
+      ),
       description: "Connect your Facebook account to enable posting",
       icon: FiFacebook,
       connect: handleFacebookConnect,
@@ -62,7 +65,6 @@ export const Configuration = () => {
         : null,
     },
   ];
-
 
   return (
     <div className="bg-white  h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
