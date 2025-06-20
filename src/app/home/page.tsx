@@ -164,15 +164,13 @@ export default function Home() {
                     <Link
                       key={index}
                       href={button.href}
-                      className="text-sm sm:text-base dark:text-zinc-400 text-gray-700 dark:hover:text-violet-400 hover:text-violet-700 transition-colors"
-                    >
+                      className="text-sm sm:text-base dark:text-zinc-400 text-gray-700 dark:hover:text-violet-400 hover:text-violet-700 transition-colors">
                       {button.name}
                     </Link>
                   ))}
                   <button
                     onClick={toggleTheme}
-                    className="p-1.5 sm:p-2 rounded-full dark:bg-violet-950 bg-violet-100 dark:hover:bg-violet-900 hover:bg-violet-200 transition-colors"
-                  >
+                    className="p-1.5 sm:p-2 rounded-full dark:bg-violet-950 bg-violet-100 dark:hover:bg-violet-900 hover:bg-violet-200 transition-colors">
                     {theme === "dark" ? (
                       <SunIcon className="w-4 h-4 sm:w-5 sm:h-5 dark:text-violet-400 text-violet-700" />
                     ) : (
@@ -192,8 +190,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
-                  className="space-y-6 sm:space-y-8 text-center md:text-left"
-                >
+                  className="space-y-6 sm:space-y-8 text-center md:text-left">
                   <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white text-gray-900 leading-tight">
                     Automate Your{" "}
                     <span className="dark:bg-gradient-to-r dark:from-violet-400 dark:via-violet-300 dark:to-white bg-gradient-to-r from-violet-700 via-violet-600 to-purple-600 bg-clip-text text-transparent">
@@ -208,8 +205,7 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
                     <Link
                       href={user?.isLoggedIn ? "/channels" : "/signin"}
-                      className="group px-6 sm:px-8 py-3 sm:py-4 dark:bg-violet-600 bg-violet-700 text-white rounded-full font-semibold transition-all duration-300 relative overflow-hidden text-sm sm:text-base"
-                    >
+                      className="group px-6 sm:px-8 py-3 sm:py-4 dark:bg-violet-600 bg-violet-700 text-white rounded-full font-semibold transition-all duration-300 relative overflow-hidden text-sm sm:text-base">
                       <span className="absolute inset-0 dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-500 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                       <span className="relative">Get Started</span>
                     </Link>
@@ -223,8 +219,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
-                  className="relative w-full sm:h-[50svh] h-full mx-auto lg:ml-auto"
-                >
+                  className="relative w-full sm:h-[50svh] h-full mx-auto lg:ml-auto">
                   <Image
                     src="/PostPilotHomePage-removebg-preview.png"
                     alt="Homepage"
@@ -245,8 +240,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="text-center mb-16"
-              >
+                className="text-center mb-16">
                 <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold dark:text-white text-gray-900 mb-6">
                   Powerful Features for{" "}
                   <span className="dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-700 to-purple-600 bg-clip-text text-transparent">
@@ -267,8 +261,7 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="dark:bg-violet-950/30 bg-white/70 backdrop-blur-sm rounded-2xl p-6 dark:border-violet-800/30 border-violet-200/30 border hover:dark:bg-violet-950/50 hover:bg-white/90 transition-all duration-300"
-                  >
+                    className="dark:bg-violet-950/30 bg-white/70 backdrop-blur-sm rounded-2xl p-6 dark:border-violet-800/30 border-violet-200/30 border hover:dark:bg-violet-950/50 hover:bg-white/90 transition-all duration-300">
                     <div className="dark:bg-violet-600/20 bg-violet-100 rounded-lg p-3 w-fit mb-4">
                       <feature.icon className="w-6 h-6 dark:text-violet-400 text-violet-700" />
                     </div>
@@ -292,8 +285,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="text-center mb-16"
-              >
+                className="text-center mb-16">
                 <h3 className="text-3xl md:text-4xl font-bold dark:text-white text-gray-900 mb-6">
                   Connect All Your{" "}
                   <span className="dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-700 to-purple-600 bg-clip-text text-transparent">
@@ -311,13 +303,11 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center"
-              >
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
                 {platforms.map((platform, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center space-y-3 dark:bg-violet-950/20 bg-white/50 rounded-xl p-6 hover:dark:bg-violet-950/40 hover:bg-white/80 transition-all duration-300"
-                  >
+                    className="flex flex-col items-center space-y-3 dark:bg-violet-950/20 bg-white/50 rounded-xl p-6 hover:dark:bg-violet-950/40 hover:bg-white/80 transition-all duration-300">
                     <div className="w-12 h-12 dark:bg-violet-600/20 bg-violet-100 rounded-lg flex items-center justify-center">
                       <span className="text-sm font-semibold dark:text-violet-400 text-violet-700">
                         {platform.name.slice(0, 2).toUpperCase()}
@@ -333,6 +323,7 @@ export default function Home() {
           </section>
 
           {/* Pricing Section */}
+          {/* 
           <section className="py-16 sm:py-24 px-6 dark:bg-gradient-to-b dark:from-violet-950/20 dark:to-black bg-gradient-to-b from-violet-50 to-white">
             <div className="max-w-7xl mx-auto">
               <motion.div
@@ -420,7 +411,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* Testimonials Section */}
           <section className="py-16 sm:py-24 px-6">
@@ -430,8 +421,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="text-center mb-16"
-              >
+                className="text-center mb-16">
                 <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold dark:text-white text-gray-900 mb-6">
                   What Our{" "}
                   <span className="dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-700 to-purple-600 bg-clip-text text-transparent">
@@ -452,8 +442,7 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="dark:bg-violet-950/30 bg-white/70 backdrop-blur-sm rounded-2xl p-6 dark:border-violet-800/30 border-violet-200/30 border"
-                  >
+                    className="dark:bg-violet-950/30 bg-white/70 backdrop-blur-sm rounded-2xl p-6 dark:border-violet-800/30 border-violet-200/30 border">
                     <div className="flex items-center gap-1 mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <StarIcon
@@ -499,8 +488,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="space-y-8"
-              >
+                className="space-y-8">
                 <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold dark:text-white text-gray-900">
                   Ready to Transform Your{" "}
                   <span className="dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-700 to-purple-600 bg-clip-text text-transparent">
@@ -514,8 +502,7 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Link
                     href={user?.isLoggedIn ? "/channels" : "/signin"}
-                    className="group px-8 py-4 dark:bg-violet-600 bg-violet-700 text-white rounded-full font-semibold transition-all duration-300 relative overflow-hidden"
-                  >
+                    className="group px-8 py-4 dark:bg-violet-600 bg-violet-700 text-white rounded-full font-semibold transition-all duration-300 relative overflow-hidden">
                     <span className="absolute inset-0 dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-500 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <span className="relative">Start Free Trial</span>
                   </Link>
@@ -549,24 +536,21 @@ export default function Home() {
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Features
                       </a>
                     </li>
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Pricing
                       </a>
                     </li>
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         API
                       </a>
                     </li>
@@ -581,24 +565,21 @@ export default function Home() {
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         About
                       </a>
                     </li>
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Contact
                       </a>
                     </li>
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Careers
                       </a>
                     </li>
@@ -613,16 +594,14 @@ export default function Home() {
                     <li>
                       <a
                         href="/privacy-policy"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Privacy Policy
                       </a>
                     </li>
                     <li>
                       <a
                         href="#"
-                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors"
-                      >
+                        className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Terms of Service
                       </a>
                     </li>
