@@ -7,319 +7,174 @@ export async function POST(request: Request) {
       accessToken,
       pageId,
       message,
-      scheduledDate,
-      published,
       imageUrls,
       clientTimeZone,
     }: {
       imageUrls: MediaItem[];
-      accessToken: any;
-      pageId: any;
-      message: any;
-      scheduledDate: any;
-      published: any;
-      clientTimeZone: any;
+      accessToken: string;
+      pageId: string; // Instagram Business Account ID
+      message: string;
+      clientTimeZone?: string;
     } = await request.json();
 
     // Validate required parameters
     if (!accessToken) {
       return NextResponse.json(
-        { error: "Page access token is required" },
+        { error: "Access token is required" },
         { status: 400 }
       );
     }
 
     if (!pageId) {
       return NextResponse.json(
-        { error: "Instagram ID is required" },
+        { error: "Instagram Business Account ID is required" },
         { status: 400 }
       );
     }
 
     if (!message || message.trim() === "") {
       return NextResponse.json(
-        { error: "Message content is required" },
+        { error: "Caption is required for Instagram posts" },
+        { status: 400 }
+      );
+    }
+
+    // Validate media requirements
+    if (!imageUrls || imageUrls.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Instagram requires at least one image or video. Text-only posts are not supported.",
+        },
         { status: 400 }
       );
     }
 
     // Validate media types
-    if (imageUrls && imageUrls.length > 0) {
-      const hasVideos = imageUrls.some((item) => item.isVideo);
-      const hasImages = imageUrls.some((item) => !item.isVideo);
-      const videoCount = imageUrls.filter((item) => item.isVideo).length;
+    const hasVideos = imageUrls.some((item) => item.isVideo);
+    const hasImages = imageUrls.some((item) => !item.isVideo);
+    const videoCount = imageUrls.filter((item) => item.isVideo).length;
 
-      // Check for mixed media
-      if (hasVideos && hasImages) {
-        return NextResponse.json(
-          {
-            error:
-              "Cannot mix videos and images in the same post. Please select either all videos or all images.",
-          },
-          { status: 400 }
-        );
-      }
-
-      // Check for multiple videos
-      if (videoCount > 1) {
-        return NextResponse.json(
-          {
-            error:
-              "Cannot post multiple videos at once. Please select only one video.",
-          },
-          { status: 400 }
-        );
-      }
+    // Check for mixed media
+    if (hasVideos && hasImages) {
+      return NextResponse.json(
+        {
+          error: "Cannot mix videos and images in the same Instagram post.",
+        },
+        { status: 400 }
+      );
     }
 
-    let finalScheduledTimestamp: number | undefined;
-
-    if (scheduledDate && clientTimeZone) {
-      finalScheduledTimestamp = scheduledDate;
+    // Check for multiple videos
+    if (videoCount > 1) {
+      return NextResponse.json(
+        {
+          error: "Instagram supports only one video per post.",
+        },
+        { status: 400 }
+      );
     }
 
-    const time = finalScheduledTimestamp
-      ? {
-          scheduled_publish_time: finalScheduledTimestamp,
-          published: false,
-        }
-      : {
-          published: published ?? true,
-        };
+    // Handle scheduling logic
 
-    // Validate scheduled time
-    if (time.scheduled_publish_time) {
-      const now = Math.floor(Date.now() / 1000);
-      // Add a buffer of 180 seconds (3 minutes) to account for processing time and network latency
-      const minScheduledTime = now + 10 * 60 + 3 * 60; // 10 minutes + 3 minute buffer
+    // Publish immediately
+    return await createAndPublishInstagramPost({
+      accessToken,
+      pageId,
+      message,
+      imageUrls,
+      published: true,
+    });
+  } catch (error: any) {
+    console.error("Instagram API Error:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
 
-      if (time.scheduled_publish_time < minScheduledTime) {
-        return NextResponse.json(
-          {
-            error:
-              "Scheduled time must be at least 13 minutes in the future (to account for processing time and network delays)",
+async function createAndPublishInstagramPost({
+  accessToken,
+  pageId,
+  message,
+  imageUrls,
+  published,
+}: {
+  accessToken: string;
+  pageId: string;
+  message: string;
+  imageUrls: MediaItem[];
+  published: boolean;
+}) {
+  if (imageUrls.length === 1) {
+    // Single media post
+    const mediaItem = imageUrls[0];
+    const mediaData = {
+      ...(mediaItem.isVideo
+        ? { video_url: mediaItem.url, media_type: "VIDEO" }
+        : { image_url: mediaItem.url, media_type: "IMAGE" }),
+      caption: message,
+      access_token: accessToken,
+    };
+
+    // Create media container
+    const createResponse = await fetch(
+      `https://graph.facebook.com/v19.0/${pageId}/media`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(mediaData),
+      }
+    );
+
+    const createData = await createResponse.json();
+    if (!createResponse.ok) {
+      throw new Error(
+        createData.error?.message || "Failed to create media container"
+      );
+    }
+
+    // Publish the media
+    if (published) {
+      const publishResponse = await fetch(
+        `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Handle different media scenarios
-    if (imageUrls && imageUrls.length === 1) {
-      if (imageUrls[0].isVideo) {
-        // Single video post
-        const videoData: any = {
-          media_type: "REELS",
-          video_url: imageUrls[0].url,
-          caption: message,
-          access_token: accessToken,
-        };
-
-        // Add scheduling info for video if needed
-        if (time.scheduled_publish_time) {
-          videoData.scheduled_publish_time = time.scheduled_publish_time;
-          videoData.published = false;
-        } else {
-          videoData.published = published ?? true;
-        }
-
-        const response = await fetch(
-          `https://graph.facebook.com/v19.0/${pageId}/media`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams(
-              Object.entries(videoData)
-                .filter(([_, value]) => value !== undefined && value !== null)
-                .reduce(
-                  (acc, [key, value]) => ({ ...acc, [key]: String(value) }),
-                  {}
-                )
-            ),
-          }
-        );
-
-        const data = await response.json();
-        if (!response.ok) {
-          console.error("Instagram Video API Error:", data);
-          throw new Error(data.error?.message || "Failed to upload video");
-        }
-
-        // If not scheduled, publish immediately
-        if (!time.scheduled_publish_time) {
-          const publishResponse = await fetch(
-            `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                creation_id: data.id,
-                access_token: accessToken,
-              }),
-            }
-          );
-
-          const publishData = await publishResponse.json();
-          if (!publishResponse.ok) {
-            console.error("Instagram Publish API Error:", publishData);
-            throw new Error(
-              publishData.error?.message || "Failed to publish video"
-            );
-          }
-
-          return NextResponse.json(publishData);
-        }
-
-        return NextResponse.json(data);
-      } else {
-        // Single image post
-        const imageData: any = {
-          media_type: "IMAGE",
-          image_url: imageUrls[0].url,
-          caption: message,
-          access_token: accessToken,
-        };
-
-        // Add scheduling info for single image if needed
-        if (time.scheduled_publish_time) {
-          imageData.scheduled_publish_time = time.scheduled_publish_time;
-          imageData.published = false;
-        } else {
-          imageData.published = published ?? true;
-        }
-
-        const response = await fetch(
-          `https://graph.facebook.com/v19.0/${pageId}/media`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams(
-              Object.entries(imageData)
-                .filter(([_, value]) => value !== undefined && value !== null)
-                .reduce(
-                  (acc, [key, value]) => ({ ...acc, [key]: String(value) }),
-                  {}
-                )
-            ),
-          }
-        );
-
-        const data = await response.json();
-        if (!response.ok) {
-          console.error("Instagram Image API Error:", data);
-          throw new Error(data.error?.message || "Failed to create post");
-        }
-
-        // If not scheduled, publish immediately
-        if (!time.scheduled_publish_time) {
-          const publishResponse = await fetch(
-            `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                creation_id: data.id,
-                access_token: accessToken,
-              }),
-            }
-          );
-
-          const publishData = await publishResponse.json();
-          if (!publishResponse.ok) {
-            console.error("Instagram Publish API Error:", publishData);
-            throw new Error(
-              publishData.error?.message || "Failed to publish image"
-            );
-          }
-
-          return NextResponse.json(publishData);
-        }
-
-        return NextResponse.json(data);
-      }
-    } else if (imageUrls && imageUrls.length > 1) {
-      // Multiple images post
-      const mediaIds = [];
-
-      for (const item of imageUrls) {
-        if (item.isVideo) {
-          const videoParams = {
-            media_type: "REELS",
-            video_url: item.url,
-            published: "false",
+          body: new URLSearchParams({
+            creation_id: createData.id,
             access_token: accessToken,
-          };
-
-          const response = await fetch(
-            `https://graph.facebook.com/v19.0/${pageId}/media`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams(videoParams),
-            }
-          );
-
-          const data = await response.json();
-          if (!response.ok) {
-            console.error("Instagram Video Upload Error:", data);
-            throw new Error(data.error?.message || "Failed to upload video");
-          }
-
-          mediaIds.push(data.id);
-        } else {
-          const imageParams = {
-            media_type: "IMAGE",
-            image_url: item.url,
-            published: "false",
-            access_token: accessToken,
-          };
-
-          const response = await fetch(
-            `https://graph.facebook.com/v19.0/${pageId}/media`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams(imageParams),
-            }
-          );
-
-          const data = await response.json();
-          if (!response.ok) {
-            console.error("Instagram Image Upload Error:", data);
-            throw new Error(data.error?.message || "Failed to upload image");
-          }
-
-          mediaIds.push(data.id);
+          }),
         }
+      );
+
+      const publishData = await publishResponse.json();
+      if (!publishResponse.ok) {
+        throw new Error(publishData.error?.message || "Failed to publish post");
       }
 
-      // Create the carousel post
-      const carouselData: any = {
-        media_type: "CAROUSEL_ALBUM",
-        children: mediaIds.join(","),
-        caption: message,
+      return NextResponse.json(publishData);
+    }
+
+    return NextResponse.json(createData);
+  } else {
+    // Carousel post
+    const mediaIds = [];
+
+    // Upload each media item
+    for (const item of imageUrls) {
+      const mediaParams = {
+        ...(item.isVideo
+          ? { video_url: item.url, media_type: "VIDEO" }
+          : { image_url: item.url, media_type: "IMAGE" }),
+        is_carousel_item: "true",
         access_token: accessToken,
       };
-
-      // Add scheduling info
-      if (time.scheduled_publish_time) {
-        carouselData.scheduled_publish_time = time.scheduled_publish_time;
-        carouselData.published = "false";
-      } else {
-        carouselData.published = (published ?? true).toString();
-      }
 
       const response = await fetch(
         `https://graph.facebook.com/v19.0/${pageId}/media`,
@@ -328,68 +183,99 @@ export async function POST(request: Request) {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: new URLSearchParams(
-            Object.entries(carouselData)
-              .filter(([_, value]) => value !== undefined && value !== null)
-              .reduce(
-                (acc, [key, value]) => ({ ...acc, [key]: String(value) }),
-                {}
-              )
-          ),
+          body: new URLSearchParams(mediaParams),
         }
       );
 
       const data = await response.json();
       if (!response.ok) {
-        console.error("Instagram Carousel API Error:", data);
         throw new Error(
-          data.error?.message || "Failed to create carousel post"
+          data.error?.message || "Failed to upload carousel item"
         );
       }
 
-      // If not scheduled, publish immediately
-      if (!time.scheduled_publish_time) {
-        const publishResponse = await fetch(
-          `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              creation_id: data.id,
-              access_token: accessToken,
-            }),
-          }
-        );
+      mediaIds.push(data.id);
+    }
 
-        const publishData = await publishResponse.json();
-        if (!publishResponse.ok) {
-          console.error("Instagram Publish API Error:", publishData);
-          throw new Error(
-            publishData.error?.message || "Failed to publish carousel"
-          );
-        }
+    // Create carousel container
+    const carouselData = {
+      media_type: "CAROUSEL",
+      children: mediaIds.join(","),
+      caption: message,
+      access_token: accessToken,
+    };
 
-        return NextResponse.json(publishData);
-      }
-
-      return NextResponse.json(data);
-    } else {
-      // Text-only post (Instagram doesn't support text-only posts, so we'll return an error)
-      return NextResponse.json(
-        {
-          error:
-            "Instagram requires media content. Please add at least one image or video.",
+    const carouselResponse = await fetch(
+      `https://graph.facebook.com/v19.0/${pageId}/media`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        { status: 400 }
+        body: new URLSearchParams(carouselData),
+      }
+    );
+
+    const carouselCreateData = await carouselResponse.json();
+    if (!carouselResponse.ok) {
+      throw new Error(
+        carouselCreateData.error?.message || "Failed to create carousel"
       );
     }
-  } catch (error: any) {
-    console.error("Instagram API Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+
+    // Publish carousel
+    if (published) {
+      const publishResponse = await fetch(
+        `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            creation_id: carouselCreateData.id,
+            access_token: accessToken,
+          }),
+        }
+      );
+
+      const publishData = await publishResponse.json();
+      if (!publishResponse.ok) {
+        throw new Error(
+          publishData.error?.message || "Failed to publish carousel"
+        );
+      }
+
+      return NextResponse.json(publishData);
+    }
+
+    return NextResponse.json(carouselCreateData);
   }
+}
+
+async function createScheduledInstagramPost({
+  accessToken,
+  pageId,
+  message,
+  imageUrls,
+  scheduledDate,
+}: {
+  accessToken: string;
+  pageId: string;
+  message: string;
+  imageUrls: MediaItem[];
+  scheduledDate: number;
+}) {
+  // Create the media container(s) but don't publish
+  // Store the creation_id(s) with scheduled time in your database
+  // Implement a cron job or scheduled task to publish later
+
+  // This is a simplified version - you'd need to implement
+  // your own scheduling system since Instagram doesn't support it natively
+
+  return NextResponse.json({
+    message: "Post scheduled successfully",
+    scheduledFor: new Date(scheduledDate * 1000).toISOString(),
+    note: "Custom scheduling system required - Instagram doesn't support native scheduling",
+  });
 }

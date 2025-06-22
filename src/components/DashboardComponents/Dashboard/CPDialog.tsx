@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Command } from "cmdk";
 import {
   FiFacebook,
   FiInstagram,
@@ -12,7 +11,7 @@ import {
 } from "react-icons/fi";
 import { useUser } from "@/context/UserContext";
 import { useChannel } from "@/context/ChannelContext";
-import { createPost } from "@/firebase/channel.firestore";
+import { createPost, editPost } from "@/firebase/channel.firestore";
 import { Post } from "@/interfaces/Channel";
 import {
   convertLocalDateTimeToUnixTimestamp,
@@ -31,6 +30,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
+import { platform } from "os";
 
 export const CPDialog = ({
   open,
@@ -101,7 +101,7 @@ export const CPDialog = ({
     });
   };
 
-  const handlePost = async (postImmediately: boolean = true) => {
+  const PostingHandler = async (postImmediately: boolean = true) => {
     setIsPosting(true);
     try {
       // Validate media types
@@ -110,14 +110,12 @@ export const CPDialog = ({
         const hasImages = selectedImages.some((item) => !item.isVideo);
         const videoCount = selectedImages.filter((item) => item.isVideo).length;
 
-        // Check for mixed media
         if (hasVideos && hasImages) {
           throw new Error(
             "Cannot mix videos and images in the same post. Please select either all videos or all images."
           );
         }
 
-        // Check for multiple videos
         if (videoCount > 1) {
           throw new Error(
             "Cannot post multiple videos at once. Please select only one video."
@@ -131,67 +129,117 @@ export const CPDialog = ({
           scheduledDate,
           selectedTimeZone
         );
-        if (!isValidScheduleTime(scheduledTimestamp)) {
-          throw new Error(
-            "Scheduled time must be at least 13 minutes in the future"
-          );
-        }
+
+        //for test...
+        // if (!isValidScheduleTime(scheduledTimestamp)) {
+        //   throw new Error(
+        //     "Scheduled time must be at least 13 minutes in the future"
+        //   );
+        // }
       }
 
       const isScheduled = Boolean(scheduledTimestamp) && !postImmediately;
+      const postId = `${new Date().getTime()}-${Math.random()
+        .toString(36)
+        .substring(2, 9)}`;
+
+      const newPost: Post = {
+        id: postId,
+        message: postText,
+        platforms: selectedPlatforms,
+        imageUrls: selectedImages,
+        published: !isScheduled,
+        ...(isScheduled && {
+          scheduledDate: scheduledTimestamp,
+          clientTimeZone: selectedTimeZone,
+        }),
+      };
+
+      if (channel?.id) {
+        await createPost(newPost, channel.id);
+      } else {
+        throw new Error("Channel ID not found");
+      }
 
       for (const platform of selectedPlatforms) {
-        let postData: Post = {
-          message: postText,
-          platforms: [platform],
-          imageUrls: selectedImages,
-          published: !isScheduled, // true if immediate, false if scheduled
-          ...(isScheduled && scheduledTimestamp
-            ? {
-                scheduledDate: scheduledTimestamp,
-                clientTimeZone: selectedTimeZone,
-              }
-            : {}),
-        };
-
-        let response, data;
-        if (platform === "facebook" && channel?.socialMedia?.facebook) {
-          postData = {
-            ...postData,
-            accessToken: channel.socialMedia.facebook.accessToken,
-            pageId: channel.socialMedia.facebook.id,
-          };
-          response = await fetch("/api/facebook/createpost", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(postData),
-          });
-          data = await response.json();
-        } else if (
-          platform === "instagram" &&
-          channel?.socialMedia?.instagram
-        ) {
-          postData = {
-            ...postData,
-            accessToken: channel.socialMedia.instagram.pageAccessToken,
-            pageId: channel.socialMedia.instagram.instagramId,
-          };
-          response = await fetch("/api/instagram/createpost", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(postData),
-          });
-          data = await response.json();
+        if (postImmediately) {
+          // Immediately post
+          if (platform === "facebook" && channel?.socialMedia?.facebook) {
+            const fbPostData = {
+              ...newPost,
+              accessToken: channel.socialMedia.facebook.accessToken,
+              pageId: channel.socialMedia.facebook.id,
+            };
+            const response = await fetch("/api/facebook/createpost", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(fbPostData),
+            });
+            const data = await response.json();
+            if (!response.ok)
+              throw new Error(data.error || "Failed to post on Facebook");
+            await editPost(postId, channel.id, {
+              id: data.id,
+              published: true,
+            });
+          } else if (
+            platform === "instagram" &&
+            channel?.socialMedia?.instagram
+          ) {
+            const igPostData = {
+              ...newPost,
+              accessToken: channel.socialMedia.instagram.pageAccessToken,
+              pageId: channel.socialMedia.instagram.instagramId,
+            };
+            const response = await fetch("/api/instagram/createpost", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(igPostData),
+            });
+            const data = await response.json();
+            if (!response.ok)
+              throw new Error(data.error || "Failed to post on Instagram");
+            await editPost(postId, channel.id, {
+              fid: data.id,
+              published: true,
+            });
+          }
         } else {
-          continue;
+          // Schedule post
+          if (platform === "facebook" && channel?.socialMedia?.facebook) {
+            const fbPostData = {
+              ...newPost,
+              accessToken: channel.socialMedia.facebook.accessToken,
+              pageId: channel.socialMedia.facebook.id,
+              scheduledDate: scheduledTimestamp,
+            };
+            const response = await fetch("/api/facebook/createpost", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(fbPostData),
+            });
+            const data = await response.json();
+            if (!response.ok)
+              throw new Error(
+                data.error || "Failed to schedule post on Facebook"
+              );
+            await editPost(postId, channel.id, { fid: data.id });
+          } else if (
+            platform === "instagram" &&
+            channel?.socialMedia?.instagram
+          ) {
+            const lambdaData = {
+              postId: postId,
+              channelId: channel.id,
+              scheduledDate: scheduledTimestamp,
+            };
+            await fetch("/api/lambda", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(lambdaData),
+            });
+          }
         }
-
-        if (!response.ok) {
-          throw new Error(data.error || `Failed to create post on ${platform}`);
-        }
-
-        const firestorePostData = { ...postData, id: data.id };
-        await createPost(firestorePostData, channel?.id as string);
       }
 
       resetForm();
@@ -438,74 +486,19 @@ export const CPDialog = ({
             {/* Schedule Button - only show if date is selected */}
             {scheduledDate && (
               <button
-                onClick={() => handlePost(false)}
-                disabled={isPosting || !canSchedule}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  isPosting || !canSchedule
-                    ? "cursor-not-allowed text-stone-400 bg-stone-100"
-                    : "text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200"
-                }`}>
-                {isPosting ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>Scheduling...</span>
-                  </>
-                ) : (
-                  <>
-                    <FiCalendar size={16} />
-                    <span>Schedule Post</span>
-                  </>
-                )}
+                onClick={() => PostingHandler(false)}
+                disabled={!canSchedule || isPosting}
+                className="bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded disabled:bg-stone-300">
+                {isPosting ? "Scheduling..." : "Schedule Post"}
               </button>
             )}
 
             {/* Post Now Button */}
             <button
-              onClick={() => handlePost(true)}
+              onClick={() => PostingHandler(true)}
               disabled={!isFormValid || isPosting}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isFormValid && !isPosting
-                  ? "bg-violet-500 hover:bg-violet-600 text-white"
-                  : "bg-stone-300 cursor-not-allowed text-stone-500"
-              }`}>
-              {isPosting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>Posting...</span>
-                </>
-              ) : (
-                <span>Post Now</span>
-              )}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300">
+              {isPosting ? "Posting..." : "Post Now"}
             </button>
           </div>
         </div>

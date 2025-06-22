@@ -39,6 +39,7 @@ export interface Channel extends ChannelBrief {
 }
 export interface Post {
   id?: string;
+  fid?: string;
   title?: string;
   date?: Date;
   platforms?: string[];
