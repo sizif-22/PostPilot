@@ -8,6 +8,7 @@ import {
   FiGlobe,
   FiClock,
 } from "react-icons/fi";
+import { FaPlay } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 const timeZones = Intl.supportedValuesOf("timeZone");
@@ -126,14 +127,31 @@ export const DetailsDialog = ({
                               ? "row-span-2"
                               : ""
                           }`}>
-                          <img
-                            src={image.url}
-                            alt={`Post image ${index + 1}`}
-                            className={`w-full h-full object-cover ${
-                              isLastImage ? "brightness-50 blur-[2px]" : ""
-                            }`}
-                            style={{ minHeight: "200px" }}
-                          />
+                          {image.isVideo ? (
+                            <>
+                              <video
+                                className="w-full h-full object-cover"
+                                preload="metadata">
+                                <source src={image.url} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                                  <FaPlay size={24} className="text-white" />
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={image.url}
+                              alt={`Post image ${index + 1}`}
+                              className={`w-full h-full object-cover ${
+                                isLastImage ? "brightness-50 blur-[2px]" : ""
+                              }`}
+                              style={{ minHeight: "200px" }}
+                            />
+                          )}
+
                           {isLastImage && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <span className="text-white text-3xl font-bold">

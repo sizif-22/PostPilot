@@ -19,8 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-
+import { FaPlay } from "react-icons/fa";
 
 const ImagePopup = ({
   isOpen,
@@ -127,8 +126,7 @@ const ImagePopup = ({
           className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          onClick={onClose}
-        >
+          onClick={onClose}>
           {/* Top Bar */}
           <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
             <div className="text-white flex items-center gap-4">
@@ -146,8 +144,7 @@ const ImagePopup = ({
                         e.stopPropagation();
                         setShowInfo(!showInfo);
                       }}
-                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                    >
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
                       <Info size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
@@ -174,8 +171,7 @@ const ImagePopup = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={handleShare}
-                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                    >
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
                       <Share2 size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
@@ -191,8 +187,7 @@ const ImagePopup = ({
                         e.stopPropagation();
                         setIsZoomed(!isZoomed);
                       }}
-                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                    >
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
                       {isZoomed ? (
                         <ZoomOut size={20} className="text-white" />
                       ) : (
@@ -212,8 +207,7 @@ const ImagePopup = ({
                         e.stopPropagation();
                         onClose();
                       }}
-                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                    >
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
                       <X size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
@@ -232,8 +226,7 @@ const ImagePopup = ({
             exit={{ opacity: 0, x: -20 }}
             onClick={handlePrevious}
             className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors group"
-            disabled={mediaItems.length <= 1}
-          >
+            disabled={mediaItems.length <= 1}>
             <ChevronLeft
               size={24}
               className="text-white transition-transform group-hover:-translate-x-1"
@@ -246,8 +239,7 @@ const ImagePopup = ({
             exit={{ opacity: 0, x: 20 }}
             onClick={handleNext}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors group"
-            disabled={mediaItems.length <= 1}
-          >
+            disabled={mediaItems.length <= 1}>
             <ChevronRight
               size={24}
               className="text-white transition-transform group-hover:translate-x-1"
@@ -261,8 +253,7 @@ const ImagePopup = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: "spring", duration: 0.3 }}
-          >
+            transition={{ type: "spring", duration: 0.3 }}>
             {!currentItem.isVideo ? (
               <div className="relative group">
                 {isLoading && (
@@ -278,8 +269,7 @@ const ImagePopup = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsZoomed(!isZoomed);
-                  }}
-                >
+                  }}>
                   <Image
                     src={currentItem.url}
                     alt={currentItem.name}
@@ -300,8 +290,7 @@ const ImagePopup = ({
                 controls
                 className="max-h-[80vh] object-contain mx-auto rounded-lg"
                 autoPlay
-                onLoadStart={() => setIsLoading(false)}
-              >
+                onLoadStart={() => setIsLoading(false)}>
                 Your browser does not support the video tag.
               </video>
             )}
@@ -314,8 +303,7 @@ const ImagePopup = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-24 right-4 bg-white/10 backdrop-blur-md rounded-lg p-4 text-white"
-              >
+                className="absolute bottom-24 right-4 bg-white/10 backdrop-blur-md rounded-lg p-4 text-white">
                 <h4 className="font-medium mb-2">{currentItem.name}</h4>
                 <p className="text-sm text-white/70">
                   Type:{" "}
@@ -334,8 +322,7 @@ const ImagePopup = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 className="absolute bottom-4 left-1/2 -translate-x-1/2"
-                onClick={(e) => e.stopPropagation()}
-              >
+                onClick={(e) => e.stopPropagation()}>
                 <div className="flex gap-2 p-2 bg-black/50 backdrop-blur-sm rounded-lg">
                   {mediaItems.map((item, index) => (
                     <motion.div
@@ -354,24 +341,20 @@ const ImagePopup = ({
                         setCurrentIndex(index);
                         setIsLoading(true);
                         setIsZoomed(false);
-                      }}
-                    >
+                      }}>
                       {item.isVideo ? (
-                        <div className="h-full bg-gray-800 flex items-center justify-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-white"
-                          >
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                          </svg>
+                        <div className="relative w-full h-full">
+                          <video
+                            className="w-full h-full object-cover"
+                            preload="metadata">
+                            <source src={item.url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                          <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                              <FaPlay size={12} className="text-white" />
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <Image

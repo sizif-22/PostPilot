@@ -9,6 +9,7 @@ import {
   FiClock,
   FiGlobe,
 } from "react-icons/fi";
+import { FaPlay } from "react-icons/fa";
 import { DetailsDialog } from "../Calendar/DetailsDialog";
 import { useState, useEffect } from "react";
 import { FiFacebook } from "react-icons/fi";
@@ -177,13 +178,32 @@ export const Upcoming = () => {
                         <div className="flex gap-2 mt-2">
                           {post.imageUrls?.map((image, index) => (
                             <div key={index} className="relative">
-                              <Image
-                                src={image.url}
-                                alt={post.title || "Post image"}
-                                className="w-10 h-10 object-cover rounded-md"
-                                width={48}
-                                height={48}
-                              />
+                              {image.isVideo ? (
+                                <>
+                                  <video
+                                    className="w-10 h-10 object-cover rounded-md"
+                                    preload="metadata">
+                                    <source src={image.url} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                  </video>
+                                  <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                                      <FaPlay
+                                        size={12}
+                                        className="text-white"
+                                      />
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <Image
+                                  src={image.url}
+                                  alt={post.title || "Post image"}
+                                  className="w-10 h-10 object-cover rounded-md"
+                                  width={48}
+                                  height={48}
+                                />
+                              )}
                               {index === 3 &&
                                 post.imageUrls &&
                                 post.imageUrls.length > 4 && (

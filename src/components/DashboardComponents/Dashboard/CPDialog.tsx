@@ -130,12 +130,26 @@ export const CPDialog = ({
           selectedTimeZone
         );
 
-        //for test...
-        // if (!isValidScheduleTime(scheduledTimestamp)) {
-        //   throw new Error(
-        //     "Scheduled time must be at least 13 minutes in the future"
-        //   );
-        // }
+        // Facebook: 13 min, Instagram: 3 min
+        const now = Math.floor(Date.now() / 1000);
+        const minFbTime = now + 13 * 60;
+        const minIgTime = now + 3 * 60;
+
+        if (
+          selectedPlatforms.includes("facebook") &&
+          scheduledTimestamp < minFbTime
+        ) {
+          throw new Error(
+            "Scheduled time must be at least 13 minutes in the future for Facebook"
+          );
+        } else if (
+          selectedPlatforms.includes("instagram") &&
+          scheduledTimestamp < minIgTime
+        ) {
+          throw new Error(
+            "Scheduled time must be at least 3 minutes in the future for Instagram"
+          );
+        }
       }
 
       const isScheduled = Boolean(scheduledTimestamp) && !postImmediately;
