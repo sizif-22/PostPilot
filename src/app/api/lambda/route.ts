@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
     const schedulerUrl =
       process.env.SCHEDULER_URL ||
-      "https://q0x6ww6cx6.execute-api.eu-north-1.amazonaws.com/prod/schedule";
+      "https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/schedule";
 
     console.log("Scheduler URL:", schedulerUrl);
 

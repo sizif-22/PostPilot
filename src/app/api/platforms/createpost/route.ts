@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import { Channel, Post } from "@/interfaces/Channel";
+
 export async function POST(request: Request) {
   const { channelId, postId }: { channelId: string; postId: string } =
     await request.json();
@@ -20,33 +21,83 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  post.platforms?.forEach(async (platform) => {
-    switch (platform) {
-      case "facebook": {
+  const platformPromises =
+    post.platforms?.map(async (platform) => {
+      switch (platform) {
+        case "facebook": {
+          console.log("Facebook posting not implemented yet");
+          return {
+            platform: "facebook",
+            success: false,
+            message: "Not implemented",
+          };
+        }
+        case "instagram": {
+          try {
+            const response = await fetch(
+              `https://postpilot-22.vercel.app/api/instagram/createpost`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  accessToken: channel.socialMedia?.instagram.pageAccessToken,
+                  pageId: channel.socialMedia?.instagram.instagramId,
+                  message: post.message || post.content,
+                  imageUrls: post.imageUrls,
+                }),
+              }
+            );
+
+            const success = response.ok;
+            console.log(
+              success
+                ? "Post Published successfully on Instagram."
+                : "Post didn't get published on Instagram"
+            );
+
+            return {
+              platform: "instagram",
+              success,
+              message: success ? "Published successfully" : "Failed to publish",
+            };
+          } catch (error) {
+            console.error("Error posting to Instagram:", error);
+            return {
+              platform: "instagram",
+              success: false,
+              message: "Error occurred",
+            };
+          }
+        }
+        default:
+          return { platform, success: false, message: "Unknown platform" };
       }
-      case "instagram": {
-        const response = await fetch("/api/instagram/createpost", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            accessToken: channel.socialMedia?.instagram.pageAccessToken,
-            pageId: channel.socialMedia?.instagram.instagramId,
-            message: post.message || post.content,
-            imageUrls: post.imageUrls,
-          }),
-        });
-        console.log(
-          response.ok
-            ? "Post Published successfully on Instagram."
-            : "Post didn't get published on Instagram"
-        );
-      }
-    }
-  });
-  return NextResponse.json(
-    { message: "Post published successfully." },
-    { status: 200 }
-  );
+    }) || [];
+
+  try {
+    const results = await Promise.all(platformPromises);
+    const successfulPlatforms = results
+      .filter((r) => r.success)
+      .map((r) => r.platform);
+
+    return NextResponse.json(
+      {
+        message: "Post published successfully.",
+        results,
+        successfulPlatforms,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error publishing posts:", error);
+    return NextResponse.json(
+      {
+        message: "Error publishing posts",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 }
