@@ -8,13 +8,11 @@ export async function POST(request: Request) {
       pageId,
       message,
       imageUrls,
-      clientTimeZone,
     }: {
       imageUrls: MediaItem[];
       accessToken: string;
       pageId: string; // Instagram Business Account ID
       message: string;
-      clientTimeZone?: string;
     } = await request.json();
 
     // Validate required parameters
@@ -111,16 +109,21 @@ async function waitForContainerReady(
       );
 
       const statusData = await statusResponse.json();
-      
+
       if (!statusResponse.ok) {
         console.error(`Status check attempt ${attempt} failed:`, statusData);
         if (attempt === maxAttempts) {
-          throw new Error(statusData.error?.message || "Failed to check container status");
+          throw new Error(
+            statusData.error?.message || "Failed to check container status"
+          );
         }
         continue;
       }
 
-      console.log(`Container ${containerId} status attempt ${attempt}:`, statusData.status_code);
+      console.log(
+        `Container ${containerId} status attempt ${attempt}:`,
+        statusData.status_code
+      );
 
       if (statusData.status_code === "FINISHED") {
         return true;
@@ -130,7 +133,7 @@ async function waitForContainerReady(
 
       // Wait before next attempt (except on last attempt)
       if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     } catch (error) {
       console.error(`Container status check attempt ${attempt} error:`, error);
@@ -138,7 +141,7 @@ async function waitForContainerReady(
         throw error;
       }
       // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 
@@ -197,16 +200,16 @@ async function createAndPublishInstagramPost({
     );
 
     let createData = await createResponse.json();
-    
+
     // Enhanced error logging
     if (!createResponse.ok) {
       console.error("Instagram API create media failed:", {
         status: createResponse.status,
         statusText: createResponse.statusText,
         response: createData,
-        requestData: mediaData
+        requestData: mediaData,
       });
-      
+
       // If REELS fails for video, try VIDEO as fallback
       if (mediaItem.isVideo && mediaData.media_type === "REELS") {
         console.warn("REELS upload failed, falling back to VIDEO");
@@ -233,19 +236,25 @@ async function createAndPublishInstagramPost({
     if (!createResponse.ok) {
       throw new Error(
         createData.error?.message ||
-        `Failed to create media container. Status: ${createResponse.status}. Response: ${JSON.stringify(createData)}`
+          `Failed to create media container. Status: ${
+            createResponse.status
+          }. Response: ${JSON.stringify(createData)}`
       );
     }
 
     if (!createData.id) {
       throw new Error(
-        `Media container was created but no ID was returned. Response: ${JSON.stringify(createData)}`
+        `Media container was created but no ID was returned. Response: ${JSON.stringify(
+          createData
+        )}`
       );
     }
 
     // Wait for container to be ready (especially important for videos)
     if (mediaItem.isVideo) {
-      console.log(`Waiting for video container ${createData.id} to be ready...`);
+      console.log(
+        `Waiting for video container ${createData.id} to be ready...`
+      );
       await waitForContainerReady(createData.id, accessToken);
       console.log(`Container ${createData.id} is ready for publishing`);
     }
@@ -271,7 +280,7 @@ async function createAndPublishInstagramPost({
         console.error("Instagram API publish failed:", {
           status: publishResponse.status,
           statusText: publishResponse.statusText,
-          response: publishData
+          response: publishData,
         });
         throw new Error(publishData.error?.message || "Failed to publish post");
       }
@@ -311,7 +320,7 @@ async function createAndPublishInstagramPost({
           status: response.status,
           statusText: response.statusText,
           response: data,
-          requestData: mediaParams
+          requestData: mediaParams,
         });
         throw new Error(
           data.error?.message || "Failed to upload carousel item"
@@ -320,7 +329,9 @@ async function createAndPublishInstagramPost({
 
       if (!data.id) {
         throw new Error(
-          `Carousel item was created but no ID was returned. Response: ${JSON.stringify(data)}`
+          `Carousel item was created but no ID was returned. Response: ${JSON.stringify(
+            data
+          )}`
         );
       }
 
@@ -328,7 +339,9 @@ async function createAndPublishInstagramPost({
 
       // Wait for video containers to be ready
       if (item.isVideo) {
-        console.log(`Waiting for video carousel item ${data.id} to be ready...`);
+        console.log(
+          `Waiting for video carousel item ${data.id} to be ready...`
+        );
         await waitForContainerReady(data.id, accessToken);
       }
     }
@@ -357,7 +370,7 @@ async function createAndPublishInstagramPost({
       console.error("Instagram API carousel creation failed:", {
         status: carouselResponse.status,
         statusText: carouselResponse.statusText,
-        response: carouselCreateData
+        response: carouselCreateData,
       });
       throw new Error(
         carouselCreateData.error?.message || "Failed to create carousel"
@@ -366,7 +379,9 @@ async function createAndPublishInstagramPost({
 
     if (!carouselCreateData.id) {
       throw new Error(
-        `Carousel container was created but no ID was returned. Response: ${JSON.stringify(carouselCreateData)}`
+        `Carousel container was created but no ID was returned. Response: ${JSON.stringify(
+          carouselCreateData
+        )}`
       );
     }
 
@@ -391,7 +406,7 @@ async function createAndPublishInstagramPost({
         console.error("Instagram API carousel publish failed:", {
           status: publishResponse.status,
           statusText: publishResponse.statusText,
-          response: publishData
+          response: publishData,
         });
         throw new Error(
           publishData.error?.message || "Failed to publish carousel"

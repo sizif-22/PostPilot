@@ -30,7 +30,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
-import { platform } from "os";
 
 export const CPDialog = ({
   open,
