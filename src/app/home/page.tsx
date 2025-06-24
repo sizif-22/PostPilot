@@ -70,11 +70,11 @@ export default function Home() {
   ];
 
   const platforms = [
-    { name: "Instagram", logo: <BsInstagram size={22}/> },
-    { name: "X", logo: <BsTwitterX size={22}/> },
-    { name: "Facebook", logo: <BsFacebook size={22}/> },
-    { name: "LinkedIn", logo: <BsLinkedin size={22}/> },
-    { name: "TikTok", logo: <BsTiktok size={22}/> },
+    { name: "Instagram", logo: <BsInstagram size={22} /> },
+    { name: "X", logo: <BsTwitterX size={22} /> },
+    { name: "Facebook", logo: <BsFacebook size={22} /> },
+    { name: "LinkedIn", logo: <BsLinkedin size={22} /> },
+    { name: "TikTok", logo: <BsTiktok size={22} /> },
   ];
 
   const pricingPlans = [
@@ -606,7 +606,7 @@ export default function Home() {
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/terms"
                         className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                         Terms of Service
                       </a>

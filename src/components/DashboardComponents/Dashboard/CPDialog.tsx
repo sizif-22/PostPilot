@@ -30,6 +30,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
+import { Timestamp } from "firebase/firestore";
+import { timeStamp } from "console";
 
 export const CPDialog = ({
   open,
@@ -173,10 +175,11 @@ export const CPDialog = ({
           }),
         });
       } else {
+        const date = scheduledTimestamp && scheduledTimestamp - 50;
         const lambdaData = {
           postId: postId,
           channelId: channel.id,
-          scheduledDate: scheduledTimestamp,
+          scheduledDate: date,
         };
         await fetch("/api/lambda", {
           method: "POST",
