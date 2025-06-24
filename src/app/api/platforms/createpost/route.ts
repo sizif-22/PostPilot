@@ -25,12 +25,21 @@ export async function POST(request: Request) {
     post.platforms?.map(async (platform) => {
       switch (platform) {
         case "facebook": {
-          console.log("Facebook posting not implemented yet");
-          return {
-            platform: "facebook",
-            success: false,
-            message: "Not implemented",
-          };
+          const response = await fetch(
+            "https://postpilot-22.vercel.app/api/facebook/createpost",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                accessToken: channel.socialMedia?.facebook?.accessToken,
+                pageId:channel.socialMedia?.facebook?.id,
+                imageUrls: post.imageUrls,
+                message: post.message || post.content,
+              }),
+            }
+          );
         }
         case "instagram": {
           try {
@@ -42,8 +51,8 @@ export async function POST(request: Request) {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  accessToken: channel.socialMedia?.instagram.pageAccessToken,
-                  pageId: channel.socialMedia?.instagram.instagramId,
+                  accessToken: channel.socialMedia?.instagram?.pageAccessToken,
+                  pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,
                 }),

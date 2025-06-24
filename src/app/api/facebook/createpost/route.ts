@@ -7,18 +7,12 @@ export async function POST(request: Request) {
       accessToken,
       pageId,
       message,
-      scheduledDate,
-      published,
       imageUrls,
-      clientTimeZone,
     }: {
       imageUrls: MediaItem[];
       accessToken: any;
       pageId: any;
       message: any;
-      scheduledDate: any;
-      published: any;
-      clientTimeZone: any;
     } = await request.json();
 
     // Validate required parameters
@@ -98,8 +92,6 @@ export async function POST(request: Request) {
     }
 
     interface PData {
-      scheduled_publish_time?: number;
-      published: boolean;
       message: string;
       caption?: string;
       access_token: string;
@@ -110,40 +102,7 @@ export async function POST(request: Request) {
       media_fbid?: string;
     }
 
-    let finalScheduledTimestamp: number | undefined;
-
-    if (scheduledDate && clientTimeZone) {
-      finalScheduledTimestamp = scheduledDate;
-    }
-
-    const time = finalScheduledTimestamp
-      ? {
-          scheduled_publish_time: finalScheduledTimestamp,
-          published: false,
-        }
-      : {
-          published: published ?? true,
-        };
-
-    // Validate scheduled time
-    if (time.scheduled_publish_time) {
-      const now = Math.floor(Date.now() / 1000);
-      // Add a buffer of 180 seconds (3 minutes) to account for processing time and network latency
-      const minScheduledTime = now + 10 * 60 + 3 * 60; // 10 minutes + 3 minute buffer
-
-      if (time.scheduled_publish_time < minScheduledTime) {
-        return NextResponse.json(
-          {
-            error:
-              "Scheduled time must be at least 13 minutes in the future (to account for processing time and network delays)",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
     const postData: PData = {
-      ...time,
       message,
       access_token: pageAccessToken, // Use page token instead of user token
     };
@@ -161,14 +120,6 @@ export async function POST(request: Request) {
           description: message,
           access_token: pageAccessToken, // Use page token
         };
-
-        // Add scheduling info for video if needed
-        if (time.scheduled_publish_time) {
-          videoData.scheduled_publish_time = time.scheduled_publish_time;
-          videoData.published = false;
-        } else {
-          videoData.published = published ?? true;
-        }
 
         const response = await fetch(
           `https://graph.facebook.com/v19.0/${pageId}/videos`,
@@ -205,14 +156,6 @@ export async function POST(request: Request) {
           caption: postData.caption,
           access_token: postData.access_token,
         };
-
-        // Add scheduling info for single photo if needed
-        if (time.scheduled_publish_time) {
-          photoData.scheduled_publish_time = time.scheduled_publish_time;
-          photoData.published = false;
-        } else {
-          photoData.published = postData.published;
-        }
 
         const response = await fetch(
           `https://graph.facebook.com/v19.0/${pageId}/photos`,
@@ -307,14 +250,6 @@ export async function POST(request: Request) {
         attached_media: JSON.stringify(postData.attached_media),
       };
 
-      // Add scheduling info
-      if (time.scheduled_publish_time) {
-        feedData.scheduled_publish_time = time.scheduled_publish_time;
-        feedData.published = "false";
-      } else {
-        feedData.published = postData.published.toString();
-      }
-
       const response = await fetch(
         `https://graph.facebook.com/v19.0/${pageId}/feed`,
         {
@@ -346,14 +281,6 @@ export async function POST(request: Request) {
         message: postData.message,
         access_token: postData.access_token,
       };
-
-      // Add scheduling info
-      if (time.scheduled_publish_time) {
-        feedData.scheduled_publish_time = time.scheduled_publish_time;
-        feedData.published = "false";
-      } else {
-        feedData.published = (postData.published ?? true).toString();
-      }
 
       const response = await fetch(
         `https://graph.facebook.com/v19.0/${pageId}/feed`,

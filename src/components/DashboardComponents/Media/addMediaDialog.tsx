@@ -33,15 +33,24 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ file, onRemove }) => {
             className="object-cover w-full h-full"
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <FaVideo className="w-6 h-6 text-stone-400" />
+          <div className="relative flex items-center justify-center h-full">
+            <video
+              className="object-cover w-full h-full"
+              preload="metadata">
+              <source src={previewUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <FaVideo size={12} className="text-white" />
+              </div>
+            </div>
           </div>
         )}
       </div>
       <button
         onClick={() => onRemove(file)}
-        className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-      >
+        className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity">
         <FaTrash className="w-2.5 h-2.5" />
       </button>
       <p className="mt-1 text-xs text-stone-600 truncate max-w-[96px]">
@@ -160,8 +169,7 @@ const MediaDialog = ({
       <DialogTrigger asChild>
         <button
           className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
-          disabled={storageUsed >= storageLimit}
-        >
+          disabled={storageUsed >= storageLimit}>
           <FaUpload className="text-violet-500" />
           <span>Upload</span>
         </button>
@@ -192,8 +200,7 @@ const MediaDialog = ({
                   variant="outline"
                   size="sm"
                   onClick={() => inputRef.current?.click()}
-                  className="flex items-center gap-2"
-                >
+                  className="flex items-center gap-2">
                   <FaUpload className="w-3 h-3" />
                   Add More
                 </Button>
@@ -213,8 +220,7 @@ const MediaDialog = ({
           ) : (
             <div
               onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 transition-colors"
-            >
+              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 transition-colors">
               <FaImage className="w-12 h-12 text-stone-300 mb-4" />
               <p className="text-stone-500">Drag and drop or click to upload</p>
               <p className="text-stone-400 text-sm mt-2">
@@ -242,8 +248,7 @@ const MediaDialog = ({
                   storageUsed > storageLimit * 0.9
                     ? "text-red-500 font-medium"
                     : ""
-                }
-              >
+                }>
                 {storageUsed.toFixed(1)}MB
               </span>
               {" / "}
@@ -253,8 +258,7 @@ const MediaDialog = ({
               <Button
                 variant="outline"
                 onClick={() => setSelectedMedia([])}
-                disabled={selectedMedia.length === 0 || isUploading}
-              >
+                disabled={selectedMedia.length === 0 || isUploading}>
                 Clear
               </Button>
               <Button
@@ -263,8 +267,7 @@ const MediaDialog = ({
                   selectedMedia.length === 0 ||
                   isUploading ||
                   storageUsed >= storageLimit
-                }
-              >
+                }>
                 Upload {selectedMedia.length > 0 && `(${selectedMedia.length})`}
               </Button>
             </div>

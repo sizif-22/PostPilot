@@ -7,7 +7,6 @@ import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { facebookChannel, Page } from "@/interfaces/Channel";
-
 interface BusinessAccount {
   id: string;
   name: string;

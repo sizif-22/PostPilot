@@ -5,6 +5,7 @@ import {
   FiAlertCircle,
   FiCheck,
 } from "react-icons/fi";
+import { FaTiktok } from "react-icons/fa6";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { useChannel } from "@/context/ChannelContext";
@@ -13,7 +14,8 @@ export const Configuration = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { channel } = useChannel();
   const isFacebookConnected = channel?.socialMedia?.facebook;
-  const isInstagramConnected = channel?.socialMedia?.instagram;
+  const isTikTokConnected = channel?.socialMedia?.tiktok;
+  // const isInstagramConnected = channel?.socialMedia?.instagram;
 
   const handleFacebookConnect = () => {
     Cookies.set("currentChannel", id as string);
@@ -21,24 +23,21 @@ export const Configuration = () => {
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection";
     const SCOPE =
       "pages_manage_posts,pages_read_engagement,pages_show_list,business_management,instagram_basic,instagram_content_publish";
-
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
-
     window.location.href = authUrl;
   };
-
-  // const handleInstagramConnect = () => {
-  //   Cookies.set("currentChannel", id as string);
-  //   const INSTAGRAM_APP_ID = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID;
-  //   const REDIRECT_URI = "https://postpilot-22.vercel.app/instagram";
-  //   const SCOPE =
-  //     "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_posts";
-
-  //   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
-
-  //   window.location.href = authUrl;
-  // };
-
+  const handleTikTokConnect = () => {
+    const csrfState = `${new Date().getTime()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
+    Cookies.set("csrfState", csrfState, { expires: 6000 / 86400 });
+    Cookies.set("currentChannel", id as string);
+    const TIKTOK_CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
+    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/tiktok";
+    const scope = "user.info.basic,video.publish,video.upload";
+    const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
+    window.location.href = authUrl;
+  };
   const handleDeleteChannel = () => {
     setShowDeleteConfirm(true);
   };
@@ -62,6 +61,17 @@ export const Configuration = () => {
       isConnected: isFacebookConnected,
       connectedInfo: isFacebookConnected
         ? `Connected to: ${isFacebookConnected.name}`
+        : null,
+    },
+    {
+      name: "TikTok",
+      html: <span>TikTok</span>,
+      description: "Connect your TikTok account to enable posting",
+      icon: FaTiktok,
+      connect: handleTikTokConnect,
+      isConnected: isTikTokConnected,
+      connectedInfo: isTikTokConnected
+        ? `Connected to: ${isTikTokConnected?.name}`
         : null,
     },
   ];

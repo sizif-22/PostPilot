@@ -29,10 +29,16 @@ export interface instagramChannel {
   instagramName: string;
   profilePictureUrl: string;
 }
+export interface tiktok {
+  accessToken: string;
+  name?: string;
+  openId:string;
+}
 export interface Channel extends ChannelBrief {
   socialMedia?: {
-    facebook: facebookChannel;
-    instagram: instagramChannel;
+    facebook?: facebookChannel;
+    instagram?: instagramChannel;
+    tiktok?: tiktok;
   };
   posts: Post[];
   TeamMembers: TeamMember[];

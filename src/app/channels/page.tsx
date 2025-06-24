@@ -19,7 +19,16 @@ const ChannelsComponent = ({
     const fetchChannels = async () => {
       if (channels.length > 0) {
         const briefs = await getChannelBriefs(channels);
-        setChannelBriefs(briefs);
+        const sortedBriefs = Object.values(briefs).sort((a, b) => {
+          const dateA = a.createdAt.toDate
+            ? a.createdAt.toDate()
+            : new Date(a.createdAt.seconds * 1000);
+          const dateB = b.createdAt.toDate
+            ? b.createdAt.toDate()
+            : new Date(b.createdAt.seconds * 1000);
+          return dateB.getTime() - dateA.getTime();
+        });
+        setChannelBriefs(sortedBriefs);
       }
     };
     fetchChannels();
@@ -30,8 +39,7 @@ const ChannelsComponent = ({
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group bg-white grid grid-cols-1 justify-items-center hover:bg-stone-50 transition-colors rounded-lg p-4 my-4 border border-stone-200 hover:border-stone-300"
-          >
+            className="group bg-white grid grid-cols-1 justify-items-center hover:bg-stone-50 transition-colors rounded-lg p-4 my-4 border border-stone-200 hover:border-stone-300">
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-2 w-full">
                 <div className="flex items-center w-full gap-3 justify-between">
@@ -91,8 +99,7 @@ const Page = () => {
               <h2 className="font-bold">Channels</h2>
               <button
                 onClick={() => setCreateNewChannel(true)}
-                className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
-              >
+                className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
                 <FiPlus className="text-violet-500" />
                 <span>New Channel</span>
               </button>

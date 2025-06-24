@@ -129,25 +129,11 @@ export const CPDialog = ({
           selectedTimeZone
         );
 
-        // Facebook: 13 min, Instagram: 3 min
         const now = Math.floor(Date.now() / 1000);
-        const minFbTime = now + 13 * 60;
-        const minIgTime = now + 3 * 60;
+        const minTime = now + 3 * 60;
 
-        if (
-          selectedPlatforms.includes("facebook") &&
-          scheduledTimestamp < minFbTime
-        ) {
-          throw new Error(
-            "Scheduled time must be at least 13 minutes in the future for Facebook"
-          );
-        } else if (
-          selectedPlatforms.includes("instagram") &&
-          scheduledTimestamp < minIgTime
-        ) {
-          throw new Error(
-            "Scheduled time must be at least 3 minutes in the future for Instagram"
-          );
+        if (scheduledTimestamp < minTime) {
+          throw new Error("Scheduled time must be at least 3 minutes");
         }
       }
 
@@ -174,85 +160,29 @@ export const CPDialog = ({
         throw new Error("Channel ID not found");
       }
 
-      for (const platform of selectedPlatforms) {
-        if (postImmediately) {
-          // Immediately post
-          if (platform === "facebook" && channel?.socialMedia?.facebook) {
-            const fbPostData = {
-              ...newPost,
-              accessToken: channel.socialMedia.facebook.accessToken,
-              pageId: channel.socialMedia.facebook.id,
-            };
-            const response = await fetch("/api/facebook/createpost", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(fbPostData),
-            });
-            const data = await response.json();
-            if (!response.ok)
-              throw new Error(data.error || "Failed to post on Facebook");
-            await editPost(postId, channel.id, {
-              id: data.id,
-              published: true,
-            });
-          } else if (
-            platform === "instagram" &&
-            channel?.socialMedia?.instagram
-          ) {
-            const igPostData = {
-              ...newPost,
-              accessToken: channel.socialMedia.instagram.pageAccessToken,
-              pageId: channel.socialMedia.instagram.instagramId,
-            };
-            const response = await fetch("/api/instagram/createpost", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(igPostData),
-            });
-            const data = await response.json();
-            if (!response.ok)
-              throw new Error(data.error || "Failed to post on Instagram");
-            await editPost(postId, channel.id, {
-              fid: data.id,
-              published: true,
-            });
-          }
-        } else {
-          // Schedule post
-          if (platform === "facebook" && channel?.socialMedia?.facebook) {
-            const fbPostData = {
-              ...newPost,
-              accessToken: channel.socialMedia.facebook.accessToken,
-              pageId: channel.socialMedia.facebook.id,
-              scheduledDate: scheduledTimestamp,
-            };
-            const response = await fetch("/api/facebook/createpost", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(fbPostData),
-            });
-            const data = await response.json();
-            if (!response.ok)
-              throw new Error(
-                data.error || "Failed to schedule post on Facebook"
-              );
-            await editPost(postId, channel.id, { fid: data.id });
-          } else if (
-            platform === "instagram" &&
-            channel?.socialMedia?.instagram
-          ) {
-            const lambdaData = {
-              postId: postId,
-              channelId: channel.id,
-              scheduledDate: scheduledTimestamp,
-            };
-            await fetch("/api/lambda", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(lambdaData),
-            });
-          }
-        }
+      if (postImmediately) {
+        // Immediately post
+        await fetch("/api/platforms/createpost", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            postId,
+            channelId: channel.id,
+          }),
+        });
+      } else {
+        const lambdaData = {
+          postId: postId,
+          channelId: channel.id,
+          scheduledDate: scheduledTimestamp,
+        };
+        await fetch("/api/lambda", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lambdaData),
+        });
       }
 
       resetForm();

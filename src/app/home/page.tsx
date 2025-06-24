@@ -12,6 +12,13 @@ import {
   StarIcon,
   PlayIcon,
 } from "@heroicons/react/24/outline";
+import {
+  BsTwitterX,
+  BsFacebook,
+  BsLinkedin,
+  BsInstagram,
+  BsTiktok,
+} from "react-icons/bs";
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
 import Image from "next/image";
@@ -63,12 +70,11 @@ export default function Home() {
   ];
 
   const platforms = [
-    { name: "Instagram", logo: "/instagram-logo.png" },
-    { name: "Twitter", logo: "/twitter-logo.png" },
-    { name: "Facebook", logo: "/facebook-logo.png" },
-    { name: "LinkedIn", logo: "/linkedin-logo.png" },
-    { name: "TikTok", logo: "/tiktok-logo.png" },
-    { name: "YouTube", logo: "/youtube-logo.png" },
+    { name: "Instagram", logo: <BsInstagram size={22}/> },
+    { name: "X", logo: <BsTwitterX size={22}/> },
+    { name: "Facebook", logo: <BsFacebook size={22}/> },
+    { name: "LinkedIn", logo: <BsLinkedin size={22}/> },
+    { name: "TikTok", logo: <BsTiktok size={22}/> },
   ];
 
   const pricingPlans = [
@@ -303,14 +309,14 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+                className="flex justify-around gap-8 items-center">
                 {platforms.map((platform, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center space-y-3 dark:bg-violet-950/20 bg-white/50 rounded-xl p-6 hover:dark:bg-violet-950/40 hover:bg-white/80 transition-all duration-300">
+                    className="flex flex-col w-44 items-center space-y-3 dark:bg-violet-950/20 bg-white/50 rounded-xl p-6 hover:dark:bg-violet-950/40 hover:bg-white/80 transition-all duration-300">
                     <div className="w-12 h-12 dark:bg-violet-600/20 bg-violet-100 rounded-lg flex items-center justify-center">
                       <span className="text-sm font-semibold dark:text-violet-400 text-violet-700">
-                        {platform.name.slice(0, 2).toUpperCase()}
+                        {platform.logo}
                       </span>
                     </div>
                     <span className="text-sm font-medium dark:text-zinc-300 text-gray-800">
