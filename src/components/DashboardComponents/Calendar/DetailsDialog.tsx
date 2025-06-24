@@ -68,12 +68,12 @@ export const DetailsDialog = ({
                 <div className="flex gap-3">
                   <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
                     <span className="text-violet-600 font-semibold">
-                      {channel?.socialMedia?.facebook.name.slice(0, 1)}
+                      {channel?.socialMedia?.facebook?.name.slice(0, 1)}
                     </span>
                   </div>
                   <div>
                     <h4 className="font-semibold">
-                      {channel?.socialMedia?.facebook.name}
+                      {channel?.socialMedia?.facebook?.name}
                     </h4>
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <div className="flex items-center gap-1">
