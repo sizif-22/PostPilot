@@ -36,7 +36,8 @@ export const Configuration = () => {
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/tiktok";
     const scope = "user.info.basic,video.publish,video.upload";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
-    window.location.href = authUrl;
+    console.log("client id:", authUrl);
+    // window.location.href = authUrl;
   };
   const handleDeleteChannel = () => {
     setShowDeleteConfirm(true);
@@ -93,7 +94,7 @@ export const Configuration = () => {
             </p>
             <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
               {socialMedia.map((item, index) => (
-                <>
+                <div key={index}>
                   <div className="flex justify-between flex-col gap-4 md:flex-row py-2 items-center w-full md:gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -126,7 +127,7 @@ export const Configuration = () => {
                   {index != socialMedia.length - 1 && (
                     <hr className="w-full border-stone-200" />
                   )}
-                </>
+                </div>
               ))}
             </div>
           </div>

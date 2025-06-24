@@ -34,7 +34,7 @@ export async function POST(request: Request) {
               },
               body: JSON.stringify({
                 accessToken: channel.socialMedia?.facebook?.accessToken,
-                pageId:channel.socialMedia?.facebook?.id,
+                pageId: channel.socialMedia?.facebook?.id,
                 imageUrls: post.imageUrls,
                 message: post.message || post.content,
               }),
@@ -75,6 +75,45 @@ export async function POST(request: Request) {
             console.error("Error posting to Instagram:", error);
             return {
               platform: "instagram",
+              success: false,
+              message: "Error occurred",
+            };
+          }
+        }
+        case "tiktok": {
+          try {
+            const response = await fetch(
+              `https://postpilot-22.vercel.app/api/tiktok/createpost`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  accessToken: channel.socialMedia?.tiktok?.accessToken,
+                  openId: channel.socialMedia?.tiktok?.openId,
+                  message: post.message || post.content,
+                  imageUrls: post.imageUrls,
+                }),
+              }
+            );
+
+            const success = response.ok;
+            console.log(
+              success
+                ? "Post Published successfully on TikTok."
+                : "Post didn't get published on TikTok"
+            );
+
+            return {
+              platform: "tiktok",
+              success,
+              message: success ? "Published successfully" : "Failed to publish",
+            };
+          } catch (error) {
+            console.error("Error posting to TikTok:", error);
+            return {
+              platform: "tiktok",
               success: false,
               message: "Error occurred",
             };

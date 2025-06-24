@@ -9,7 +9,7 @@ import {
   FiClock,
   FiGlobe,
 } from "react-icons/fi";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaTiktok } from "react-icons/fa";
 import { DetailsDialog } from "../Calendar/DetailsDialog";
 import { useState, useEffect } from "react";
 import { FiFacebook } from "react-icons/fi";
@@ -163,6 +163,8 @@ export const Upcoming = () => {
                             <FiLinkedin className="w-4 h-4" />
                           ) : platform === "youtube" ? (
                             <FiYoutube className="w-4 h-4" />
+                          ) : platform === "tiktok" ? (
+                            <FaTiktok className="w-4 h-4 text-black" />
                           ) : null}
                         </span>
                       ))}

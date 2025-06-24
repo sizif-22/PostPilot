@@ -1,12 +1,15 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaTiktok } from "react-icons/fa6";
 
 export const Platforms = () => {
   const { channel } = useChannel();
 
   const hasPlatforms =
-    channel?.socialMedia?.facebook || channel?.socialMedia?.instagram;
+    channel?.socialMedia?.facebook ||
+    channel?.socialMedia?.instagram ||
+    channel?.socialMedia?.tiktok;
 
   return (
     <div className="col-span-1 row-span-2 border shadow-sm rounded-lg p-4 h-[50vh]">
@@ -36,6 +39,17 @@ export const Platforms = () => {
                   {channel.socialMedia.instagram.pageName}
                 </p>
                 <p className="text-sm text-gray-500">Instagram Account</p>
+              </div>
+            </div>
+          )}
+          {channel?.socialMedia?.tiktok && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <FaTiktok className="text-black text-xl" />
+              <div>
+                <p className="font-medium">
+                  {channel.socialMedia.tiktok.name || "TikTok User"}
+                </p>
+                <p className="text-sm text-gray-500">TikTok Account</p>
               </div>
             </div>
           )}

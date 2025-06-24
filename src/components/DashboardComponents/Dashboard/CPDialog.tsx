@@ -30,6 +30,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
+import { FaTiktok } from "react-icons/fa6";
 import { Timestamp } from "firebase/firestore";
 import { timeStamp } from "console";
 
@@ -240,6 +241,18 @@ export const CPDialog = ({
                 }`}>
                 <FiInstagram className="text-lg" />
                 <span className="text-sm">Instagram</span>
+              </button>
+            )}
+            {channel?.socialMedia?.tiktok && (
+              <button
+                onClick={() => handlePlatformToggle("tiktok")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                  selectedPlatforms.includes("tiktok")
+                    ? "border-black bg-black text-white"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}>
+                <FaTiktok className="text-lg" />
+                <span className="text-sm">TikTok</span>
               </button>
             )}
           </div>
