@@ -7,6 +7,7 @@ import {
   FiFacebook,
   FiInstagram,
   FiImage,
+  FiBarChart,
 } from "react-icons/fi";
 import { useChannel } from "@/context/ChannelContext";
 export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: string) => void, route: string}) => {
@@ -23,6 +24,10 @@ export const RouteSelect = ( {Callbackfunc , route} : {Callbackfunc: (route: str
     {
       Icon: FiCalendar,
       title: "Calendar",
+    },
+    {
+      Icon: FiBarChart,
+      title: "Analytics",
     },
     {
       Icon: FiUsers,

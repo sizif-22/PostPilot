@@ -1,4 +1,5 @@
 "use client";
+import AnalyticsDashboard from "@/components/DashboardComponents/Analytics/AnalyticsDashboard";
 import { Dashboard } from "@/components/DashboardComponents/Dashboard/Dashboard";
 import { Sidebar } from "@/components/DashboardComponents/Sidebar/Sidebar";
 import { useCallback, useEffect, useState } from "react";
@@ -157,6 +158,8 @@ export default function Home({
               <Team />
             ) : route === "Calendar" ? (
               <Calendar />
+            ) : route === "Analytics" ? (
+              <AnalyticsDashboard />
             ) : route === "Media" ? (
               <Media
                 media={media}
