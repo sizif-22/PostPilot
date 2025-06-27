@@ -79,8 +79,8 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
   const maxReach = Math.max(...trendData.map((d) => d.reach));
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+      <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-4">
         Engagement Metrics
       </h3>
 
@@ -91,7 +91,7 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
           return (
             <div
               key={metric.name}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <div className={`p-2 rounded-lg ${metric.bgColor}`}>
                   <Icon className={`text-lg ${metric.color}`} />
@@ -105,10 +105,10 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
                   {metric.change}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-stone-900 dark:text-white">
                 {metric.value}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-stone-600 dark:text-stone-400">
                 {metric.name}
               </p>
             </div>
@@ -118,25 +118,25 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
 
       {/* Engagement Trend Chart */}
       <div className="mb-6">
-        <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+        <h4 className="text-md font-medium text-stone-900 dark:text-white mb-3">
           Weekly Trend
         </h4>
         <div className="space-y-3">
           {trendData.map((day, index) => (
             <div key={day.day} className="flex items-center gap-4">
-              <div className="w-12 text-sm text-gray-600 dark:text-gray-400">
+              <div className="w-12 text-sm text-stone-600 dark:text-stone-400">
                 {day.day}
               </div>
               <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     Engagement
                   </span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-stone-900 dark:text-white">
                     {day.engagement}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500"
                     style={{
@@ -147,14 +147,14 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
               </div>
               <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     Reach
                   </span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-stone-900 dark:text-white">
                     {day.reach}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500"
                     style={{ width: `${(day.reach / maxReach) * 100}%` }}
@@ -167,21 +167,21 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
       </div>
 
       {/* Averages */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-stone-600 dark:text-stone-400">
               Avg Engagement
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+            <p className="text-lg font-semibold text-stone-900 dark:text-white">
               {Math.round(avgEngagement)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-stone-600 dark:text-stone-400">
               Avg Reach
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+            <p className="text-lg font-semibold text-stone-900 dark:text-white">
               {Math.round(avgReach)}
             </p>
           </div>

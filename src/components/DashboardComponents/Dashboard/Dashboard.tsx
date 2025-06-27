@@ -15,8 +15,8 @@ export const Dashboard = ({
   media: MediaItem[];
 }) => {
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
-      <TopBar media={media}/>
+    <div className="bg-white dark:bg-secondDarkBackground dark:border-darkBoarder h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg border border-stone-200  transition-colors duration-300">
+      <TopBar media={media} />
       <Grid
         storageLimit={storageLimit}
         storageUsed={storageUsed}

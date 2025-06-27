@@ -61,36 +61,36 @@ export const NewChannel = ({
   ];
   return (
     <main className="p-4 md:px-24 grid-cols-[220px,_1fr]">
-      <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow pb-10">
+      <div className="bg-white dark:bg-gray-800 h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow pb-10">
         {/* Top Bar */}
-        <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white px-4 border-b border-stone-200 z-10">
-          <h2 className="font-bold">Create New Channel</h2>
+        <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-gray-800 px-4 border-b border-stone-200 dark:border-gray-700 z-10">
+          <h2 className="font-bold dark:text-white">Create New Channel</h2>
         </div>
         <div className="px-8 md:px-16">
           <div className="p-6 space-y-6">
             <div className="pb-4">
-              <h2 className="text-xl border-b border-stone-200 pb-4 mb-2 font-semibold">
+              <h2 className="text-xl border-b border-stone-200 dark:border-gray-700 pb-4 mb-2 font-semibold dark:text-white">
                 Channel Details
               </h2>
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-stone-500 dark:text-gray-400">
                 Create a new channel to start posting to your social media
                 accounts.
               </p>
-              <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
+              <div className="flex flex-col gap-2 w-full border-2 border-stone-200 dark:border-gray-700 rounded-lg px-4 py-2 mt-4">
                 <div className="flex flex-col items-start w-full py-2 gap-2">
-                  <h2 className="text-lg font-medium">Channel Name</h2>
+                  <h2 className="text-lg font-medium dark:text-white">Channel Name</h2>
                   <input
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
                     type="text"
-                    className="w-1/2 border-2 border-stone-200 rounded-lg px-4 py-2"
+                    className="w-1/2 border-2 border-stone-200 dark:border-gray-700 rounded-lg px-4 py-2 dark:bg-gray-900 dark:text-white"
                   />
-                  <hr className="w-full border-stone-200 my-2" />
-                  <h2 className="text-lg font-medium">Channel Description</h2>
+                  <hr className="w-full border-stone-200 dark:border-gray-700 my-2" />
+                  <h2 className="text-lg font-medium dark:text-white">Channel Description</h2>
                   <textarea
                     value={channelDescription}
                     onChange={(e) => setChannelDescription(e.target.value)}
-                    className="w-full border-2 min-h-24 border-stone-200 rounded-lg px-4 py-2"
+                    className="w-full border-2 min-h-24 border-stone-200 dark:border-gray-700 rounded-lg px-4 py-2 dark:bg-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -133,15 +133,15 @@ export const NewChannel = ({
               <Button
                 onClick={handleCancel}
                 variant={"outline"}
-                className="text-sm  hover:bg-stone-200 duration-300 rounded-lg px-4 py-2">
+                className="text-sm  hover:bg-stone-200 dark:hover:bg-gray-700 dark:text-white dark:border-gray-700 duration-300 rounded-lg px-4 py-2">
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateChannel}
                 className={`text-sm ${
                   channelName
-                    ? "bg-violet-700 hover:bg-violet-800"
-                    : "bg-stone-300 text-stone-500 hover:bg-stone-300 cursor-not-allowed"
+                    ? "bg-violet-700 hover:bg-violet-800 dark:bg-violet-600 dark:hover:bg-violet-700"
+                    : "bg-stone-300 text-stone-500 hover:bg-stone-300 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
                 } duration-300 rounded-lg px-4 py-2`}>
                 Save
               </Button>

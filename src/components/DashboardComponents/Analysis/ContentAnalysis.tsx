@@ -48,8 +48,8 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+      <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-4">
         Content Analysis
       </h3>
 
@@ -61,30 +61,30 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
           return (
             <div
               key={type.name}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${type.bgColor}`}>
                   <Icon className={`text-lg ${type.color}`} />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-stone-900 dark:text-white">
                     {type.name}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-stone-500 dark:text-stone-400">
                     {type.count} posts
                   </p>
                 </div>
               </div>
               <div className="mb-2">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     Usage
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-stone-900 dark:text-white">
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${type.bgColor
                       .replace("bg-", "bg-")
@@ -93,7 +93,7 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
                   />
                 </div>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-stone-500 dark:text-stone-400">
                 {type.description}
               </p>
             </div>
@@ -101,12 +101,12 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
         })}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-stone-600 dark:text-stone-400">
             Content Distribution
           </span>
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-stone-900 dark:text-white">
             {total} total
           </span>
         </div>

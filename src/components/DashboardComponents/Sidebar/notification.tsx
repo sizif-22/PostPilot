@@ -25,9 +25,9 @@ const NotificationSection = () => {
   const { user } = useUser();
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   return (
-    <div className="border-b h-16 flex items-center justify-between border-stone-300">
+    <div className="border-b h-16 flex items-center justify-between border-stone-300 dark:border-stone-800">
       <Link href="/home">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 text-transparent bg-clip-text">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
           PostPilot
         </h1>
       </Link>
@@ -36,23 +36,20 @@ const NotificationSection = () => {
           console.log(notificationBar);
           openNotificationBar(!notificationBar);
         }}
-        className="p-1 transition-all hover:bg-stone-200 rounded relative"
-      >
-        <IoIosNotificationsOutline className="w-6 h-auto" />
+        className="p-1 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">
+        <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
         <div
           className={`w-2 h-2 absolute top-1.5 rounded-full right-2 bg-red-600 ${
             (user?.notifications == undefined ||
               user?.notifications?.length == 0) &&
             "hidden"
-          }`}
-        ></div>
+          }`}></div>
       </button>
       <div
         ref={notificationRef}
-        className={`absolute top-16 left-[12.8rem] z-[51] w-80 bg-[#1f1f1f]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
+        className={`absolute top-16 left-[12.8rem] z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
           !notificationBar && "hidden"
-        }`}
-      >
+        }`}>
         {user?.notifications == undefined ||
         user?.notifications?.length == 0 ? (
           <div className="flex justify-center items-center py-8 text-gray-400 text-sm">
@@ -63,8 +60,7 @@ const NotificationSection = () => {
             {user?.notifications?.map((notification, index) => (
               <div
                 key={index}
-                className="p-4 hover:bg-white/5 transition-all duration-200"
-              >
+                className="p-4 hover:bg-white/5 transition-all duration-200">
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-col  items-start gap-2 text-sm">
                     <span className="font-semibold">{notification.owner}</span>
@@ -87,8 +83,7 @@ const NotificationSection = () => {
                           rejectJoiningToAChannel(notification, user)
                         }
                         variant={"link"}
-                        className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition"
-                      >
+                        className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition">
                         Reject
                       </Button>
                       <Button
@@ -96,8 +91,7 @@ const NotificationSection = () => {
                           acceptJoiningToAChannel(notification, user)
                         }
                         variant={"secondary"}
-                        className=" text-black px-4 py-1.5 rounded-lg text-xs font-medium transition"
-                      >
+                        className=" text-black px-4 py-1.5 rounded-lg text-xs font-medium transition">
                         Accept
                       </Button>
                     </div>

@@ -39,16 +39,16 @@ const ChannelsComponent = ({
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group bg-white grid grid-cols-1 justify-items-center hover:bg-stone-50 transition-colors rounded-lg p-4 my-4 border border-stone-200 hover:border-stone-300">
+            className="group bg-white dark:bg-stone-900 grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors rounded-lg p-4 my-4 border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600">
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-2 w-full">
                 <div className="flex items-center w-full gap-3 justify-between">
                   <Link href={`/channels/${channel.id}`}>
-                    <h3 className="font-bold text-xl hover:text-violet-700 transition-colors">
+                    <h3 className="font-bold text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors">
                       {channel.name}
                     </h3>
                   </Link>
-                  <div className="text-sm bg-stone-100 px-2 rounded-md flex items-center gap-1 cursor-default group-hover:bg-stone-200 transition-colors">
+                  <div className="text-sm bg-stone-100 dark:bg-stone-700 px-2 rounded-md flex items-center gap-1 cursor-default group-hover:bg-stone-200 dark:group-hover:bg-stone-600 transition-colors">
                     {channel.authority === "Owner" ? (
                       <span className="text-lg pb-1">👑</span>
                     ) : channel.authority === "Reviewer" ? (
@@ -59,8 +59,8 @@ const ChannelsComponent = ({
                     {channel.authority}
                   </div>
                 </div>
-                <p className="text-sm text-stone-600">{channel.description}</p>
-                <div className="flex items-center gap-4 text-sm text-stone-500">
+                <p className="text-sm text-stone-600 dark:text-stone-400">{channel.description}</p>
+                <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-500">
                   <span>•</span>
                   <span>
                     CreatedAt: {channel.createdAt.toDate().toUTCString()}
@@ -71,7 +71,7 @@ const ChannelsComponent = ({
           </div>
         ))
       ) : (
-        <div className="text-center text-stone-500">
+        <div className="text-center text-stone-500 dark:text-stone-400">
           <p>No channels found</p>
         </div>
       )}
@@ -91,15 +91,15 @@ const Page = () => {
       {createNewChannel ? (
         <NewChannel setCreateNewChannel={setCreateNewChannel} />
       ) : (
-        <main className="grid gap-4 p-4 grid-cols-[220px,_1fr]">
+        <main className="grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-black">
           <Sidebar />
-          <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
+          <div className="bg-white dark:bg-stone-800 h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
             {/* Top Bar */}
-            <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white px-4 border-b border-stone-200 z-10">
-              <h2 className="font-bold">Channels</h2>
+            <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-stone-800 px-4 border-b border-stone-200 dark:border-stone-700 z-10">
+              <h2 className="font-bold dark:text-white">Channels</h2>
               <button
                 onClick={() => setCreateNewChannel(true)}
-                className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
+                className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-stone-700 transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
                 <FiPlus className="text-violet-500" />
                 <span>New Channel</span>
               </button>

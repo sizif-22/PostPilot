@@ -163,11 +163,11 @@ export const Media = ({
   };
 
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow">
-      <div className="flex p-3 h-16 sticky top-0 z-10 bg-white justify-between items-center px-4 border-b border-stone-200">
+    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
+      <div className="flex p-3 h-16 sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] justify-between items-center px-4 border-b border-stone-200 dark:border-stone-800">
         <div className="flex justify-between items-center w-full gap-4">
           <div className="flex items-center gap-4">
-            <h2 className="font-bold text-xl">Media</h2>
+            <h2 className="font-bold text-xl dark:text-white">Media</h2>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -176,7 +176,7 @@ export const Media = ({
                     size="icon"
                     onClick={onRefresh}
                     disabled={isLoading}
-                    className={`h-8 w-8 ${isLoading ? "animate-spin" : ""}`}>
+                    className={`h-8 w-8 ${isLoading ? "animate-spin" : ""} dark:bg-stone-900 dark:text-white dark:border-stone-800 dark:hover:bg-stone-800`}>
                     <FaSync className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -189,7 +189,7 @@ export const Media = ({
           {(channel?.authority == "Owner" ||
             channel?.authority == "Contributor") && (
             <div className="flex items-center gap-4">
-              <div className="text-sm text-stone-500">
+              <div className="text-sm text-stone-500 dark:text-stone-400">
                 <span
                   className={
                     storageUsed > STORAGE_LIMIT_MB * 0.9
@@ -206,7 +206,7 @@ export const Media = ({
                   <Button
                     variant="outline"
                     onClick={() => setIsSelectMode(true)}
-                    className="h-8">
+                    className="h-8 dark:bg-stone-900 dark:text-white dark:border-stone-800 dark:hover:bg-stone-800">
                     Select
                   </Button>
                   <MediaDialog
@@ -221,14 +221,14 @@ export const Media = ({
                     variant="destructive"
                     onClick={handleDeleteSelected}
                     disabled={selectedItems.size === 0}
-                    className="h-8">
+                    className="h-8 dark:bg-red-700 dark:hover:bg-red-800">
                     <FaTrash className="h-4 w-4 mr-2" />
                     Delete ({selectedItems.size})
                   </Button>
                   <Button
                     variant="outline"
                     onClick={handleCancelSelection}
-                    className="h-8">
+                    className="h-8 dark:bg-stone-900 dark:text-white dark:border-stone-800 dark:hover:bg-stone-800">
                     <FaTimes className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
@@ -241,11 +241,11 @@ export const Media = ({
 
       {isLoading ? (
         <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
-          <div className="text-stone-500">Loading media...</div>
+          <div className="text-stone-500 dark:text-gray-400">Loading media...</div>
         </div>
       ) : media.length === 0 ? (
         <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
-          <div className="text-stone-500">No media found</div>
+          <div className="text-stone-500 dark:text-gray-400">No media found</div>
         </div>
       ) : (
         <div

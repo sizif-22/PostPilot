@@ -134,18 +134,14 @@ export default function Home({
   }, [id, fetchImgs]);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loading />
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
     <>
       {userChannel !== undefined ? (
         <ChannelContextProvider userChannel={userChannel}>
-          <main className="grid gap-4 p-4 grid-cols-[220px,_1fr]">
+          <main className="grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-darkBackground">
             <Sidebar Callbackfunc={Navigation} route={route} />
             {route === "Dashboard" ? (
               <Dashboard
@@ -173,8 +169,10 @@ export default function Home({
           </main>
         </ChannelContextProvider>
       ) : (
-        <div className="flex justify-center items-center h-screen">
-          <h1 className="text-2xl font-bold">Channel not found</h1>
+        <div className="flex justify-center items-center h-screen dark:bg-black">
+          <h1 className="text-2xl font-bold dark:text-white">
+            Channel not found
+          </h1>
         </div>
       )}
     </>

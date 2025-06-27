@@ -39,8 +39,8 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
     {
       name: "TikTok",
       icon: FaTiktok,
-      color: "text-black",
-      bgColor: "bg-gray-100",
+      color: "text-black dark:text-white",
+      bgColor: "bg-stone-100 dark:bg-stone-700",
       posts: data.platformUsage?.tiktok || 0,
       avgEngagement: 456,
       avgReach: 2100,
@@ -56,10 +56,10 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
     0
   );
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
+    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
       <div className="flex items-center gap-2 mb-4">
-        <FiBarChart className="text-lg text-gray-600 dark:text-gray-400" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <FiBarChart className="text-lg text-stone-600 dark:text-stone-400" />
+        <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
           Platform Comparison
         </h3>
       </div>
@@ -72,7 +72,7 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
           return (
             <div
               key={platform.name}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${platform.bgColor}`}>
@@ -82,10 +82,10 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
                   })()}
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
+                    <h4 className="font-medium text-stone-900 dark:text-white">
                       {platform.name}
                     </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {platform.posts} posts
                     </p>
                   </div>
@@ -104,23 +104,23 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
 
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <FiTrendingUp className="w-4 h-4 text-gray-500" />
+                  <FiTrendingUp className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-stone-600 dark:text-stone-400">
                       Avg Engagement
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-stone-900 dark:text-white">
                       {platform.avgEngagement}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <FiUsers className="w-4 h-4 text-gray-500" />
+                  <FiUsers className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-stone-600 dark:text-stone-400">
                       Avg Reach
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-stone-900 dark:text-white">
                       {platform.avgReach}
                     </p>
                   </div>
@@ -129,21 +129,21 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
 
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <FiClock className="w-4 h-4 text-gray-500" />
+                  <FiClock className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-stone-600 dark:text-stone-400">
                       Best Time
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-stone-900 dark:text-white">
                       {platform.bestTime}
                     </p>
                   </div>
                 </div>
                 <div className="text-sm">
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-stone-600 dark:text-stone-400">
                     Target Audience
                   </p>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-stone-900 dark:text-white">
                     {platform.audience}
                   </p>
                 </div>
@@ -151,14 +151,14 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
 
               <div className="mb-2">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     Post Distribution
                   </span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-stone-900 dark:text-white">
                     {postPercentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${platform.bgColor
                       .replace("bg-", "bg-")
@@ -173,8 +173,8 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
       </div>
 
       {/* Platform Recommendations */}
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+        <h4 className="text-md font-medium text-stone-900 dark:text-white mb-3">
           Recommendations
         </h4>
         <div className="space-y-2 text-sm">
@@ -185,9 +185,9 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
                   key={`rec-${platform.name}`}
                   className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     Consider posting on{" "}
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-stone-900 dark:text-white">
                       {platform.name}
                     </span>{" "}
                     to expand your reach
@@ -201,8 +201,8 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
           {platformData.some((p) => p.posts > 0) && (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-stone-600 dark:text-stone-400">
+                <span className="font-medium text-stone-900 dark:text-white">
                   TikTok
                 </span>{" "}
                 shows the highest engagement rate - focus on video content
@@ -212,7 +212,7 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
 
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-stone-600 dark:text-stone-400">
               Optimize posting times based on platform-specific peak hours
             </span>
           </div>

@@ -168,16 +168,16 @@ const MediaDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
-          className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded"
+          className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded"
           disabled={storageUsed >= storageLimit}>
           <FaUpload className="text-violet-500" />
           <span>Upload</span>
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] dark:bg-gray-800 dark:text-white">
         <DialogHeader>
-          <DialogTitle>Upload Media</DialogTitle>
+          <DialogTitle className="dark:text-white">Upload Media</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
@@ -192,7 +192,7 @@ const MediaDialog = ({
           {selectedMedia.length > 0 ? (
             <>
               <div className="flex justify-between items-center mb-4">
-                <p className="text-sm text-stone-600">
+                <p className="text-sm text-stone-600 dark:text-gray-400">
                   {selectedMedia.length}{" "}
                   {selectedMedia.length === 1 ? "file" : "files"} selected
                 </p>
@@ -200,12 +200,12 @@ const MediaDialog = ({
                   variant="outline"
                   size="sm"
                   onClick={() => inputRef.current?.click()}
-                  className="flex items-center gap-2">
+                  className="flex items-center gap-2 dark:bg-gray-900 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700">
                   <FaUpload className="w-3 h-3" />
                   Add More
                 </Button>
               </div>
-              <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              <ScrollArea className="h-[400px] w-full rounded-md border dark:border-gray-700 p-4">
                 <div className="grid grid-cols-5 gap-3">
                   {selectedMedia.map((file, index) => (
                     <MediaPreview
@@ -220,10 +220,10 @@ const MediaDialog = ({
           ) : (
             <div
               onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 transition-colors">
-              <FaImage className="w-12 h-12 text-stone-300 mb-4" />
-              <p className="text-stone-500">Drag and drop or click to upload</p>
-              <p className="text-stone-400 text-sm mt-2">
+              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-gray-700 transition-colors dark:border-gray-700">
+              <FaImage className="w-12 h-12 text-stone-300 dark:text-gray-500 mb-4" />
+              <p className="text-stone-500 dark:text-gray-400">Drag and drop or click to upload</p>
+              <p className="text-stone-400 dark:text-gray-500 text-sm mt-2">
                 Supported formats: JPEG, PNG, GIF, TIFF, HEIF, HEIC, WEBP, MP4,
                 WEBM
               </p>
@@ -233,16 +233,16 @@ const MediaDialog = ({
           {isUploading && (
             <div className="mt-4">
               <Progress value={uploadProgress} className="h-2" />
-              <p className="text-sm text-stone-500 mt-2">
+              <p className="text-sm text-stone-500 dark:text-gray-400 mt-2">
                 Uploading... {uploadProgress}%
               </p>
             </div>
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="dark:border-gray-700">
           <div className="flex justify-between w-full">
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-stone-500 dark:text-gray-400">
               <span
                 className={
                   storageUsed > storageLimit * 0.9
@@ -258,7 +258,8 @@ const MediaDialog = ({
               <Button
                 variant="outline"
                 onClick={() => setSelectedMedia([])}
-                disabled={selectedMedia.length === 0 || isUploading}>
+                disabled={selectedMedia.length === 0 || isUploading}
+                className="dark:bg-gray-900 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700">
                 Clear
               </Button>
               <Button
@@ -267,7 +268,8 @@ const MediaDialog = ({
                   selectedMedia.length === 0 ||
                   isUploading ||
                   storageUsed >= storageLimit
-                }>
+                }
+                className="dark:bg-violet-600 dark:hover:bg-violet-700">
                 Upload {selectedMedia.length > 0 && `(${selectedMedia.length})`}
               </Button>
             </div>

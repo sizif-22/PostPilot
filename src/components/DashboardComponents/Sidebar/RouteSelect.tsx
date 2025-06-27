@@ -73,11 +73,13 @@ export const RouteSelect = ({
 };
 export const Route = ({
   Icon,
+  className,
   title,
   route,
   Callbackfunc,
 }: {
   Icon: IconType;
+  className?: string;
   title: string;
   route: string;
   Callbackfunc: (route: string) => void;
@@ -85,10 +87,10 @@ export const Route = ({
   return (
     <button
       onClick={() => Callbackfunc(title)}
-      className={`flex items-center justify-start gap-2 w-full rounded px-2 py-1.5 text-sm transition-[box-shadow,_background-color,_color] ${
+      className={`flex items-center justify-start gap-2 w-full rounded px-2 py-1.5 text-sm transition-[box-shadow,_background-color,_color]   ${className} ${
         title == route
-          ? "bg-white text-stone-950 shadow"
-          : "hover:bg-stone-200 bg-transparent text-stone-500 shadow-none"
+          ? "bg-white text-stone-950 shadow dark:bg-darkBoarder dark:text-white"
+          : "hover:bg-stone-200 dark:hover:bg-darkButtons bg-transparent text-stone-500 dark:text-stone-400 shadow-none"
       }`}>
       <Icon className={title == route ? "text-violet-500" : ""} />
       <span>{title}</span>
@@ -106,15 +108,15 @@ export const SettingsSection = ({
   Callbackfunc: (route: string) => void;
 }) => {
   return (
-    <div className="flex sticky top-[calc(100vh_-_48px_-_16px)] flex-col h-12 border-t px-2 border-stone-300 justify-end text-xs">
-      <div className="flex items-center justify-between">
+    <div className="flex sticky top-[calc(100vh_-_48px_-_16px)] flex-col h-12 border-t px-2 border-stone-300 dark:border-stone-800 justify-end text-xs">
+      <div className="flex items-center gap-1 justify-between">
         <Route
           Icon={FiSettings}
           route={route}
           Callbackfunc={Callbackfunc}
           title="Configuration"
         />
-        <ThemeToggle />
+        <ThemeToggle className="h-full rounded" />
       </div>
     </div>
   );

@@ -78,27 +78,27 @@ export const Configuration = () => {
   ];
 
   return (
-    <div className="bg-white  h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
-      <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200">
-        <h2 className="font-bold text-xl">Configuration</h2>
+    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
+      <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200 dark:border-stone-800">
+        <h2 className="font-bold text-xl dark:text-white">Configuration</h2>
       </div>
       <div className="px-8 md:px-16">
         <div className="p-6 space-y-6">
           {/* Section Title */}
           <div className="pb-4">
-            <h2 className="text-xl border-b border-stone-200 pb-4 mb-2 font-semibold">
+            <h2 className="text-xl border-b border-stone-200 dark:border-stone-800 pb-4 mb-2 font-semibold dark:text-white">
               Social Media Connections
             </h2>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-stone-500 dark:text-stone-400">
               Connect your social media accounts to enable posting
             </p>
-            <div className="flex flex-col gap-2 w-full border-2 border-stone-200 rounded-lg px-4 py-2 mt-4">
+            <div className="flex flex-col gap-2 w-full border-2 border-stone-200 dark:border-stone-800 rounded-lg px-4 py-2 mt-4">
               {socialMedia.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between flex-col gap-4 md:flex-row py-2 items-center w-full md:gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-medium">
+                        <h2 className="text-lg font-medium dark:text-white">
                           Connect to {item.html}
                         </h2>
                         {item.isConnected && (
@@ -108,7 +108,7 @@ export const Configuration = () => {
                           </div>
                         )}
                       </div>
-                      <h3 className="text-sm text-stone-500">
+                      <h3 className="text-sm text-stone-500 dark:text-stone-400">
                         {item.isConnected
                           ? item.connectedInfo
                           : item.description}
@@ -118,14 +118,14 @@ export const Configuration = () => {
                       onClick={item.connect}
                       className={`text-sm font-bold duration-300 transition-colors rounded-lg border px-4 py-2 ${
                         item.isConnected
-                          ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                          : "bg-white hover:text-black text-black/70 border-stone-200 hover:bg-stone-200"
+                          ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900"
+                          : "bg-white hover:text-black text-black/70 border-stone-200 hover:bg-stone-200 dark:bg-stone-900 dark:text-white dark:border-stone-800 dark:hover:bg-stone-800"
                       }`}>
                       {item.isConnected ? "Reconnect" : "Connect"}
                     </button>
                   </div>
                   {index != socialMedia.length - 1 && (
-                    <hr className="w-full border-stone-200" />
+                    <hr className="w-full border-stone-200 dark:border-stone-800" />
                   )}
                 </div>
               ))}
@@ -133,7 +133,7 @@ export const Configuration = () => {
           </div>
 
           {/* Danger Zone */}
-          <div className="mt-12 pt-6 border-t">
+          <div className="mt-12 pt-6 border-t dark:border-stone-800">
             <h3 className="text-lg font-medium text-red-600 mb-4">
               Danger Zone
             </h3>
@@ -141,15 +141,15 @@ export const Configuration = () => {
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-col gap-4 md:flex-row items-center w-full md:gap-2">
                   <div>
-                    <h2 className="text-lg font-medium">Delete Channel</h2>
-                    <h3 className="text-sm text-stone-500">
+                    <h2 className="text-lg font-medium dark:text-white">Delete Channel</h2>
+                    <h3 className="text-sm text-stone-500 dark:text-stone-400">
                       Once you delete a channel, there is no going back. Please
                       be certain.
                     </h3>
                   </div>
                   <button
                     onClick={handleDeleteChannel}
-                    className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2">
+                    className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2 dark:bg-red-950 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900">
                     Delete Channel
                   </button>
                 </div>
@@ -160,25 +160,25 @@ export const Configuration = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-stone-950/50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
               <div className="flex items-start gap-4">
                 <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Delete Channel</h3>
-                  <p className="text-stone-600 mb-4">
+                  <h3 className="text-lg font-semibold mb-2 dark:text-white">Delete Channel</h3>
+                  <p className="text-stone-600 dark:text-gray-400 mb-4">
                     Are you sure you want to delete this channel? This action
                     cannot be undone.
                   </p>
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded">
+                      className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-gray-700 rounded">
                       Cancel
                     </button>
                     <button
                       onClick={confirmDelete}
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded">
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded">
                       Delete Channel
                     </button>
                   </div>

@@ -148,7 +148,7 @@ const ImagePopup = ({
                       <Info size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="dark:bg-gray-800 dark:text-white">
                     <p>Toggle Info</p>
                   </TooltipContent>
                 </Tooltip>
@@ -175,7 +175,7 @@ const ImagePopup = ({
                       <Share2 size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="dark:bg-gray-800 dark:text-white">
                     <p>Share</p>
                   </TooltipContent>
                 </Tooltip>
@@ -195,7 +195,7 @@ const ImagePopup = ({
                       )}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="dark:bg-gray-800 dark:text-white">
                     <p>{isZoomed ? "Zoom Out" : "Zoom In"}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -211,7 +211,7 @@ const ImagePopup = ({
                       <X size={20} className="text-white" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="dark:bg-gray-800 dark:text-white">
                     <p>Close</p>
                   </TooltipContent>
                 </Tooltip>
@@ -303,7 +303,7 @@ const ImagePopup = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-24 right-4 bg-white/10 backdrop-blur-md rounded-lg p-4 text-white">
+                className="absolute bottom-24 right-4 bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-4 text-white">
                 <h4 className="font-medium mb-2">{currentItem.name}</h4>
                 <p className="text-sm text-white/70">
                   Type:{" "}

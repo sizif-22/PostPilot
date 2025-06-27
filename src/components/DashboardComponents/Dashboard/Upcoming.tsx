@@ -85,19 +85,19 @@ export const Upcoming = () => {
   });
 
   return (
-    <div className="col-span-2 row-span-3 border shadow-sm rounded-lg h-[81vh] bg-white ">
-      <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white justify-between px-6 py-4 border-b">
+    <div className="col-span-2 row-span-3 border dark:border-darkBoarder  shadow-sm dark:shadow-lg rounded-lg h-[81vh] bg-white dark:bg-transparent">
+      <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white dark:bg-transparent justify-between px-6 py-4 border-b dark:border-darkBoarder">
         <div className="flex items-center gap-2">
           <FiCalendar className="w-5 h-5 text-violet-500" />
-          <h1 className="text-xl font-bold">Upcoming</h1>
+          <h1 className="text-xl font-bold dark:text-white">Upcoming</h1>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <FiGlobe className="w-4 h-4 text-gray-500" />
+            <FiGlobe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <select
               value={selectedTimeZone}
               onChange={(e) => setSelectedTimeZone(e.target.value)}
-              className="text-sm text-gray-500 bg-transparent border-none focus:ring-0 cursor-pointer">
+              className="text-sm text-gray-500 dark:text-gray-400 bg-transparent border-none focus:ring-0 cursor-pointer">
               {timeZones.map((tz) => (
                 <option key={tz} value={tz}>
                   {tz}
@@ -105,7 +105,7 @@ export const Upcoming = () => {
               ))}
             </select>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",
@@ -115,7 +115,7 @@ export const Upcoming = () => {
         </div>
       </div>
       {sortedGroupedPosts.length == 0 && (
-        <div className="flex justify-center pt-5 text-black/70 font-bold text-sm">
+        <div className="flex justify-center pt-5 text-black/70 dark:text-white/70 font-bold text-sm">
           There are no Upcoming Posts right now
         </div>
       )}
@@ -123,22 +123,22 @@ export const Upcoming = () => {
         {sortedGroupedPosts.map(({ date, day, month, posts }) => (
           <div key={date} className="flex gap-6 relative">
             <div className="sticky top-0 flex flex-col items-center min-w-[4rem] pt-2 h-fit">
-              <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2">
-                <div className="text-sm text-gray-500">{month}</div>
-                <div className="text-2xl font-semibold text-gray-900">
+              <div className=" backdrop-blur-sm rounded-lg p-2">
+                <div className="text-sm text-gray-500 dark:text-gray-400">{month}</div>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                   {date}
                 </div>
-                <div className="text-sm text-gray-500">{day}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{day}</div>
               </div>
             </div>
             <div className="flex-1 space-y-4">
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="rounded-lg p-4 hover:bg-gray-50 border border-gray-100 cursor-pointer transition-colors duration-200"
+                  className="rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-darkButtons border border-gray-100 dark:border-darkBoarder cursor-pointer transition-colors duration-200"
                   onClick={() => setSelectedEvent(post)}>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center text-gray-500">
+                    <div className="flex items-center text-gray-500 dark:text-gray-400">
                       <FiClock className="w-4 h-4 mr-1" />
                       <span className="text-sm">
                         {post.scheduledDate
@@ -149,11 +149,11 @@ export const Upcoming = () => {
                           : ""}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-500">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                       {post.platforms?.map((platform: string) => (
                         <span
                           key={platform}
-                          className="hover:text-gray-700 transition-colors">
+                          className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                           {platform === "facebook" ? (
                             <FiFacebook className="w-4 h-4" />
                           ) : platform === "instagram" ? (
@@ -165,7 +165,7 @@ export const Upcoming = () => {
                           ) : platform === "youtube" ? (
                             <FiYoutube className="w-4 h-4" />
                           ) : platform === "tiktok" ? (
-                            <FaTiktok className="w-4 h-4 text-black" />
+                            <FaTiktok className="w-4 h-4 text-black dark:text-white" />
                           ) : null}
                         </span>
                       ))}
@@ -174,7 +174,7 @@ export const Upcoming = () => {
                   <div className="flex gap-3">
                     <div className="min-w-1 w-1 self-stretch bg-violet-500 rounded-full"></div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 line-clamp-2 mb-2">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
                         {post.content || post.message}
                       </h3>
                       {post.imageUrls && post.imageUrls.length > 0 && (

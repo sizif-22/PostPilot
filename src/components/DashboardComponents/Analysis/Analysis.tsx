@@ -130,18 +130,18 @@ export const Analysis = () => {
   if (!analyticsData) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">No data available for analysis</p>
+        <p className="text-stone-500">No data available for analysis</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow ">
+    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
       {/* Header */}
-      <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 sticky top-0 z-50 bg-white flex justify-between">
+      <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 dark:border-stone-800 sticky top-0 z-50 bg-white dark:bg-[#1a1a1a] flex justify-between">
         <div>
-          <h1 className="text-sm font-bold block">Analytics Dashboard</h1>
-          <p className="text-xs block text-stone-500">
+          <h1 className="text-sm font-bold block dark:text-white">Analytics Dashboard</h1>
+          <p className="text-xs block text-stone-500 dark:text-stone-400">
             Insights and performance metrics for your social media content
           </p>
         </div>
@@ -153,7 +153,7 @@ export const Analysis = () => {
               className={`flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded ${
                 selectedTimeframe === timeframe
                   ? "bg-violet-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  : "bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-violet-950"
               }`}>
               {timeframe}
             </button>
@@ -163,13 +163,13 @@ export const Analysis = () => {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
                 Total Posts
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-stone-900 dark:text-white">
                 {analyticsData.totalPosts}
               </p>
             </div>
@@ -190,13 +190,13 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
                 Published
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-stone-900 dark:text-white">
                 {analyticsData.publishedPosts}
               </p>
             </div>
@@ -217,13 +217,13 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
                 Scheduled
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-stone-900 dark:text-white">
                 {analyticsData.scheduledPosts}
               </p>
             </div>
@@ -244,13 +244,13 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
                 Avg Engagement
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-stone-900 dark:text-white">
                 {Math.round(analyticsData.averageEngagement)}
               </p>
             </div>

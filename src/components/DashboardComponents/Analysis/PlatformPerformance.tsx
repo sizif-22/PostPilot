@@ -31,13 +31,13 @@ export const PlatformPerformance = ({ data }: PlatformPerformanceProps) => {
       name: "TikTok",
       count: data.tiktok,
       icon: FaTiktok,
-      color: "text-black",
-      bgColor: "bg-gray-100",
+      color: "text-black dark:text-white",
+      bgColor: "bg-stone-100 dark:bg-stone-700",
     },
   ];
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+      <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-4">
         Platform Performance
       </h3>
 
@@ -57,19 +57,19 @@ export const PlatformPerformance = ({ data }: PlatformPerformanceProps) => {
                   })()}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-stone-900 dark:text-white">
                     {platform.name}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-stone-500 dark:text-stone-400">
                     {platform.count} posts
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-stone-900 dark:text-white">
                   {percentage.toFixed(1)}%
                 </p>
-                <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-20 h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${platform.bgColor
                       .replace("bg-", "bg-")
@@ -83,12 +83,12 @@ export const PlatformPerformance = ({ data }: PlatformPerformanceProps) => {
         })}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-stone-600 dark:text-stone-400">
             Total Posts
           </span>
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-stone-900 dark:text-white">
             {total}
           </span>
         </div>

@@ -36,10 +36,10 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
   );
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
+    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
       <div className="flex items-center gap-2 mb-4">
-        <FiCalendar className="text-lg text-gray-600 dark:text-gray-400" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <FiCalendar className="text-lg text-stone-600 dark:text-stone-400" />
+        <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
           Posting Schedule
         </h3>
       </div>
@@ -53,19 +53,19 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
 
           return (
             <div key={day.name} className="flex items-center gap-3">
-              <div className="w-16 text-sm font-medium text-gray-900 dark:text-white">
+              <div className="w-16 text-sm font-medium text-stone-900 dark:text-white">
                 {day.short}
               </div>
               <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     {day.count} posts
                   </span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-stone-900 dark:text-white">
                     {total > 0 ? ((day.count / total) * 100).toFixed(1) : 0}%
                   </span>
                 </div>
-                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                <div className="w-full h-3 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden relative">
                   <div
                     className={`h-full transition-all duration-300 ${
                       isBest
@@ -90,16 +90,16 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
       </div>
 
       {/* Insights */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+      <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
+        <h4 className="text-md font-medium text-stone-900 dark:text-white mb-3">
           Insights
         </h4>
         <div className="space-y-2">
           {bestDay.count > 0 && (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-stone-600 dark:text-stone-400">
+                <span className="font-medium text-stone-900 dark:text-white">
                   {bestDay.name}
                 </span>{" "}
                 is your most active day with {bestDay.count} posts
@@ -109,8 +109,8 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
           {worstDay.count === 0 && (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-stone-600 dark:text-stone-400">
+                <span className="font-medium text-stone-900 dark:text-white">
                   {worstDay.name}
                 </span>{" "}
                 has no posts - consider adding content
@@ -119,9 +119,9 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
           )}
           <div className="flex items-center gap-2 text-sm">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-stone-600 dark:text-stone-400">
               Average of{" "}
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="font-medium text-stone-900 dark:text-white">
                 {Math.round(total / 7)}
               </span>{" "}
               posts per day

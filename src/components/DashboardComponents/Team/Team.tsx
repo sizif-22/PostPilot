@@ -94,35 +94,35 @@ const MemberDialog = ({
       onOpenChange={onOpenChange}
       onClick={() => onOpenChange(false)}
       label="Member Details"
-      className="fixed inset-0 bg-stone-950/50 flex items-center justify-center z-50">
+      className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg w-full max-w-md mx-4 shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-200">
-          <h3 className="text-lg font-semibold">{title}</h3>
+        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold dark:text-white">{title}</h3>
         </div>
 
         <div className="p-6 space-y-4">
           <div className="space-y-2 relative">
-            <label className="text-sm font-medium text-stone-700">Email</label>
+            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Email</label>
             <div className="relative">
               {selectedMember || member ? (
-                <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                   <div>
-                    <span className="text-sm font-semibold block">
+                    <span className="text-sm font-semibold block dark:text-white">
                       {selectedMember?.name || member?.name}
                     </span>
-                    <span className="text-xs block text-gray-500">
+                    <span className="text-xs block text-gray-500 dark:text-gray-400">
                       {selectedMember?.email || member?.email}
                     </span>
                   </div>
                   {!member && (
                     <button
                       onClick={handleMemberRemove}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-500"
+                        className="h-5 w-5 text-gray-500 dark:text-gray-400"
                         viewBox="0 0 20 20"
                         fill="currentColor">
                         <path
@@ -155,32 +155,31 @@ const MemberDialog = ({
                       setSearchResult([]);
                     }
                   }}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:text-white"
                   placeholder="Search by email"
                 />
               )}
               <div
-                className={`absolute bg-white w-full rounded-lg py-1 top-full z-10 shadow-lg border border-gray-700 ${
+                className={`absolute bg-white dark:bg-gray-800 w-full rounded-lg py-1 top-full z-10 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-gray-700 dark:border-gray-700 ${
                   searchQuery.length < 4 && "hidden"
                 }`}>
                 {searchResult.length > 0 ? (
                   searchResult.map((tm) => (
                     <div
                       key={tm.email}
-                      className="p-3 hover:bg-[#eee] rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 last:border-b-0"
-                      onClick={() => handleMemberSelect(tm)}>
+                      className="p-3 hover:bg-[#eee] dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-gray-700 last:border-b-0">
                       <div className="text-start">
-                        <span className="text-sm font-semibold block">
+                        <span className="text-sm font-semibold block dark:text-white">
                           {tm.name}
                         </span>
-                        <span className="text-xs block text-gray-400 mt-0.5">
+                        <span className="text-xs block text-gray-400 dark:text-gray-500 mt-0.5">
                           {tm.email}
                         </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="flex justify-center py-1 text-black/70 font-bold text-sm">
+                  <div className="flex justify-center py-1 text-black/70 dark:text-white/70 font-bold text-sm">
                     There is no any email like that ...
                   </div>
                 )}
@@ -189,10 +188,10 @@ const MemberDialog = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Role</label>
+            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Role</label>
             <div className="relative">
               <select
-                className="w-full relative px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full relative px-3 py-2 rounded-lg border border-stone-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:text-white"
                 value={formData.role || ""}
                 onChange={(e) =>
                   setFormData({
@@ -205,7 +204,7 @@ const MemberDialog = ({
               </select>
               <span className="pointer-events-none top-0 absolute inset-y-0 right-0 ml-3 flex items-center pr-1">
                 <svg
-                  className="size-4 sm:size-5 text-slate-600"
+                  className="size-4 sm:size-5 text-slate-600 dark:text-gray-400"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                   aria-hidden="true">
@@ -220,15 +219,15 @@ const MemberDialog = ({
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-stone-50 border-t border-stone-200 flex justify-end gap-2">
+        <div className="px-6 py-4 bg-stone-50 dark:bg-gray-900 border-t border-stone-200 dark:border-gray-700 flex justify-end gap-2">
           <button
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-200 rounded-lg transition-colors">
+            className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
             Cancel
           </button>
           <button
             onClick={() => handleSubmit(member ? "update" : "add")}
-            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg transition-colors">
+            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700 rounded-lg transition-colors">
             {member ? "Update" : "Add"} Member
           </button>
         </div>
@@ -296,40 +295,40 @@ export const Team = () => {
   };
 
   return (
-    <div className="bg-white h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow">
-      <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200">
+    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
+      <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200 dark:border-stone-800">
         <div>
-          <h2 className="font-bold text-xl">Team Members</h2>
+          <h2 className="font-bold text-xl dark:text-white">Team Members</h2>
         </div>
         {channel?.authority == "Owner" && (
           <button
             onClick={() => setIsAddingMember(true)}
-            className="flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded">
+            className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded">
             <FiUserPlus className="text-violet-500" />
-            <span>Add Member</span>
+            <span className="dark:text-white">Add Member</span>
           </button>
         )}
       </div>
 
       <div className="py-6 px-16">
-        <div className="rounded-lg border border-stone-200 overflow-hidden">
+        <div className="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-stone-50 border-b border-stone-200">
+            <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800">
               <tr>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500">
+                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                   Name
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500">
+                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                   Email
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500">
+                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                   Role
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500">
+                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                   Status
                 </th>
                 {channel?.authority == "Owner" && (
-                  <th className="text-right py-3 px-4 text-sm font-medium text-stone-500">
+                  <th className="text-right py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                     Actions
                   </th>
                 )}
@@ -337,7 +336,7 @@ export const Team = () => {
             </thead>
             <tbody>
               {channel?.TeamMembers.map((member) => (
-                <tr key={member.email} className="border-b border-stone-200">
+                <tr key={member.email} className="border-b border-stone-200 dark:border-stone-800">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
@@ -347,7 +346,7 @@ export const Team = () => {
                       </div>
                       <span
                         className={
-                          member.status === "pending" ? "text-stone-500" : ""
+                          member.status === "pending" ? "text-stone-500 dark:text-gray-400" : "dark:text-white"
                         }>
                         {member.name}
                       </span>
@@ -355,10 +354,10 @@ export const Team = () => {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <FiMail className="w-4 h-4 text-stone-400" />
+                      <FiMail className="w-4 h-4 text-stone-400 dark:text-gray-400" />
                       <span
                         className={
-                          member.status === "pending" ? "text-stone-500" : ""
+                          member.status === "pending" ? "text-stone-500 dark:text-gray-400" : "dark:text-white"
                         }>
                         {member.email}
                       </span>
@@ -381,7 +380,7 @@ export const Team = () => {
                             <>
                               <button
                                 onClick={() => setEditingMember(member)}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                                className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded">
                                 <FiEdit2 className="w-4 h-4" />
                               </button>
                               <button
@@ -389,7 +388,7 @@ export const Team = () => {
                                   setMemberOnDelete(member);
                                   setShowDeleteConfirm(true);
                                 }}
-                                className="p-1 text-red-600 hover:bg-red-50 rounded">
+                                className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded">
                                 <FiTrash2 className="w-4 h-4" />
                               </button>
                             </>
@@ -407,27 +406,27 @@ export const Team = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-stone-950/50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
             <div className="flex items-start gap-4">
               <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
               <div>
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-lg font-semibold mb-2 dark:text-white">
                   Delete TeamMember
                 </h3>
-                <p className="text-stone-600 mb-4">
+                <p className="text-stone-600 dark:text-gray-400 mb-4">
                   Are you sure you want to delete this Team Member? This action
                   cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded">
+                    className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-gray-700 rounded">
                     Cancel
                   </button>
                   <button
                     onClick={() => handleDeleteMember()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded">
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded">
                     Delete TeamMember
                   </button>
                 </div>
