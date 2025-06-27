@@ -14,7 +14,6 @@ export const TopBar = ({ media }: { media: MediaItem[] }) => {
         <div>
           <span className="text-sm font-bold block">{channel?.name}</span>
           <span className="text-xs block text-stone-500">
-            {/* Tuesday, Aug 8th 2023 */}
             {channel?.description}
           </span>
         </div>

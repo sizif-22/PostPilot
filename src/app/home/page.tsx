@@ -1,8 +1,7 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useTheme } from "@/context/ThemeContext";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { useTheme } from "next-themes";
 import {
   CalendarIcon,
   ChartBarIcon,
@@ -22,10 +21,11 @@ import {
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/DashboardComponents/Sidebar/ThemeToggle";
 
 export default function Home() {
   const { user } = useUser();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const Buttons = [
     {
@@ -174,15 +174,7 @@ export default function Home() {
                       {button.name}
                     </Link>
                   ))}
-                  <button
-                    onClick={toggleTheme}
-                    className="p-1.5 sm:p-2 rounded-full dark:bg-violet-950 bg-violet-100 dark:hover:bg-violet-900 hover:bg-violet-200 transition-colors">
-                    {theme === "dark" ? (
-                      <SunIcon className="w-4 h-4 sm:w-5 sm:h-5 dark:text-violet-400 text-violet-700" />
-                    ) : (
-                      <MoonIcon className="w-4 h-4 sm:w-5 sm:h-5 dark:text-violet-400 text-violet-700" />
-                    )}
-                  </button>
+                  <ThemeToggle />
                 </div>
               </div>
             </div>

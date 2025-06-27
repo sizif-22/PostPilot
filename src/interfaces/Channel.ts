@@ -32,7 +32,7 @@ export interface instagramChannel {
 export interface tiktok {
   accessToken: string;
   name?: string;
-  openId:string;
+  openId: string;
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {
@@ -40,11 +40,12 @@ export interface Channel extends ChannelBrief {
     instagram?: instagramChannel;
     tiktok?: tiktok;
   };
-  posts: Post[];
+  posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];
 }
 export interface Post {
   id?: string;
+  ruleName?: string;
   fid?: string;
   title?: string;
   date?: Date;

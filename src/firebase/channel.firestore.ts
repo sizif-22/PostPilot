@@ -83,8 +83,10 @@ const createPost = async (post: Post, channelId: string) => {
     Object.entries(firestorePost).filter(([_, value]) => value !== undefined)
   );
 
+  // Use the post ID as the key in the posts map
+  const postId = post.id || Date.now().toString();
   await fs.updateDoc(fs.doc(db, "Channels", channelId), {
-    posts: fs.arrayUnion(cleanPost),
+    [`posts.${postId}`]: cleanPost,
   });
 };
 
@@ -99,21 +101,9 @@ const createChannel = async (channel: Channel, user: User) => {
 };
 
 const deletePost = async (postId: string, channelId: string) => {
-  // First, get the channel document to find the post
-  const channelDoc = await fs.getDoc(fs.doc(db, "Channels", channelId));
-  if (!channelDoc.exists()) {
-    throw new Error("Channel not found");
-  }
-
-  const channelData = channelDoc.data();
-  const posts = channelData.posts || [];
-
-  // Find and remove the post with the matching ID
-  const updatedPosts = posts.filter((post: Post) => post.id !== postId);
-
-  // Update the channel with the new posts array
+  // Update the channel by removing the specific post from the map
   await fs.updateDoc(fs.doc(db, "Channels", channelId), {
-    posts: updatedPosts,
+    [`posts.${postId}`]: fs.deleteField(),
   });
 };
 
@@ -129,16 +119,15 @@ const editPost = async (
   }
 
   const channelData = channelDoc.data();
-  const posts = channelData.posts || [];
+  const posts = channelData.posts || {};
 
-  // Find the post index
-  const postIndex = posts.findIndex((post: Post) => post.id === postId);
-  if (postIndex === -1) {
+  // Check if the post exists
+  const existingPost = posts[postId];
+  if (!existingPost) {
     throw new Error("Post not found");
   }
 
   // Update the post with new data
-  const existingPost = posts[postIndex];
   const updatedPostData = { ...existingPost, ...updatedPost };
 
   // Handle scheduledDate conversion if present
@@ -149,13 +138,9 @@ const editPost = async (
         : Math.floor(new Date(updatedPost.scheduledDate).getTime() / 1000);
   }
 
-  // Update the posts array
-  const updatedPosts = [...posts];
-  updatedPosts[postIndex] = updatedPostData;
-
-  // Update the channel with the new posts array
+  // Update the specific post in the map
   await fs.updateDoc(fs.doc(db, "Channels", channelId), {
-    posts: updatedPosts,
+    [`posts.${postId}`]: updatedPostData,
   });
 };
 

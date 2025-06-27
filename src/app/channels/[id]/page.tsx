@@ -6,6 +6,7 @@ import { Team } from "@/components/DashboardComponents/Team/Team";
 import { Configuration } from "@/components/DashboardComponents/Configuration/configuration";
 import { Calendar } from "@/components/DashboardComponents/Calendar/Calendar";
 import { Media } from "@/components/DashboardComponents/Media/Media";
+import { Analysis } from "@/components/DashboardComponents/Analysis/Analysis";
 import { ChannelContextProvider } from "@/context/ChannelContext";
 import { useUser } from "@/context/UserContext";
 import { MediaItem } from "@/interfaces/Media";
@@ -153,6 +154,8 @@ export default function Home({
                 storageUsed={storageUsed}
                 filesCount={media.length}
               />
+            ) : route === "Analysis" ? (
+              <Analysis />
             ) : route === "Team" ? (
               <Team />
             ) : route === "Calendar" ? (

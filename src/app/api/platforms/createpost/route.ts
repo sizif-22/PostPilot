@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   if (!channel) {
     return NextResponse.json({ message: "Channel not found" }, { status: 400 });
   }
-  const post: Post = channel.posts.find((p) => p.id === postId) as Post;
+  const post: Post = channel.posts[postId];
 
   if (!post) {
     return NextResponse.json(

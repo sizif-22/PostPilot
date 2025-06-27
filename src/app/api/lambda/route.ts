@@ -1,4 +1,6 @@
 // Fixed backend route that schedules posts via AWS EventBridge
+import { db } from "@/firebase/config";
+import * as fs from "firebase/firestore";
 import { NextResponse } from "next/server";
 
 interface SchedulePostRequest {
@@ -187,6 +189,10 @@ export async function POST(request: Request) {
 
     // Generate a unique rule name for tracking
     const ruleName = `scheduled-post-${post.postId}-${Date.now()}`;
+
+    await fs.updateDoc(fs.doc(db, "Channels", post.channelId), {
+      [`posts.${post.postId}.ruleName`]: ruleName,
+    });
 
     return NextResponse.json(
       {

@@ -26,22 +26,24 @@ export const Calendar = () => {
   const highlightedDates = useMemo(() => {
     const dateMap = new Map<string, Post[]>();
 
-    channel?.posts?.forEach((post) => {
-      if (post.scheduledDate) {
-        // Convert Unix timestamp to Date object
-        const date = new Date(post.scheduledDate * 1000);
+    if (channel?.posts) {
+      Object.values(channel.posts).forEach((post) => {
+        if (post.scheduledDate) {
+          // Convert Unix timestamp to Date object
+          const date = new Date(post.scheduledDate * 1000);
 
-        // Create a consistent key format for the date
-        const key = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}`;
+          // Create a consistent key format for the date
+          const key = `${date.getFullYear()}-${
+            date.getMonth() + 1
+          }-${date.getDate()}`;
 
-        if (!dateMap.has(key)) {
-          dateMap.set(key, []);
+          if (!dateMap.has(key)) {
+            dateMap.set(key, []);
+          }
+          dateMap.get(key)!.push(post);
         }
-        dateMap.get(key)!.push(post);
-      }
-    });
+      });
+    }
 
     return Array.from(dateMap).map(([key, posts]) => {
       const [year, month, day] = key.split("-").map(Number);

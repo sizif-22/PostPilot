@@ -36,8 +36,9 @@ export const Upcoming = () => {
   useEffect(() => {
     localStorage.setItem("userTimeZone", selectedTimeZone);
   }, [selectedTimeZone]);
+
   // First sort all posts by date and time
-  const sortedPosts = [...(channel?.posts || [])]
+  const sortedPosts = Object.values(channel?.posts || {})
     .filter((post) => {
       // Ensure scheduledDate exists and is in the future (compared to current Unix timestamp)
       return post.scheduledDate && post.scheduledDate * 1000 > Date.now();
