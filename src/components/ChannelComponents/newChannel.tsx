@@ -22,7 +22,7 @@ export const NewChannel = ({
         description: channelDescription,
         authority: "Owner",
         createdAt: Timestamp.now(),
-        posts: [],
+        posts: {},
         TeamMembers: [
           {
             name: user?.name,
@@ -133,8 +133,7 @@ export const NewChannel = ({
               <Button
                 onClick={handleCancel}
                 variant={"outline"}
-                className="text-sm  hover:bg-stone-200 duration-300 rounded-lg px-4 py-2"
-              >
+                className="text-sm  hover:bg-stone-200 duration-300 rounded-lg px-4 py-2">
                 Cancel
               </Button>
               <Button
@@ -143,8 +142,7 @@ export const NewChannel = ({
                   channelName
                     ? "bg-violet-700 hover:bg-violet-800"
                     : "bg-stone-300 text-stone-500 hover:bg-stone-300 cursor-not-allowed"
-                } duration-300 rounded-lg px-4 py-2`}
-              >
+                } duration-300 rounded-lg px-4 py-2`}>
                 Save
               </Button>
             </div>
