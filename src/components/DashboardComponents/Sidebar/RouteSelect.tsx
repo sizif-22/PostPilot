@@ -89,7 +89,7 @@ export const Route = ({
       onClick={() => Callbackfunc(title)}
       className={`flex items-center justify-start gap-2 w-full rounded px-2 py-1.5 text-sm transition-[box-shadow,_background-color,_color]   ${className} ${
         title == route
-          ? "bg-white text-stone-950 shadow dark:bg-darkBoarder dark:text-white"
+          ? "bg-white text-stone-950 shadow dark:bg-darkBorder dark:text-white"
           : "hover:bg-stone-200 dark:hover:bg-darkButtons bg-transparent text-stone-500 dark:text-stone-400 shadow-none"
       }`}>
       <Icon className={title == route ? "text-violet-500" : ""} />
@@ -107,16 +107,25 @@ export const SettingsSection = ({
   route: string;
   Callbackfunc: (route: string) => void;
 }) => {
+  const { channel } = useChannel();
   return (
     <div className="flex sticky top-[calc(100vh_-_48px_-_16px)] flex-col h-12 border-t px-2 border-stone-300 dark:border-stone-800 justify-end text-xs">
       <div className="flex items-center gap-1 justify-between">
-        <Route
-          Icon={FiSettings}
-          route={route}
-          Callbackfunc={Callbackfunc}
-          title="Configuration"
-        />
-        <ThemeToggle className="h-full rounded" />
+        {channel?.authority == "Owner" ? (
+          <>
+            <Route
+              Icon={FiSettings}
+              route={route}
+              Callbackfunc={Callbackfunc}
+              title="Configuration"
+            />
+            <ThemeToggle className="h-full rounded" />
+          </>
+        ):(
+          <div className="flex items-center justify-center w-full">
+            <ThemeToggle className=" rounded" />
+          </div>
+        )}
       </div>
     </div>
   );

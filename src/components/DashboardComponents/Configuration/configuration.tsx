@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  FiFacebook,
-  FiInstagram,
   FiAlertCircle,
   FiCheck,
 } from "react-icons/fi";
-import { FaTiktok } from "react-icons/fa6";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { useChannel } from "@/context/ChannelContext";
@@ -57,7 +54,6 @@ export const Configuration = () => {
         </span>
       ),
       description: "Connect your Facebook account to enable posting",
-      icon: FiFacebook,
       connect: handleFacebookConnect,
       isConnected: isFacebookConnected,
       connectedInfo: isFacebookConnected
@@ -68,7 +64,6 @@ export const Configuration = () => {
       name: "TikTok",
       html: <span>TikTok</span>,
       description: "Connect your TikTok account to enable posting",
-      icon: FaTiktok,
       connect: handleTikTokConnect,
       isConnected: isTikTokConnected,
       connectedInfo: isTikTokConnected
@@ -78,21 +73,21 @@ export const Configuration = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
-      <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
+      <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200 dark:border-darkBorder">
         <h2 className="font-bold text-xl dark:text-white">Configuration</h2>
       </div>
       <div className="px-8 md:px-16">
         <div className="p-6 space-y-6">
           {/* Section Title */}
           <div className="pb-4">
-            <h2 className="text-xl border-b border-stone-200 dark:border-stone-800 pb-4 mb-2 font-semibold dark:text-white">
+            <h2 className="text-xl border-b border-stone-200 dark:border-darkBorder pb-4 mb-2 font-semibold dark:text-white">
               Social Media Connections
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
               Connect your social media accounts to enable posting
             </p>
-            <div className="flex flex-col gap-2 w-full border-2 border-stone-200 dark:border-stone-800 rounded-lg px-4 py-2 mt-4">
+            <div className="flex flex-col gap-2 w-full border-2 border-stone-200 dark:border-darkBorder rounded-lg px-4 py-2 mt-4">
               {socialMedia.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between flex-col gap-4 md:flex-row py-2 items-center w-full md:gap-2">
@@ -119,13 +114,13 @@ export const Configuration = () => {
                       className={`text-sm font-bold duration-300 transition-colors rounded-lg border px-4 py-2 ${
                         item.isConnected
                           ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900"
-                          : "bg-white hover:text-black text-black/70 border-stone-200 hover:bg-stone-200 dark:bg-stone-900 dark:text-white dark:border-stone-800 dark:hover:bg-stone-800"
+                          : "bg-white hover:text-black text-black/70 border-stone-200 hover:bg-stone-200 dark:bg-stone-900 dark:text-white dark:border-darkBorder dark:hover:bg-stone-800"
                       }`}>
                       {item.isConnected ? "Reconnect" : "Connect"}
                     </button>
                   </div>
                   {index != socialMedia.length - 1 && (
-                    <hr className="w-full border-stone-200 dark:border-stone-800" />
+                    <hr className="w-full border-stone-200 dark:border-darkBorder" />
                   )}
                 </div>
               ))}
@@ -133,7 +128,7 @@ export const Configuration = () => {
           </div>
 
           {/* Danger Zone */}
-          <div className="mt-12 pt-6 border-t dark:border-stone-800">
+          <div className="mt-12 pt-6 border-t dark:border-darkBorder">
             <h3 className="text-lg font-medium text-red-600 mb-4">
               Danger Zone
             </h3>

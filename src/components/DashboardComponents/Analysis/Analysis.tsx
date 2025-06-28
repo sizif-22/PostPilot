@@ -136,9 +136,9 @@ export const Analysis = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
+    <div className="bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
       {/* Header */}
-      <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 dark:border-stone-800 sticky top-0 z-50 bg-white dark:bg-[#1a1a1a] flex justify-between">
+      <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 dark:border-darkBorder sticky top-0 z-50 bg-white dark:bg-secondDarkBackground flex justify-between">
         <div>
           <h1 className="text-sm font-bold block dark:text-white">Analytics Dashboard</h1>
           <p className="text-xs block text-stone-500 dark:text-stone-400">
@@ -153,7 +153,7 @@ export const Analysis = () => {
               className={`flex text-sm items-center gap-2 bg-stone-100 transition-colors hover:bg-violet-100 hover:text-violet-700 px-3 py-1.5 rounded ${
                 selectedTimeframe === timeframe
                   ? "bg-violet-600 text-white"
-                  : "bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-violet-950"
+                  : "bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-secondDarkBackground dark:text-stone-300 dark:hover:bg-violet-950"
               }`}>
               {timeframe}
             </button>
@@ -163,7 +163,7 @@ export const Analysis = () => {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4">
-        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
@@ -190,7 +190,7 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
@@ -217,7 +217,7 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
@@ -244,7 +244,7 @@ export const Analysis = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+        <div className="bg-white dark:bg-transparent p-4 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-600 dark:text-stone-400">

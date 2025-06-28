@@ -94,11 +94,11 @@ const MemberDialog = ({
       onOpenChange={onOpenChange}
       onClick={() => onOpenChange(false)}
       label="Member Details"
-      className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50">
+      className="fixed inset-0 bg-stone-950/50 dark:bg-darkButtons flex items-center justify-center z-50">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-200 dark:border-gray-700">
+        className="bg-white dark:bg-secondDarkBackground rounded-lg w-full max-w-md mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-200 dark:border-darkBorder">
           <h3 className="text-lg font-semibold dark:text-white">{title}</h3>
         </div>
 
@@ -107,7 +107,7 @@ const MemberDialog = ({
             <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Email</label>
             <div className="relative">
               {selectedMember || member ? (
-                <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-2 bg-white dark:bg-secondDarkBackground rounded-lg border border-gray-200 dark:border-darkBorder">
                   <div>
                     <span className="text-sm font-semibold block dark:text-white">
                       {selectedMember?.name || member?.name}
@@ -119,7 +119,7 @@ const MemberDialog = ({
                   {!member && (
                     <button
                       onClick={handleMemberRemove}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-full transition-colors">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 text-gray-500 dark:text-gray-400"
@@ -155,19 +155,19 @@ const MemberDialog = ({
                       setSearchResult([]);
                     }
                   }}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:text-white"
+                  className="w-full p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
                   placeholder="Search by email"
                 />
               )}
               <div
-                className={`absolute bg-white dark:bg-gray-800 w-full rounded-lg py-1 top-full z-10 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-gray-700 dark:border-gray-700 ${
+                className={`absolute bg-white dark:bg-secondDarkBackground w-full rounded-lg py-1 top-full z-10 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-gray-700 dark:border-darkBorder ${
                   searchQuery.length < 4 && "hidden"
                 }`}>
                 {searchResult.length > 0 ? (
                   searchResult.map((tm) => (
                     <div
                       key={tm.email}
-                      className="p-3 hover:bg-[#eee] dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-gray-700 last:border-b-0">
+                      className="p-3 hover:bg-[#eee] dark:hover:bg-darkBorder rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-darkBorder last:border-b-0">
                       <div className="text-start">
                         <span className="text-sm font-semibold block dark:text-white">
                           {tm.name}
@@ -191,7 +191,7 @@ const MemberDialog = ({
             <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Role</label>
             <div className="relative">
               <select
-                className="w-full relative px-3 py-2 rounded-lg border border-stone-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:text-white"
+                className="w-full relative px-3 py-2 rounded-lg border border-stone-300 dark:border-darkBorder focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
                 value={formData.role || ""}
                 onChange={(e) =>
                   setFormData({
@@ -219,10 +219,10 @@ const MemberDialog = ({
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-stone-50 dark:bg-gray-900 border-t border-stone-200 dark:border-gray-700 flex justify-end gap-2">
+        <div className="px-6 py-4 bg-stone-50 dark:bg-secondDarkBackground border-t border-stone-200 dark:border-darkBorder flex justify-end gap-2">
           <button
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-darkBorder rounded-lg transition-colors">
             Cancel
           </button>
           <button
@@ -295,15 +295,15 @@ export const Team = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
-      <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200 dark:border-stone-800">
+    <div className="bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
+      <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200 dark:border-darkBorder">
         <div>
           <h2 className="font-bold text-xl dark:text-white">Team Members</h2>
         </div>
         {channel?.authority == "Owner" && (
           <button
             onClick={() => setIsAddingMember(true)}
-            className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded">
+            className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:hover:bg-darkBorder transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded">
             <FiUserPlus className="text-violet-500" />
             <span className="dark:text-white">Add Member</span>
           </button>
@@ -313,7 +313,7 @@ export const Team = () => {
       <div className="py-6 px-16">
         <div className="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800">
+            <thead className="bg-stone-50 dark:bg-darkButtons border-b border-stone-200 dark:border-stone-800">
               <tr>
                 <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
                   Name
@@ -407,7 +407,7 @@ export const Team = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+          <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
             <div className="flex items-start gap-4">
               <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
               <div>

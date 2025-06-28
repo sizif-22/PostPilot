@@ -85,8 +85,8 @@ export const Upcoming = () => {
   });
 
   return (
-    <div className="col-span-2 row-span-3 border dark:border-darkBoarder  shadow-sm dark:shadow-lg rounded-lg h-[81vh] bg-white dark:bg-transparent">
-      <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white dark:bg-transparent justify-between px-6 py-4 border-b dark:border-darkBoarder">
+    <div className="col-span-2 row-span-3 border dark:border-darkBorder  shadow-sm dark:shadow-lg rounded-lg h-[81vh] bg-white dark:bg-transparent">
+      <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white dark:bg-transparent justify-between px-6 py-4 border-b dark:border-darkBorder">
         <div className="flex items-center gap-2">
           <FiCalendar className="w-5 h-5 text-violet-500" />
           <h1 className="text-xl font-bold dark:text-white">Upcoming</h1>
@@ -135,7 +135,7 @@ export const Upcoming = () => {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-darkButtons border border-gray-100 dark:border-darkBoarder cursor-pointer transition-colors duration-200"
+                  className="rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-darkButtons border border-gray-100 dark:border-darkBorder cursor-pointer transition-colors duration-200"
                   onClick={() => setSelectedEvent(post)}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center text-gray-500 dark:text-gray-400">

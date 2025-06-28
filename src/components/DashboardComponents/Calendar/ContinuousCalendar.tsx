@@ -2,10 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/interfaces/Channel";
-import {
-  FiFacebook,
-  FiInstagram,
-} from "react-icons/fi";
+import { FiFacebook, FiInstagram } from "react-icons/fi";
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
   "January",
@@ -197,9 +194,10 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
               data-month={month}
               data-day={day}
               className={`relative group border font-medium transition-all hover:z-20 hover:border-violet-400 dark:hover:border-violet-600 border-[#00000005] dark:border-stone-700 aspect-square w-full min-h-[50px] sm:min-h-[80px] lg:min-h-[120px] ${
-                hasEvents ? "bg-violet-50 dark:bg-violet-950/30" : "dark:bg-stone-800"
-              }`}
-            >
+                hasEvents
+                  ? "bg-violet-50 dark:bg-violet-950/30"
+                  : "dark:bg-secondDarkBackground"
+              }`}>
               <span
                 className={`absolute left-1 top-1 flex size-6 items-center rounded-full justify-center text-xs sm:size-7 sm:text-sm lg:left-2 lg:top-2 lg:size-8 lg:text-base ${
                   isToday
@@ -209,8 +207,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                     : month < 0
                     ? "text-slate-400"
                     : "text-slate-800 dark:text-white"
-                }`}
-              >
+                }`}>
                 {day}
               </span>
               {isNewMonth && (
@@ -232,20 +229,19 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                               "h:mm a"
                             )
                           : ""
-                      }`}
-                    >
+                      }`}>
                       {post.scheduledDate
                         ? format(new Date(post.scheduledDate * 1000), "h:mm a")
                         : ""}
-                        <div className="flex gap-1">
-                          {post.platforms?.map((platform, index) =>
-                            platform === "facebook" ? (
-                              <FiFacebook key={index} />
-                            ) : platform === "instagram" ? (
-                              <FiInstagram key={index} />
-                            ) : null
-                          )}
-                        </div>
+                      <div className="flex gap-1">
+                        {post.platforms?.map((platform, index) =>
+                          platform === "facebook" ? (
+                            <FiFacebook key={index} />
+                          ) : platform === "instagram" ? (
+                            <FiInstagram key={index} />
+                          ) : null
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -293,8 +289,8 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
   }, []);
 
   return (
-    <div className="calendar-container px-4 text-slate-800 dark:text-white bg-white dark:bg-stone-800 h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
-      <div className="sticky top-0 z-50  w-full rounded-t-2xl bg-white dark:bg-stone-800 px-2 pt-3 sm:px-5 sm:pt-7">
+    <div className="calendar-container text-slate-800 dark:text-white bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+      <div className="sticky top-0 z-50  w-full rounded-t-2xl bg-white dark:bg-secondDarkBackground px-2 pt-3 sm:px-5 sm:pt-7">
         <div className="mb-2 flex w-full  sm:flex-row sm:items-center justify-between gap-2 sm:gap-6">
           <div className="flex items-center gap-2">
             <Select
@@ -302,20 +298,18 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
               value={`${selectedMonth}`}
               options={monthOptions}
               onChange={handleMonthChange}
-              className="border-violet-400"
+              className="border-violet-400 dark:text-white"
             />
             <button
               onClick={handleTodayClick}
-              className="rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-sm font-medium text-stone-900 dark:text-white hover:bg-stone-100 dark:hover:bg-stone-700 focus:outline-none sm:px-3 sm:py-1.5 lg:px-5 lg:py-2.5"
-            >
+              className="rounded-lg border border-stone-300 dark:border-darkBorder bg-white dark:bg-darkButtons px-2 py-1 text-sm font-medium text-stone-900 dark:text-white hover:bg-darkBorder transition-all dark:hover:bg-stone-700 focus:outline-none sm:px-3 sm:py-1.5 lg:px-5 lg:py-2.5">
               Today
             </button>
           </div>
           <div className="flex w-fit items-center justify-between">
             <button
               onClick={handlePrevYear}
-              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2"
-            >
+              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
               <svg
                 className="size-4 sm:size-5 text-stone-800 dark:text-white"
                 aria-hidden="true"
@@ -323,8 +317,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                 width="24"
                 height="24"
                 fill="none"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke="currentColor"
                   strokeLinecap="round"
@@ -339,8 +332,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
             </h1>
             <button
               onClick={handleNextYear}
-              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2"
-            >
+              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
               <svg
                 className="size-4 sm:size-5 text-stone-800 dark:text-white"
                 aria-hidden="true"
@@ -348,8 +340,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                 width="24"
                 height="24"
                 fill="none"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke="currentColor"
                   strokeLinecap="round"
@@ -365,8 +356,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
           {daysOfWeek.map((day, index) => (
             <div
               key={index}
-              className="w-full border-b border-slate-200 dark:border-stone-700 py-1 sm:py-2 text-center text-xs sm:text-sm font-semibold"
-            >
+              className="w-full border-b border-slate-200 dark:border-stone-700 py-1 sm:py-2 text-center text-xs sm:text-sm font-semibold">
               {day}
             </div>
           ))}
@@ -378,8 +368,6 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
     </div>
   );
 };
-
-
 
 export interface SelectProps {
   name: string;
@@ -398,9 +386,9 @@ export const Select = ({
   onChange,
   className,
 }: SelectProps) => (
-  <div className={`relative ${className}`}>
+  <div className={`relative ${className} `}>
     {label && (
-      <label htmlFor={name} className="mb-2 block font-medium text-slate-800">
+      <label htmlFor={name} className="mb-2 block font-medium text-slate-800 dark:text-white">
         {label}
       </label>
     )}
@@ -410,15 +398,13 @@ export const Select = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="cursor-pointer calendar-select w-full rounded-lg border border-stone-300 py-1 pl-2 pr-6 text-sm font-medium text-stone-900 bg-[#21212101] focus:outline-none sm:py-1.5 sm:pl-3 sm:pr-8 lg:py-2.5"
-        required
-      >
+        className="cursor-pointer calendar-select w-full rounded-lg border dark:text-white dark:border-darkBorder dark:bg-darkButtons border-stone-300 py-1 pl-2 pr-6 text-sm font-medium text-stone-900 bg-[#21212101] focus:outline-none sm:py-1.5 sm:pl-3 sm:pr-8 lg:py-2.5"
+        required>
         {options.map((option) => (
           <option
             key={option.value}
             value={option.value}
-            className=" bg-[#21212100] "
-          >
+            className=" bg-[#21212100] dark:bg-darkBackground outline-none border-none">
             {option.name}
           </option>
         ))}
@@ -428,8 +414,7 @@ export const Select = ({
           className="size-4 sm:size-5 text-slate-600"
           viewBox="0 0 20 20"
           fill="currentColor"
-          aria-hidden="true"
-        >
+          aria-hidden="true">
           <path
             fillRule="evenodd"
             d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z"

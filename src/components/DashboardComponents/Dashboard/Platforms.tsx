@@ -12,7 +12,7 @@ export const Platforms = () => {
     channel?.socialMedia?.tiktok;
 
   return (
-    <div className="col-span-1 row-span-2 border shadow-sm dark:shadow-lg rounded-lg p-4 h-[50vh] dark:bg-transparent dark:border-darkBoarder">
+    <div className="col-span-1 row-span-2 border shadow-sm dark:shadow-lg rounded-lg p-4 h-[50vh] dark:bg-transparent dark:border-darkBorder">
       <h3 className="text-lg font-semibold mb-4 dark:text-white">Connected Platforms</h3>
       {!hasPlatforms ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">

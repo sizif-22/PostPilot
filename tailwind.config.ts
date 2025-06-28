@@ -27,7 +27,7 @@ const config: Config = {
       colors: {
         darkBackground: "var(--dark-background)",
         secondDarkBackground: "var(--second-dark-background)",
-        darkBoarder: "hsl(var(--dark-borders))",
+        darkBorder: "var(--dark-borders)",
         darkButtons: "var(--dark-buttons)",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

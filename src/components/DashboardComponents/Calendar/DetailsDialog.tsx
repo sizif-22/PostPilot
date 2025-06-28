@@ -47,9 +47,9 @@ export const DetailsDialog = ({
         onClick={() => setOpen(false)}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-white dark:bg-stone-800 rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
+          className="bg-white dark:bg-darkBackground rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
           {/* Header */}
-          <div className="px-4 flex items-center justify-between  border-b border-stone-200 dark:border-stone-700 h-[9vh]">
+          <div className="px-4 flex items-center justify-between  border-b border-stone-200 dark:border-darkBorder h-[9vh]">
             <div className="flex sticky top-0 justify-between w-full items-center">
               <h3 className="text-lg font-semibold dark:text-white">Scheduled Post Preview</h3>
               <button
@@ -62,7 +62,7 @@ export const DetailsDialog = ({
 
           {/* Post Preview */}
           <div className="p-4 overflow-y-auto max-h-[80vh]">
-            <div className="bg-stone-50 dark:bg-stone-900 rounded-lg p-4 space-y-4">
+            <div className="bg-stone-50 dark:bg-secondDarkBackground rounded-lg p-4 space-y-4">
               {/* Post Header */}
               <div className="flex items-start justify-between">
                 <div className="flex gap-3">
@@ -108,7 +108,7 @@ export const DetailsDialog = ({
                 </p>
                 {selectedEvent.imageUrls && (
                   <div
-                    className={`rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 grid gap-1 ${
+                    className={`rounded-lg overflow-hidden border border-stone-200 dark:border-darkBorder grid gap-1 ${
                       selectedEvent.imageUrls.length === 1
                         ? "grid-cols-1"
                         : "grid-cols-2"
@@ -167,7 +167,7 @@ export const DetailsDialog = ({
               </div>
 
               {/* Post Status */}
-              <div className="bg-white dark:bg-stone-800 p-3 rounded-lg border border-stone-200 dark:border-stone-700">
+              <div className="bg-white dark:bg-darkButtons p-3 rounded-lg border border-stone-200 dark:border-darkBorder">
                 <div className="flex items-center gap-2 text-sm">
                   <div className="w-2 h-2 rounded-full bg-violet-500"></div>
                   <span className="font-medium dark:text-white">Scheduled</span>
@@ -202,7 +202,7 @@ export const DetailsDialog = ({
           {/* Footer Actions */}
           {(channel?.authority == "Owner" ||
             channel?.authority == "Contributor") && (
-            <div className="px-4 flex items-center w-full border-t border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 h-[9vh]">
+            <div className="px-4 flex items-center w-full border-t border-stone-200 dark:border-darkBorder bg-stone-50 dark:bg-darkBackground h-[9vh]">
               <div className="flex justify-end gap-2 w-full">
                 <button
                   onClick={() => {

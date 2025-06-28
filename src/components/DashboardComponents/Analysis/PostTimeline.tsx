@@ -36,7 +36,7 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
   );
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+    <div className="bg-white dark:bg-secondDarkBackground p-6 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
       <div className="flex items-center gap-2 mb-4">
         <FiCalendar className="text-lg text-stone-600 dark:text-stone-400" />
         <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
@@ -90,7 +90,7 @@ export const PostTimeline = ({ data }: PostTimelineProps) => {
       </div>
 
       {/* Insights */}
-      <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
+      <div className="pt-4 border-t border-stone-200 dark:border-darkBorder">
         <h4 className="text-md font-medium text-stone-900 dark:text-white mb-3">
           Insights
         </h4>

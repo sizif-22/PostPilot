@@ -47,7 +47,7 @@ export const TopPosts = ({ posts }: TopPostsProps) => {
   };
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+    <div className="bg-white dark:bg-secondDarkBackground p-6 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
       <div className="flex items-center gap-2 mb-4">
         <FiTrendingUp className="text-lg text-stone-600 dark:text-stone-400" />
         <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
@@ -59,7 +59,7 @@ export const TopPosts = ({ posts }: TopPostsProps) => {
         {posts.map((post, index) => (
           <div
             key={post.id || index}
-            className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors">
+            className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center">
@@ -129,7 +129,7 @@ export const TopPosts = ({ posts }: TopPostsProps) => {
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-darkBorder">
         <div className="flex justify-between items-center text-sm">
           <span className="text-stone-600 dark:text-stone-400">
             Showing top {posts.length} posts

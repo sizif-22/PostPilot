@@ -1,4 +1,5 @@
 "use client";
+import { Progress } from "@/components/ui/progress";
 import { FiType, FiImage, FiVideo, FiLayers } from "react-icons/fi";
 
 interface ContentAnalysisProps {
@@ -48,7 +49,7 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
   ];
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+    <div className="bg-white dark:bg-secondDarkBackground p-6 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
       <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-4">
         Content Analysis
       </h3>
@@ -61,7 +62,7 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
           return (
             <div
               key={type.name}
-              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${type.bgColor}`}>
                   <Icon className={`text-lg ${type.color}`} />
@@ -84,14 +85,7 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${type.bgColor
-                      .replace("bg-", "bg-")
-                      .replace("-100", "-500")}`}
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+                <Progress  value={percentage} className={`h-2`} />
               </div>
               <p className="text-xs text-stone-500 dark:text-stone-400">
                 {type.description}
@@ -101,7 +95,7 @@ export const ContentAnalysis = ({ data }: ContentAnalysisProps) => {
         })}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-darkBorder">
         <div className="flex justify-between items-center">
           <span className="text-sm text-stone-600 dark:text-stone-400">
             Content Distribution

@@ -168,14 +168,14 @@ const MediaDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
-          className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded"
+          className="flex text-sm items-center gap-2 bg-stone-100 dark:text-white dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded"
           disabled={storageUsed >= storageLimit}>
           <FaUpload className="text-violet-500" />
           <span>Upload</span>
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[600px] dark:bg-gray-800 dark:text-white">
+      <DialogContent className="sm:max-w-[600px] dark:bg-secondDarkBackground dark:text-white">
         <DialogHeader>
           <DialogTitle className="dark:text-white">Upload Media</DialogTitle>
         </DialogHeader>
@@ -200,7 +200,7 @@ const MediaDialog = ({
                   variant="outline"
                   size="sm"
                   onClick={() => inputRef.current?.click()}
-                  className="flex items-center gap-2 dark:bg-gray-900 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700">
+                  className="flex items-center gap-2 dark:bg-darkButtons dark:hover:bg-gray-700 dark:text-white dark:hover:bg-darkBorder">
                   <FaUpload className="w-3 h-3" />
                   Add More
                 </Button>
@@ -220,11 +220,11 @@ const MediaDialog = ({
           ) : (
             <div
               onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-gray-700 transition-colors dark:border-gray-700">
+              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-darkButtons transition-colors dark:border-darkBorder">
               <FaImage className="w-12 h-12 text-stone-300 dark:text-gray-500 mb-4" />
               <p className="text-stone-500 dark:text-gray-400">Drag and drop or click to upload</p>
               <p className="text-stone-400 dark:text-gray-500 text-sm mt-2">
-                Supported formats: JPEG, PNG, GIF, TIFF, HEIF, HEIC, WEBP, MP4,
+                Supported formats: JPEG, PNG, GIF, TIFF, WEBP, MP4,
                 WEBM
               </p>
             </div>
@@ -259,7 +259,7 @@ const MediaDialog = ({
                 variant="outline"
                 onClick={() => setSelectedMedia([])}
                 disabled={selectedMedia.length === 0 || isUploading}
-                className="dark:bg-gray-900 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700">
+                className="dark:bg-darkButtons dark:text-white dark:hover:bg-darkBorder">
                 Clear
               </Button>
               <Button
@@ -269,7 +269,7 @@ const MediaDialog = ({
                   isUploading ||
                   storageUsed >= storageLimit
                 }
-                className="dark:bg-violet-600 dark:hover:bg-violet-700">
+                className="dark:bg-violet-600 dark:hover:bg-violet-700 dark:text-white">
                 Upload {selectedMedia.length > 0 && `(${selectedMedia.length})`}
               </Button>
             </div>

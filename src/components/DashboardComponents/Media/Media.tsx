@@ -46,7 +46,7 @@ const MediaThumbnail = React.memo(
             isSelected ? "ring-2 ring-violet-500" : ""
           }`}
           onClick={handleClick}>
-          <div className="w-full h-fit media-section bg-gray-900 rounded-lg relative flex items-center justify-center overflow-hidden">
+          <div className="w-full h-fit media-section bg-gray-900 dark:bg-darkBackground rounded-lg relative flex items-center justify-center overflow-hidden">
             <video
               className="w-full h-auto max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] object-cover"
               preload="metadata">
@@ -163,8 +163,8 @@ export const Media = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-stone-800 transition-colors duration-300">
-      <div className="flex p-3 h-16 sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] justify-between items-center px-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="bg-white dark:bg-secondDarkBackground dark:to-[#2a2a2a] h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
+      <div className="flex p-3 h-16 sticky top-0 z-10 bg-white dark:bg-secondDarkBackground justify-between items-center px-4 border-b border-stone-200 dark:border-stone-800">
         <div className="flex justify-between items-center w-full gap-4">
           <div className="flex items-center gap-4">
             <h2 className="font-bold text-xl dark:text-white">Media</h2>

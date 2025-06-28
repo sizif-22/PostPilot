@@ -14,7 +14,7 @@ export const Storage = ({
   const storagePercentage = (storageUsed / storageLimit) * 100;
 
   return (
-    <div className="col-span-1 flex flex-col justify-around  row-span-1 border shadow-sm dark:shadow-lg rounded-lg p-2 h-[30vh] dark:bg-transparent dark:border-darkBoarder">
+    <div className="col-span-1 flex flex-col justify-around  row-span-1 border shadow-sm dark:shadow-lg rounded-lg p-2 h-[30vh] dark:bg-transparent dark:border-darkBorder">
       <div className="flex flex-col items-start justify-between">
         <div className="flex items-center gap-2">
           <FiHardDrive className="w-5 h-5 text-violet-500" />
@@ -40,7 +40,7 @@ export const Storage = ({
       </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="border rounded-lg p-2 dark:border-darkBoarder">
+        <div className="border rounded-lg p-2 dark:border-darkBorder">
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <FiHardDrive className="w-4 h-4" />
             <span className="text-sm">Available</span>
@@ -50,7 +50,7 @@ export const Storage = ({
           </p>
         </div>
 
-        <div className="border rounded-lg p-2 dark:border-darkBoarder">
+        <div className="border rounded-lg p-2 dark:border-darkBorder">
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <FiFile className="w-4 h-4" />
             <span className="text-sm">Files</span>

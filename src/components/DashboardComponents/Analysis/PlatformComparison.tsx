@@ -56,7 +56,7 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
     0
   );
   return (
-    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+    <div className="bg-white dark:bg-secondDarkBackground p-6 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
       <div className="flex items-center gap-2 mb-4">
         <FiBarChart className="text-lg text-stone-600 dark:text-stone-400" />
         <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
@@ -72,7 +72,7 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
           return (
             <div
               key={platform.name}
-              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:bg-darkButtons dark:border-darkBorder rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${platform.bgColor}`}>
@@ -173,7 +173,7 @@ export const PlatformComparison = ({ data }: PlatformComparisonProps) => {
       </div>
 
       {/* Platform Recommendations */}
-      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+      <div className="mt-6 pt-4 border-t border-stone-200 dark:border-darkBorder">
         <h4 className="text-md font-medium text-stone-900 dark:text-white mb-3">
           Recommendations
         </h4>

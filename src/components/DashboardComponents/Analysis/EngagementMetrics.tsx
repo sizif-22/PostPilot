@@ -79,7 +79,7 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
   const maxReach = Math.max(...trendData.map((d) => d.reach));
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-6 rounded-lg border dark:border-stone-800 shadow-sm dark:shadow-lg">
+    <div className="bg-white dark:bg-secondDarkBackground p-6 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
       <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-4">
         Engagement Metrics
       </h3>
@@ -91,7 +91,7 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
           return (
             <div
               key={metric.name}
-              className="p-4 border border-stone-200 dark:border-stone-700 rounded-lg">
+              className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <div className={`p-2 rounded-lg ${metric.bgColor}`}>
                   <Icon className={`text-lg ${metric.color}`} />
@@ -167,7 +167,7 @@ export const EngagementMetrics = ({ data }: EngagementMetricsProps) => {
       </div>
 
       {/* Averages */}
-      <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
+      <div className="pt-4 border-t border-stone-200 dark:border-darkBorder">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-stone-600 dark:text-stone-400">
