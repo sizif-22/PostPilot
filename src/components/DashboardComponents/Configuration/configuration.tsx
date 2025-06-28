@@ -1,17 +1,26 @@
 import { useState } from "react";
-import {
-  FiAlertCircle,
-  FiCheck,
-} from "react-icons/fi";
+import { FiAlertCircle, FiCheck } from "react-icons/fi";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { useChannel } from "@/context/ChannelContext";
+import {
+  deleteChannel,
+  updateChanneDescription,
+  updateChanneName,
+} from "@/firebase/channel.firestore";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 export const Configuration = () => {
   const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { channel } = useChannel();
   const isFacebookConnected = channel?.socialMedia?.facebook;
   const isTikTokConnected = channel?.socialMedia?.tiktok;
+  const [nameInput, setNameInput] = useState<string | undefined>(channel?.name);
+  const [descInput, setDescInput] = useState<string | undefined>(
+    channel?.description
+  );
   // const isInstagramConnected = channel?.socialMedia?.instagram;
 
   const handleFacebookConnect = () => {
@@ -40,8 +49,10 @@ export const Configuration = () => {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
-    console.log("Deleting channel...");
+  const confirmDelete = async () => {
+    if (channel?.TeamMembers && channel.id) {
+      await deleteChannel(channel?.TeamMembers, channel?.id);
+    }
     setShowDeleteConfirm(false);
   };
 
@@ -79,6 +90,61 @@ export const Configuration = () => {
       </div>
       <div className="px-8 md:px-16">
         <div className="p-6 space-y-6">
+          <div>
+            <h2 className="text-xl border-b border-stone-200 dark:border-darkBorder pb-4 mb-2 font-semibold dark:text-white">
+              General
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              Update the channel's data
+            </p>
+            <div className="flex flex-col gap-2 mt-4 justify-start dark:text-white">
+              <h3>Update Description:</h3>
+              <div className="flex gap-2">
+                <Input
+                  className="w-60"
+                  onChange={(e) => setNameInput(e.target.value)}
+                  value={nameInput}
+                />
+                <Button
+                  disabled={
+                    nameInput == "" ||
+                    nameInput == undefined ||
+                    nameInput == channel?.name
+                  }
+                  onClick={() => {
+                    if (channel && channel.id && nameInput) {
+                      updateChanneName(channel?.id, nameInput);
+                    }
+                  }}>
+                  Update
+                </Button>
+              </div>
+              <div className="flex flex-col gap-2 mt-4 justify-start dark:text-white">
+                <h3>Update Description:</h3>
+                <Textarea
+                  value={descInput}
+                  className="w-full min-h-52 max-h-72"
+                  onChange={(e) => setDescInput(e.target.value)}
+                />
+                <div className="flex w-full justify-end">
+                  <Button
+                    disabled={
+                      descInput == "" ||
+                      descInput == undefined ||
+                      descInput == channel?.description
+                    }
+                    onClick={() => {
+                      if (channel && channel.id && descInput) {
+                        updateChanneDescription(channel?.id, descInput);
+                      }
+                    }}>
+                    Update
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Section Title */}
           <div className="pb-4">
             <h2 className="text-xl border-b border-stone-200 dark:border-darkBorder pb-4 mb-2 font-semibold dark:text-white">
@@ -136,7 +202,9 @@ export const Configuration = () => {
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-col gap-4 md:flex-row items-center w-full md:gap-2">
                   <div>
-                    <h2 className="text-lg font-medium dark:text-white">Delete Channel</h2>
+                    <h2 className="text-lg font-medium dark:text-white">
+                      Delete Channel
+                    </h2>
                     <h3 className="text-sm text-stone-500 dark:text-stone-400">
                       Once you delete a channel, there is no going back. Please
                       be certain.
@@ -156,11 +224,13 @@ export const Configuration = () => {
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+            <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
               <div className="flex items-start gap-4">
                 <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 dark:text-white">Delete Channel</h3>
+                  <h3 className="text-lg font-semibold mb-2 dark:text-white">
+                    Delete Channel
+                  </h3>
                   <p className="text-stone-600 dark:text-gray-400 mb-4">
                     Are you sure you want to delete this channel? This action
                     cannot be undone.

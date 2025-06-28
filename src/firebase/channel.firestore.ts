@@ -206,6 +206,27 @@ export const updateRole = async (
   });
 };
 
+export const deleteChannel = async (
+  users: { email: string; role: Authority }[],
+  channelId: string
+) => {
+  await fs.deleteDoc(fs.doc(db, "Channels", channelId));
+  for (const user of users) {
+    await fs.updateDoc(fs.doc(db, "Users", user.email), {
+      channels: fs.arrayRemove({ id: channelId, authority: user.role }),
+    });
+  }
+};
+export const updateChanneName = async (channelId: string, name: string) => {
+  await fs.updateDoc(fs.doc(db, "Channels", channelId), { name });
+};
+export const updateChanneDescription = async (
+  channelId: string,
+  description: string
+) => {
+  await fs.updateDoc(fs.doc(db, "Channels", channelId), { description });
+};
+
 export {
   getChannelBriefs,
   getChannel,

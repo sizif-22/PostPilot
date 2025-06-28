@@ -7,18 +7,18 @@ import { FaGoogle, FaFacebook } from "react-icons/fa";
 import {  addUserWithFacebook, addUserWithGoogle } from "@/firebase/auth";
 const Signin = () => {
   return (
-    <main className="h-screen flex justify-center items-center">
-      <div className="h-fit transition-all bg-white rounded-lg py-4 px-6 flex flex-col gap-4">
+    <main className="h-screen flex justify-center items-center dark:text-white dark:bg-darkBackground">
+      <div className="h-fit transition-all bg-white dark:bg-secondDarkBackground rounded-lg py-4 px-6 flex flex-col gap-4">
         <h1 className="font-bold text-2xl">
           Welcome to{" "}
-          <span className="font-PlaywriteHU text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-violet-700 to-black">
+          <span className="font-PlaywriteHU text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-violet-700 to-black dark:to-white">
             PostPilot
           </span>
         </h1>
 
         <Tabs defaultValue="sign-in">
           <TabsList
-            className="grid lg:w-[30vw] md:w-[50vw] w-[70vw] max-w-[350px] grid-cols-2 font-RobotoMono"
+            className="grid lg:w-[30vw] md:w-[50vw] w-[70vw] max-w-[350px] grid-cols-2 font-RobotoMono dark:bg-darkButtons"
             duration-1000
           >
             <TabsTrigger
@@ -50,7 +50,7 @@ const Signin = () => {
                 placeholder="Password"
                 className="transition-all duration-200"
               />
-              <Button className="w-full transition-all duration-200 hover:opacity-95">
+              <Button className="w-full transition-all duration-200 hover:opacity-95 dark:bg-darkButtons text-white">
                 Log In
               </Button>
               <Oauth />
@@ -82,7 +82,7 @@ const Signin = () => {
                 placeholder="Confirm Password"
                 className="transition-all duration-200"
               />
-              <Button className="w-full transition-all duration-200 hover:opacity-95">
+              <Button className="w-full transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons">
                 Sign Up
               </Button>
               <Oauth />
@@ -100,18 +100,18 @@ const Oauth = () => {
       <hr className="my-4" />
       <h2 className="text-sm font-medium">Or continue with</h2>
       <div className="flex gap-2 mt-4">
-        <Button className="flex-1 transition-all duration-200 hover:opacity-95" onClick={() => addUserWithGoogle()}>
+        <Button className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons" onClick={() => addUserWithGoogle()}>
           <span className="mr-2">
             <FaGoogle />
           </span>
           Google
         </Button>
-        <Button className="flex-1 transition-all duration-200 hover:opacity-95" onClick={() => addUserWithFacebook()}>
+        {/* <Button className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons" onClick={() => addUserWithFacebook()}>
           <span className="mr-2">
             <FaFacebook />
           </span>
           Facebook
-        </Button>
+        </Button> */}
       </div>
     </>
   );
