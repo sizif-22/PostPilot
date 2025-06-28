@@ -206,49 +206,47 @@ export const CPDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] dark:bg-secondDarkBackground dark:text-white">
         <DialogHeader>
           <DialogTitle>Create Post</DialogTitle>
         </DialogHeader>
 
         {/* Platform Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-stone-700 dark:text-white/70">
             Select Platforms
           </label>
           <div className="flex gap-2 flex-wrap">
             {channel?.socialMedia?.facebook && (
               <button
                 onClick={() => handlePlatformToggle("facebook")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
                   selectedPlatforms.includes("facebook")
-                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder"
                     : "border-stone-200 hover:border-stone-300"
                 }`}>
-                <FiFacebook className="text-lg" />
-                <span className="text-sm">
-                  {channel?.socialMedia.facebook.name}
-                </span>
+                <FiFacebook className="text-lg text-blue-700" />
+                <span className="text-sm">Facebook</span>
               </button>
             )}
             {channel?.socialMedia?.instagram && (
               <button
                 onClick={() => handlePlatformToggle("instagram")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
                   selectedPlatforms.includes("instagram")
-                    ? "border-pink-300 bg-pink-50 text-pink-700"
+                    ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder"
                     : "border-stone-200 hover:border-stone-300"
                 }`}>
-                <FiInstagram className="text-lg" />
+                <FiInstagram className="text-lg text-pink-700" />
                 <span className="text-sm">Instagram</span>
               </button>
             )}
             {channel?.socialMedia?.tiktok && (
               <button
                 onClick={() => handlePlatformToggle("tiktok")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder  ${
                   selectedPlatforms.includes("tiktok")
-                    ? "border-black bg-black text-white"
+                    ? "border-black bg-black text-white dark:bg-darkBorder"
                     : "border-stone-200 hover:border-stone-300"
                 }`}>
                 <FaTiktok className="text-lg" />
@@ -263,7 +261,7 @@ export const CPDialog = ({
             value={postText}
             onChange={(e) => setPostText(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
             rows={4}
           />
 
@@ -323,12 +321,12 @@ export const CPDialog = ({
 
         {/* Media Selection Dialog */}
         <Dialog open={isMediaDialogOpen} onOpenChange={setIsMediaDialogOpen}>
-          <DialogContent className="sm:max-w-[800px]">
+          <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
             <DialogHeader>
               <DialogTitle>Select Images</DialogTitle>
             </DialogHeader>
-            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-              <div className="grid grid-cols-4 gap-4">
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4 dark:bg-secondDarkBackground dark:border-darkBorder">
+              <div className="grid grid-cols-4 gap-4 ">
                 {media
                   .filter((item) => !item.isVideo)
                   .map((item) => (
@@ -381,8 +379,8 @@ export const CPDialog = ({
         </Dialog>
 
         {/* Schedule Options */}
-        <div className="space-y-4 border-t border-stone-200 pt-4">
-          <label className="block text-sm font-medium text-stone-700">
+        <div className="space-y-4 border-t border-stone-200 dark:border-darkBorder pt-4">
+          <label className="block text-sm font-medium text-stone-700 dark:text-white/70">
             Schedule (Optional)
           </label>
 
@@ -393,7 +391,7 @@ export const CPDialog = ({
               <select
                 value={selectedTimeZone}
                 onChange={(e) => setSelectedTimeZone(e.target.value)}
-                className="text-sm text-stone-700 bg-white border border-stone-200 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1">
+                className="text-sm text-stone-700 bg-white dark:bg-darkButtons outline-none dark:text-white border border-stone-200 dark:border-darkBorder rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1">
                 {sortedTimezones.map(({ name, offset }) => (
                   <option key={name} value={name}>
                     {name}
@@ -420,7 +418,7 @@ export const CPDialog = ({
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
               min={getMinScheduleDateTime(selectedTimeZone)}
-              className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="w-full px-3 py-2 border dark:bg-darkButtons dark:border-darkBorder border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
             />
             <p className="text-xs text-stone-500">
               📅 Posts must be scheduled at least 13 minutes in advance
@@ -431,11 +429,11 @@ export const CPDialog = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center gap-2 pt-4 border-t border-stone-200">
+        <div className="flex justify-between items-center gap-2 pt-4 border-t border-stone-200 dark:border-darkBorder">
           <button
             onClick={resetForm}
             type="button"
-            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-2 text-red-600 dark:hover:bg-transparent hover:bg-red-50 rounded transition-colors text-sm"
             title="Reset form">
             <FiRefreshCcw size={16} />
             Reset
@@ -447,7 +445,7 @@ export const CPDialog = ({
               <button
                 onClick={() => PostingHandler(false)}
                 disabled={!canSchedule || isPosting}
-                className="bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded disabled:bg-stone-300">
+                className="bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded disabled:bg-stone-300 dark:disabled:bg-secondDarkBackground dark:border-darkBorder dark:border dark:bg-darkButtons dark:hover:bg-darkBorder dark:disabled:cursor-not-allowed">
                 {isPosting ? "Scheduling..." : "Schedule Post"}
               </button>
             )}
@@ -456,7 +454,7 @@ export const CPDialog = ({
             <button
               onClick={() => PostingHandler(true)}
               disabled={!isFormValid || isPosting}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300">
+              className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-800 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300 dark:disabled:bg-secondDarkBackground dark:disabled:border dark:disabled:border-darkBorder dark:disabled:cursor-not-allowed">
               {isPosting ? "Posting..." : "Post Now"}
             </button>
           </div>

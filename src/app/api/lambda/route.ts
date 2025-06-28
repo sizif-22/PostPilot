@@ -181,6 +181,22 @@ export async function POST(request: Request) {
     let schedulerResult;
     try {
       schedulerResult = await schedulerResponse.json();
+      await fs.updateDoc(fs.doc(db, "Channels", post.channelId), {
+        [`posts.${post.postId}.ruleName`]: schedulerResult.ruleName,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Post scheduled successfully",
+          scheduledAt: scheduleTime,
+          ruleName: schedulerResult.ruleName,
+          channelId: post.channelId,
+          postId: post.postId,
+          schedulerResponse: schedulerResult,
+        },
+        { status: 200 }
+      );
     } catch (e) {
       schedulerResult = { message: "Scheduled successfully" };
     }
@@ -188,24 +204,7 @@ export async function POST(request: Request) {
     console.log("Post scheduled successfully:", schedulerResult);
 
     // Generate a unique rule name for tracking
-    const ruleName = `scheduled-post-${post.postId}-${Date.now()}`;
-
-    await fs.updateDoc(fs.doc(db, "Channels", post.channelId), {
-      [`posts.${post.postId}.ruleName`]: ruleName,
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Post scheduled successfully",
-        scheduledAt: scheduleTime,
-        ruleName: ruleName,
-        channelId: post.channelId,
-        postId: post.postId,
-        schedulerResponse: schedulerResult,
-      },
-      { status: 200 }
-    );
+    // const ruleName = (await schedulerResponse.json());
   } catch (error: any) {
     console.error("Scheduling error:", error);
     console.error("Error stack:", error.stack);
@@ -219,4 +218,21 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(request: Request) {
+  const { ruleNames }: { ruleNames: string[] } = await request.json();
+  if (!ruleNames || ruleNames.length < 1)
+    return NextResponse.json({ message: "Done" }, { status: 200 });
+  await fetch(
+    "https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/schedule",
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ruleNames }),
+    }
+  );
+  return NextResponse.json({ message: "Done" }, { status: 200 });
 }

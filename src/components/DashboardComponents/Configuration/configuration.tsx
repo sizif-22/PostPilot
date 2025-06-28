@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FiAlertCircle, FiCheck } from "react-icons/fi";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useChannel } from "@/context/ChannelContext";
 import {
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 export const Configuration = () => {
+  const router = useRouter();
   const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { channel } = useChannel();
@@ -51,7 +52,20 @@ export const Configuration = () => {
 
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {
+      let ruleNames: string[] = [];
+      Object.values(channel.posts).forEach((post) => {
+        if (post.ruleName) {
+          ruleNames.push(post.ruleName);
+        }
+      });
+      const res = await fetch("/api/lambda", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ruleNames }),
+      });
+      console.log("res.status:", res.status);
       await deleteChannel(channel?.TeamMembers, channel?.id);
+      router.replace("/channels");
     }
     setShowDeleteConfirm(false);
   };
@@ -95,7 +109,7 @@ export const Configuration = () => {
               General
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
-              Update the channel's data
+              Manage your channel's basic information and settings
             </p>
             <div className="flex flex-col gap-2 mt-4 justify-start dark:text-white">
               <h3>Update Description:</h3>

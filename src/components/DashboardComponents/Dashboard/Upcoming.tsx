@@ -49,40 +49,42 @@ export const Upcoming = () => {
       return dateA - dateB;
     });
 
+  // Group posts by full date (YYYY-MM-DD)
   const groupedPosts = sortedPosts.reduce((acc, post) => {
     if (!post.scheduledDate) return acc;
+    const dateObj = new Date(post.scheduledDate * 1000);
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth();
+    const day = dateObj.getDate();
+    const groupKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(
+      day
+    ).padStart(2, "0")}`;
 
-    const { date, day, month } = formatDateInTimezone(
-      post.scheduledDate,
-      selectedTimeZone
-    );
+    // Use formatDateInTimezone for display values
+    const {
+      date,
+      day: dayName,
+      month: monthName,
+    } = formatDateInTimezone(post.scheduledDate, selectedTimeZone);
 
-    if (!acc[date]) {
-      acc[date] = {
-        date,
-        day,
-        month,
+    if (!acc[groupKey]) {
+      acc[groupKey] = {
+        groupKey,
+        date, // day of month
+        day: dayName,
+        month: monthName,
         posts: [],
+        timestamp: post.scheduledDate * 1000,
       };
     }
-    acc[date].posts.push(post);
+    acc[groupKey].posts.push(post);
     return acc;
-  }, {} as Record<number, { date: number; day: string; month: string; posts: Post[] }>);
+  }, {} as Record<string, { groupKey: string; date: number; day: string; month: string; posts: Post[]; timestamp: number }>);
 
-  // Convert to array and sort by date
-  const sortedGroupedPosts = Object.values(groupedPosts).sort((a, b) => {
-    const dateA = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      a.date
-    );
-    const dateB = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      b.date
-    );
-    return dateA.getTime() - dateB.getTime();
-  });
+  // Convert to array and sort by timestamp
+  const sortedGroupedPosts = Object.values(groupedPosts).sort(
+    (a, b) => a.timestamp - b.timestamp
+  );
 
   return (
     <div className="col-span-2 row-span-3 border dark:border-darkBorder  shadow-sm dark:shadow-lg rounded-lg h-[81vh] bg-white dark:bg-transparent">
@@ -124,11 +126,15 @@ export const Upcoming = () => {
           <div key={date} className="flex gap-6 relative">
             <div className="sticky top-0 flex flex-col items-center min-w-[4rem] pt-2 h-fit">
               <div className=" backdrop-blur-sm rounded-lg p-2">
-                <div className="text-sm text-gray-500 dark:text-gray-400">{month}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {month}
+                </div>
                 <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                   {date}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{day}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {day}
+                </div>
               </div>
             </div>
             <div className="flex-1 space-y-4">

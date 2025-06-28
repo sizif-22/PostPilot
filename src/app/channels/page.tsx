@@ -39,7 +39,7 @@ const ChannelsComponent = ({
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-lg p-4 my-4 border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600">
+            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-lg p-4 my-4 border border-stone-200 dark:border-darkBorder hover:border-stone-300 dark:hover:border-stone-600">
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-2 w-full">
                 <div className="flex items-center w-full gap-3 justify-between">
@@ -48,7 +48,7 @@ const ChannelsComponent = ({
                       {channel.name}
                     </h3>
                   </Link>
-                  <div className="text-sm bg-stone-100 dark:bg-darkBorder px-2 rounded-md dark:text-white flex items-center gap-1 cursor-default group-hover:bg-stone-200 dark:group-hover:bg-stone-600 transition-colors">
+                  <div className="text-sm bg-stone-100 dark:bg-darkBorder px-2 rounded-md dark:text-white flex items-center gap-1 cursor-default group-hover:bg-stone-200 dark:group-hover:bg-darkBorder dark:group-hover:shadow  transition-colors">
                     {channel.authority === "Owner" ? (
                       <span className="text-lg pb-1">👑</span>
                     ) : channel.authority === "Reviewer" ? (
@@ -95,7 +95,7 @@ const Page = () => {
           <Sidebar />
           <div className="bg-white dark:bg-secondDarkBackground border dark:border-darkBorder h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
             {/* Top Bar */}
-            <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-secondDarkBackground px-4 border-b border-stone-200 dark:border-stone-700 z-10">
+            <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-secondDarkBackground px-4 border-b border-stone-200 dark:border-darkBorder z-10">
               <h2 className="font-bold dark:text-white">Channels</h2>
               <button
                 onClick={() => setCreateNewChannel(true)}
