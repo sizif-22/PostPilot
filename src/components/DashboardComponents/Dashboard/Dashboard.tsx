@@ -21,6 +21,7 @@ export const Dashboard = ({
         storageLimit={storageLimit}
         storageUsed={storageUsed}
         filesCount={filesCount}
+        media={media}
       />
     </div>
   );

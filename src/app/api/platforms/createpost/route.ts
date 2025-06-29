@@ -130,6 +130,10 @@ export async function POST(request: Request) {
       .filter((r) => r.success)
       .map((r) => r.platform);
 
+    await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
+      [`posts.${postId}.published`]: true,
+    });
+
     return NextResponse.json(
       {
         message: "Post published successfully.",

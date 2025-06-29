@@ -155,7 +155,7 @@ export default function Home({
             ) : route === "Team" ? (
               <Team />
             ) : route === "Calendar" ? (
-              <Calendar />
+              <Calendar media={media} />
             ) : route === "Media" ? (
               <Media
                 media={media}

@@ -26,7 +26,7 @@ export const Analysis = () => {
 
     const filteredPosts = posts.filter((post) => {
       if (!post.date) return false;
-      const postDate = new Date(post.date);
+      const postDate = new Date(post.date.toDate());
       return (
         now.getTime() - postDate.getTime() <=
         timeframeMs[selectedTimeframe as keyof typeof timeframeMs]
@@ -86,7 +86,7 @@ export const Analysis = () => {
 
     filteredPosts.forEach((post) => {
       if (post.date) {
-        const day = new Date(post.date)
+        const day = new Date(post.date.toDate())
           .toLocaleDateString("en-US", { weekday: "long" })
           .toLowerCase();
         if (day in publishingSchedule) {
@@ -140,7 +140,9 @@ export const Analysis = () => {
       {/* Header */}
       <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 dark:border-darkBorder sticky top-0 z-50 bg-white dark:bg-secondDarkBackground flex justify-between">
         <div>
-          <h1 className="text-sm font-bold block dark:text-white">Analytics Dashboard</h1>
+          <h1 className="text-sm font-bold block dark:text-white">
+            Analytics Dashboard
+          </h1>
           <p className="text-xs block text-stone-500 dark:text-stone-400">
             Insights and performance metrics for your social media content
           </p>
@@ -276,13 +278,21 @@ export const Analysis = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 my-4">
         <PlatformPerformance data={analyticsData.platformUsage} />
         <ContentAnalysis data={analyticsData.contentTypes} />
-        <EngagementMetrics data={analyticsData.engagementData} />
+        <EngagementMetrics 
+          data={analyticsData.engagementData.map(post => ({
+            ...post,
+            date: post.date?.toDate()
+          }))} 
+        />
         <PostTimeline data={analyticsData.publishingSchedule} />
       </div>
 
       {/* Full Width Components */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 my-4">
-        <TopPosts posts={analyticsData.topPosts} />
+        <TopPosts posts={analyticsData.topPosts.map(post => ({
+          ...post,
+          date: post.date?.toDate()
+        }))} />
         <PlatformComparison data={analyticsData} />
       </div>
     </div>

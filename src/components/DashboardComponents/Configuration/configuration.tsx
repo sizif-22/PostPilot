@@ -137,7 +137,8 @@ export const Configuration = () => {
                 <h3>Update Description:</h3>
                 <Textarea
                   value={descInput}
-                  className="w-full min-h-52 max-h-72"
+                  rows={4}
+                  className="w-full resize-none"
                   onChange={(e) => setDescInput(e.target.value)}
                 />
                 <div className="flex w-full justify-end">
@@ -252,7 +253,7 @@ export const Configuration = () => {
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-gray-700 rounded">
+                      className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-darkBorder rounded">
                       Cancel
                     </button>
                     <button

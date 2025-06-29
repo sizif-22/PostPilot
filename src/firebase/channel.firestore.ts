@@ -75,9 +75,6 @@ const createPost = async (post: Post, channelId: string) => {
     firestorePost.clientTimeZone = post.clientTimeZone;
   }
 
-  // Add the current timestamp as the creation date
-  firestorePost.date = new Date();
-
   // Filter out undefined values
   const cleanPost = Object.fromEntries(
     Object.entries(firestorePost).filter(([_, value]) => value !== undefined)
@@ -226,7 +223,6 @@ export const updateChanneDescription = async (
 ) => {
   await fs.updateDoc(fs.doc(db, "Channels", channelId), { description });
 };
-
 export {
   getChannelBriefs,
   getChannel,

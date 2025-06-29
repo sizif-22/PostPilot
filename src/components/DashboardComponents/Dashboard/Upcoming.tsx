@@ -17,11 +17,12 @@ import Image from "next/image";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/lib/utils";
+import { MediaItem } from "@/interfaces/Media";
 
 // Get all available timezones
 const timeZones = Intl.supportedValuesOf("timeZone");
 
-export const Upcoming = () => {
+export const Upcoming = ({ media }: { media: MediaItem[] }) => {
   const [selectedEvent, setSelectedEvent] = useState<Post | null>(null);
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     // Try to get saved timezone from localStorage, default to user's local timezone
@@ -239,6 +240,7 @@ export const Upcoming = () => {
         setSelectedEvent={setSelectedEvent}
         open={!!selectedEvent}
         setOpen={setSelectedEvent}
+        media={media}
       />
     </div>
   );

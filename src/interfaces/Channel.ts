@@ -48,7 +48,7 @@ export interface Post {
   ruleName?: string;
   fid?: string;
   title?: string;
-  date?: Date;
+  date?: Timestamp;
   platforms?: string[];
   content?: string;
   imageUrls?: MediaItem[];

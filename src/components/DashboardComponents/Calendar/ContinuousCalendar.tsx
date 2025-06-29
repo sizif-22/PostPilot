@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/interfaces/Channel";
 import { FiFacebook, FiInstagram } from "react-icons/fi";
+import { Timestamp } from "firebase/firestore";
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
   "January",
@@ -109,7 +110,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
       onEventSelect({
         id: "",
         title: "",
-        date: new Date(year - 1, 11, day),
+        date: Timestamp.fromDate(new Date(year - 1, 11, day)),
         platforms: [],
         content: "",
         published: false,
@@ -228,11 +229,20 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                               new Date(post.scheduledDate * 1000),
                               "h:mm a"
                             )
+                          : post.date
+                          ? format(
+                              new Date(post.date.toDate()),
+                              "h:mm a"
+                            )
                           : ""
                       }`}>
                       {post.scheduledDate
                         ? format(new Date(post.scheduledDate * 1000), "h:mm a")
-                        : ""}
+                        : post.date
+                          ?  format(
+                          new Date(post.date.toDate()),
+                          "h:mm a"
+                        ):""}
                       <div className="flex gap-1">
                         {post.platforms?.map((platform, index) =>
                           platform === "facebook" ? (
