@@ -18,6 +18,7 @@ export const Configuration = () => {
   const { channel } = useChannel();
   const isFacebookConnected = channel?.socialMedia?.facebook;
   const isTikTokConnected = channel?.socialMedia?.tiktok;
+  const isLinkedInConnected = channel?.socialMedia?.linkedin;
   const [nameInput, setNameInput] = useState<string | undefined>(channel?.name);
   const [descInput, setDescInput] = useState<string | undefined>(
     channel?.description
@@ -45,6 +46,15 @@ export const Configuration = () => {
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
     console.log("client id:", authUrl);
     // window.location.href = authUrl;
+  };
+  const handleLinkedInConnect = () => {
+    Cookies.set("currentChannel", id as string);
+    const LINKEDIN_CLIENT_ID = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
+    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/linkedin";
+    const SCOPE =
+      "openid w_organization_social rw_organization_admin r_organization_social";
+    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
+    window.location.href = authUrl;
   };
   const handleDeleteChannel = () => {
     setShowDeleteConfirm(true);
@@ -93,6 +103,16 @@ export const Configuration = () => {
       isConnected: isTikTokConnected,
       connectedInfo: isTikTokConnected
         ? `Connected to: ${isTikTokConnected?.name}`
+        : null,
+    },
+    {
+      name: "LinkedIn",
+      html: <span>LinkedIn</span>,
+      description: "Connect your LinkedIn organization to enable posting",
+      connect: handleLinkedInConnect,
+      isConnected: isLinkedInConnected,
+      connectedInfo: isLinkedInConnected
+        ? `Connected to: ${isLinkedInConnected?.name}`
         : null,
     },
   ];

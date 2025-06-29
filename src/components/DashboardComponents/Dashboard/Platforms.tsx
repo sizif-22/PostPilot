@@ -1,6 +1,6 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
-import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { FaTiktok } from "react-icons/fa6";
 
 export const Platforms = () => {
@@ -9,11 +9,14 @@ export const Platforms = () => {
   const hasPlatforms =
     channel?.socialMedia?.facebook ||
     channel?.socialMedia?.instagram ||
-    channel?.socialMedia?.tiktok;
+    channel?.socialMedia?.tiktok ||
+    channel?.socialMedia?.linkedin;
 
   return (
     <div className="col-span-1 row-span-2 border shadow-sm dark:shadow-lg rounded-lg p-4 h-[50vh] dark:bg-transparent dark:border-darkBorder">
-      <h3 className="text-lg font-semibold mb-4 dark:text-white">Connected Platforms</h3>
+      <h3 className="text-lg font-semibold mb-4 dark:text-white">
+        Connected Platforms
+      </h3>
       {!hasPlatforms ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">
           You did not add any platforms yet.
@@ -27,7 +30,9 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.facebook.name}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Facebook Page</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Facebook Page
+                </p>
               </div>
             </div>
           )}
@@ -38,7 +43,9 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.instagram.pageName}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Instagram Account</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Instagram Account
+                </p>
               </div>
             </div>
           )}
@@ -49,7 +56,22 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.tiktok.name || "TikTok User"}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">TikTok Account</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  TikTok Account
+                </p>
+              </div>
+            </div>
+          )}
+          {channel?.socialMedia?.linkedin && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+              <FaLinkedin className="text-blue-700 text-xl" />
+              <div>
+                <p className="font-medium dark:text-gray-100">
+                  {channel.socialMedia.linkedin.name}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  LinkedIn Organization
+                </p>
               </div>
             </div>
           )}

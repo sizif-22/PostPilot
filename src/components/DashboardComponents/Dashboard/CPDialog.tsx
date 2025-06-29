@@ -30,7 +30,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
-import { FaTiktok } from "react-icons/fa6";
+import { FaTiktok, FaLinkedin } from "react-icons/fa6";
 import { Timestamp } from "firebase/firestore";
 import { timeStamp } from "console";
 
@@ -251,6 +251,18 @@ export const CPDialog = ({
                 }`}>
                 <FaTiktok className="text-lg" />
                 <span className="text-sm">TikTok</span>
+              </button>
+            )}
+            {channel?.socialMedia?.linkedin && (
+              <button
+                onClick={() => handlePlatformToggle("linkedin")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder  ${
+                  selectedPlatforms.includes("linkedin")
+                    ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}>
+                <FaLinkedin className="text-lg text-blue-700" />
+                <span className="text-sm">LinkedIn</span>
               </button>
             )}
           </div>

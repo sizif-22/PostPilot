@@ -34,11 +34,18 @@ export interface tiktok {
   name?: string;
   openId: string;
 }
+export interface linkedinChannel {
+  name: string;
+  urn: string;
+  accessToken: string;
+  organizationId: string;
+}
 export interface Channel extends ChannelBrief {
   socialMedia?: {
     facebook?: facebookChannel;
     instagram?: instagramChannel;
     tiktok?: tiktok;
+    linkedin?: linkedinChannel;
   };
   posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];

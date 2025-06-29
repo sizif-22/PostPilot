@@ -9,7 +9,7 @@ import {
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaLinkedin } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/lib/utils";
@@ -50,6 +50,8 @@ export const DetailsDialog = ({
         return <FiFacebook className="text-[#1877F2]" />;
       case "instagram":
         return <FiInstagram className="text-[#E4405F]" />;
+      case "linkedin":
+        return <FaLinkedin className="text-[#0A66C2]" />;
       default:
         return <FiGlobe className="text-stone-600" />;
     }

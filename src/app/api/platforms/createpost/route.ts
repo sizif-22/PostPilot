@@ -119,6 +119,43 @@ export async function POST(request: Request) {
             };
           }
         }
+        case "linkedin": {
+          try {
+            const response = await fetch(
+              `https://postpilot-22.vercel.app/api/linkedin/createpost`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  postId: postId,
+                  channelId: channelId,
+                }),
+              }
+            );
+
+            const success = response.ok;
+            console.log(
+              success
+                ? "Post Published successfully on LinkedIn."
+                : "Post didn't get published on LinkedIn"
+            );
+
+            return {
+              platform: "linkedin",
+              success,
+              message: success ? "Published successfully" : "Failed to publish",
+            };
+          } catch (error) {
+            console.error("Error posting to LinkedIn:", error);
+            return {
+              platform: "linkedin",
+              success: false,
+              message: "Error occurred",
+            };
+          }
+        }
         default:
           return { platform, success: false, message: "Unknown platform" };
       }
