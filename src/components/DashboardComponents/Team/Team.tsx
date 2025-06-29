@@ -9,8 +9,16 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { Command } from "cmdk";
-import { Authority, TeamMember, TMBrief } from "@/interfaces/User";
-import { getTeamMembers } from "@/firebase/user.firestore";
+import {
+  Authority,
+  TeamMember,
+  TMBrief,
+  Notification,
+} from "@/interfaces/User";
+import {
+  getTeamMembers,
+  rejectJoiningToAChannel,
+} from "@/firebase/user.firestore";
 import { useUser } from "@/context/UserContext";
 import {
   sendNotification,
@@ -104,7 +112,9 @@ const MemberDialog = ({
 
         <div className="p-6 space-y-4">
           <div className="space-y-2 relative">
-            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Email</label>
+            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">
+              Email
+            </label>
             <div className="relative">
               {selectedMember || member ? (
                 <div className="flex items-center justify-between p-2 bg-white dark:bg-secondDarkBackground rounded-lg border border-gray-200 dark:border-darkBorder">
@@ -167,6 +177,7 @@ const MemberDialog = ({
                   searchResult.map((tm) => (
                     <div
                       key={tm.email}
+                      onClick={() => handleMemberSelect(tm)}
                       className="p-3 hover:bg-[#eee] dark:hover:bg-darkBorder rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-darkBorder last:border-b-0">
                       <div className="text-start">
                         <span className="text-sm font-semibold block dark:text-white">
@@ -188,7 +199,9 @@ const MemberDialog = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">Role</label>
+            <label className="text-sm font-medium text-stone-700 dark:text-gray-400">
+              Role
+            </label>
             <div className="relative">
               <select
                 className="w-full relative px-3 py-2 rounded-lg border border-stone-300 dark:border-darkBorder focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
@@ -242,12 +255,23 @@ export const Team = () => {
   const [memberOnDelete, setMemberOnDelete] = useState<TeamMember | null>(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const { user } = useUser();
   const handleDeleteMember = async () => {
     if (channel) {
       const memberToDelete = channel.TeamMembers.find(
         (m) => m.email === memberOnDelete?.email
       );
       if (memberToDelete) {
+        if (memberOnDelete?.status === "pending" && channel && user?.email) {
+          const notification: Notification = {
+            Type: "Ask",
+            owner: user?.email,
+            channelName: channel.name,
+            channelDescription: channel.description,
+            channelId: channel.id,
+          };
+          await rejectJoiningToAChannel(notification, memberOnDelete.email);
+        }
         await deleteTeamMember(memberToDelete, channel);
       }
     }
@@ -336,7 +360,9 @@ export const Team = () => {
             </thead>
             <tbody>
               {channel?.TeamMembers.map((member) => (
-                <tr key={member.email} className="border-b border-stone-200 dark:border-stone-800">
+                <tr
+                  key={member.email}
+                  className="border-b border-stone-200 dark:border-stone-800">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
@@ -346,7 +372,9 @@ export const Team = () => {
                       </div>
                       <span
                         className={
-                          member.status === "pending" ? "text-stone-500 dark:text-gray-400" : "dark:text-white"
+                          member.status === "pending"
+                            ? "text-stone-500 dark:text-gray-400"
+                            : "dark:text-white"
                         }>
                         {member.name}
                       </span>
@@ -357,7 +385,9 @@ export const Team = () => {
                       <FiMail className="w-4 h-4 text-stone-400 dark:text-gray-400" />
                       <span
                         className={
-                          member.status === "pending" ? "text-stone-500 dark:text-gray-400" : "dark:text-white"
+                          member.status === "pending"
+                            ? "text-stone-500 dark:text-gray-400"
+                            : "dark:text-white"
                         }>
                         {member.email}
                       </span>
@@ -376,7 +406,7 @@ export const Team = () => {
                     <td className="py-3 px-4 text-right">
                       {member.role !== "Owner" && (
                         <div className="flex items-center justify-end gap-2">
-                          {member.status === "active" && (
+                          {
                             <>
                               <button
                                 onClick={() => setEditingMember(member)}
@@ -392,7 +422,7 @@ export const Team = () => {
                                 <FiTrash2 className="w-4 h-4" />
                               </button>
                             </>
-                          )}
+                          }
                         </div>
                       )}
                     </td>
@@ -421,7 +451,7 @@ export const Team = () => {
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-gray-700 rounded">
+                    className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-darkButtons rounded">
                     Cancel
                   </button>
                   <button

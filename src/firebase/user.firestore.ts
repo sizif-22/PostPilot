@@ -69,19 +69,19 @@ export const acceptJoiningToAChannel = async (
 };
 export const rejectJoiningToAChannel = async (
   notification: Notification,
-  user: User
+  userId: string
 ) => {
   const channel = (
     await fs.getDoc(fs.doc(db, "Channels", notification.channelId))
   ).data() as Channel;
   const tm = channel.TeamMembers.find(
-    (tm) => tm.email == user.email && tm.status == "pending"
+    (tm) => tm.email == userId && tm.status == "pending"
   );
   if (tm) {
     await fs.updateDoc(fs.doc(db, "Channels", notification.channelId), {
       TeamMembers: fs.arrayRemove(tm),
     });
-    await fs.updateDoc(fs.doc(db, "Users", user.email), {
+    await fs.updateDoc(fs.doc(db, "Users", userId), {
       notifications: fs.arrayRemove(notification),
     });
   }

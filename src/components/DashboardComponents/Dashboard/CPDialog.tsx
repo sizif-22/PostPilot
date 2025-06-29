@@ -33,6 +33,8 @@ import { FaPlay } from "react-icons/fa";
 import { FaTiktok, FaLinkedin } from "react-icons/fa6";
 import { Timestamp } from "firebase/firestore";
 import { timeStamp } from "console";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
 
 export const CPDialog = ({
   open,
@@ -57,6 +59,7 @@ export const CPDialog = ({
     );
   });
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   // Get sorted timezones for better UX
   const sortedTimezones = getSortedTimezones();
@@ -91,6 +94,7 @@ export const CPDialog = ({
     setSelectedImages([]);
     setSelectedPlatforms([]);
     setScheduledDate("");
+    setError(null);
   };
 
   const handleImageSelect = (image: MediaItem) => {
@@ -105,6 +109,7 @@ export const CPDialog = ({
 
   const PostingHandler = async (postImmediately: boolean = true) => {
     setIsPosting(true);
+    setError(null);
     try {
       // Validate media types
       if (selectedImages.length > 0) {
@@ -193,7 +198,7 @@ export const CPDialog = ({
       setOpen(false);
     } catch (error: any) {
       console.error("Error posting:", error);
-      alert(error.message || "Failed to create post");
+      setError(error.message || "Failed to create post");
     } finally {
       setIsPosting(false);
     }
@@ -210,6 +215,24 @@ export const CPDialog = ({
         <DialogHeader>
           <DialogTitle>Create Post</DialogTitle>
         </DialogHeader>
+
+        {error && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md">
+            <Alert
+              variant="destructive"
+              className="bg-white dark:bg-darkBorder shadow-lg select-none shadow-black/50">
+              <AlertCircleIcon className="h-5 w-5" />
+              <AlertTitle>Unable to create post</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+              <button
+                className="absolute top-2 right-2  hover:text-red-700"
+                onClick={() => setError(null)}
+                aria-label="Dismiss error">
+                <FiX />
+              </button>
+            </Alert>
+          </div>
+        )}
 
         {/* Platform Selection */}
         <div className="space-y-2">

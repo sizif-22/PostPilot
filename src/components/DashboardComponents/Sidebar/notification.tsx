@@ -7,8 +7,34 @@ import {
   acceptJoiningToAChannel,
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+
 const NotificationSection = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const [notificationBar, openNotificationBar] = useState<boolean>(false);
+  const [showNewAlert, setShowNewAlert] = useState(false);
+  const [lastNotifCount, setLastNotifCount] = useState<number>(
+    user?.notifications?.length || 0
+  );
+  const [newNotif, setNewNotif] = useState<any>(null);
+
+  // Detect new notification arrival
+  useEffect(() => {
+    const currentCount = user?.notifications?.length || 0;
+    if (
+      currentCount > lastNotifCount &&
+      user?.notifications &&
+      user.notifications.length > 0
+    ) {
+      setNewNotif(user.notifications[0]);
+      setShowNewAlert(true);
+      setTimeout(() => setShowNewAlert(false), 3000);
+    }
+    setLastNotifCount(currentCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.notifications]);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -22,10 +48,21 @@ const NotificationSection = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  const { user } = useUser();
-  const [notificationBar, openNotificationBar] = useState<boolean>(false);
+
   return (
-    <div className="border-b h-16 flex items-center justify-between border-stone-300 dark:border-stone-800">
+    <div className="border-b h-16 flex items-center justify-between border-stone-300 dark:border-stone-800 relative">
+      {showNewAlert && newNotif && (
+        <div className="fixed top-4 left-1/2 z-[100] -translate-x-1/2 w-[90vw] max-w-md">
+          <Alert className="bg-white dark:bg-[#1a1a1a] shadow-lg">
+            <AlertTitle>New Notification</AlertTitle>
+            <AlertDescription>
+              <span className="font-semibold">{newNotif.owner}</span> invited
+              you to join{" "}
+              <span className="font-medium">{newNotif.channelName}</span>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <Link href="/home">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
           PostPilot
@@ -47,7 +84,7 @@ const NotificationSection = () => {
       </button>
       <div
         ref={notificationRef}
-        className={`absolute top-16 left-[12.8rem] z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
+        className={`fixed top-16 left-[12.8rem] z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
           !notificationBar && "hidden"
         }`}>
         {user?.notifications == undefined ||
@@ -80,7 +117,7 @@ const NotificationSection = () => {
                     <div className="flex justify-end gap-2 mt-4">
                       <Button
                         onClick={() =>
-                          rejectJoiningToAChannel(notification, user)
+                          rejectJoiningToAChannel(notification, user.email)
                         }
                         variant={"link"}
                         className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition">
@@ -91,7 +128,7 @@ const NotificationSection = () => {
                           acceptJoiningToAChannel(notification, user)
                         }
                         variant={"secondary"}
-                        className=" text-black px-4 py-1.5 rounded-lg text-xs font-medium transition">
+                        className=" text-black dark:text-white px-4 py-1.5 rounded-lg text-xs font-medium transition">
                         Accept
                       </Button>
                     </div>

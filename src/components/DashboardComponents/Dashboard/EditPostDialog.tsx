@@ -21,6 +21,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
 
 // Define the shape of a Post
 interface Post {
@@ -50,6 +52,7 @@ export function EditPostDialog({
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize form with post data
   useEffect(() => {
@@ -58,6 +61,7 @@ export function EditPostDialog({
       setSelectedPlatforms(post.platforms || []);
       setSelectedImages(post.media || []);
       setOriginalPost(post);
+      setError(null);
     }
   }, [post]);
 
@@ -90,6 +94,7 @@ export function EditPostDialog({
     if (!post || !channel?.id) return;
 
     setIsUpdating(true);
+    setError(null);
     try {
       // Validate media types
       if (selectedImages.length > 0) {
@@ -123,7 +128,7 @@ export function EditPostDialog({
       setIsOpen(false);
     } catch (error: any) {
       console.error("Error updating post:", error);
-      alert(error.message || "Failed to update post");
+      setError(error.message || "Failed to update post");
     } finally {
       setIsUpdating(false);
     }
@@ -150,6 +155,24 @@ export function EditPostDialog({
         <DialogHeader>
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
+
+        {error && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md">
+            <Alert
+              variant="destructive"
+              className="bg-white dark:bg-[#1a1a1a] shadow-lg">
+              <AlertCircleIcon className="h-5 w-5 text-red-500" />
+              <AlertTitle>Unable to update post</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+              <button
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                onClick={() => setError(null)}
+                aria-label="Dismiss error">
+                <FiX />
+              </button>
+            </Alert>
+          </div>
+        )}
 
         {/* Platform Selection */}
         <div className="space-y-2">
