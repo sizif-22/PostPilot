@@ -25,21 +25,43 @@ export async function POST(request: Request) {
     post.platforms?.map(async (platform) => {
       switch (platform) {
         case "facebook": {
-          const response = await fetch(
-            "https://postpilot-22.vercel.app/api/facebook/createpost",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                accessToken: channel.socialMedia?.facebook?.accessToken,
-                pageId: channel.socialMedia?.facebook?.id,
-                imageUrls: post.imageUrls,
-                message: post.message || post.content,
-              }),
-            }
-          );
+          try {
+            const response = await fetch(
+              "https://postpilot-22.vercel.app/api/facebook/createpost",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  accessToken: channel.socialMedia?.facebook?.accessToken,
+                  pageId: channel.socialMedia?.facebook?.id,
+                  imageUrls: post.imageUrls,
+                  message: post.message || post.content,
+                }),
+              }
+            );
+
+            const success = response.ok;
+            console.log(
+              success
+                ? "Post Published successfully on Facebook."
+                : "Post didn't get published on Facebook"
+            );
+
+            return {
+              platform: "facebook",
+              success,
+              message: success ? "Published successfully" : "Failed to publish",
+            };
+          } catch (error) {
+            console.error("Error posting to Facebook:", error);
+            return {
+              platform: "facebook",
+              success: false,
+              message: "Error occurred",
+            };
+          }
         }
         case "instagram": {
           try {
