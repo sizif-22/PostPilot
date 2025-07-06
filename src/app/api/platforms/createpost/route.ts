@@ -166,7 +166,7 @@ export async function POST(request: Request) {
     const successfulPlatforms = results
       .filter((r) => r.success)
       .map((r) => r.platform);
-
+    console.log("posted");
     await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
       [`posts.${postId}.published`]: true,
     });

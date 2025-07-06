@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { deleteMediaFolder } from "@/firebase/storage";
 export const Configuration = () => {
   const router = useRouter();
   const { id } = useParams();
@@ -56,10 +57,6 @@ export const Configuration = () => {
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
     window.location.href = authUrl;
   };
-  const handleDeleteChannel = () => {
-    setShowDeleteConfirm(true);
-  };
-
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {
       let ruleNames: string[] = [];
@@ -73,7 +70,8 @@ export const Configuration = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ruleNames }),
       });
-      console.log("res.status:", res.status);
+
+      await deleteMediaFolder(channel.id);
       await deleteChannel(channel?.TeamMembers, channel?.id);
       router.replace("/channels");
     }
@@ -246,7 +244,7 @@ export const Configuration = () => {
                     </h3>
                   </div>
                   <button
-                    onClick={handleDeleteChannel}
+                    onClick={() => setShowDeleteConfirm(true)}
                     className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2 dark:bg-red-950 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900">
                     Delete Channel
                   </button>
