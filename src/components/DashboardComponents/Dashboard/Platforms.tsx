@@ -1,5 +1,6 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
+import Link from "next/link";
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { FaTiktok } from "react-icons/fa6";
 
@@ -24,7 +25,10 @@ export const Platforms = () => {
       ) : (
         <div className="space-y-4">
           {channel?.socialMedia?.facebook && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+            <Link
+              href={`https://facebook.com/profile.php?id=${channel.socialMedia.facebook.id}`}
+              target="_blank"
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
               <FaFacebook className="text-blue-600 text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">
@@ -34,20 +38,23 @@ export const Platforms = () => {
                   Facebook Page
                 </p>
               </div>
-            </div>
+            </Link>
           )}
           {channel?.socialMedia?.instagram && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+            <Link
+              href={`https://instagram.com/${channel.socialMedia.instagram.instagramUsername}`}
+              target="_blank"
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
               <FaInstagram className="text-pink-600 text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">
-                  {channel.socialMedia.instagram.pageName}
+                  {channel.socialMedia.instagram.instagramUsername}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Instagram Account
                 </p>
               </div>
-            </div>
+            </Link>
           )}
           {channel?.socialMedia?.tiktok && (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">

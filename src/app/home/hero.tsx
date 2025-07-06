@@ -36,7 +36,7 @@ export const Hero = () => {
                 className="group px-4 sm:px-5 py-1 sm:py-3 dark:bg-violet-600 bg-violet-700 text-white rounded-sm font-semibold transition-all duration-300 relative overflow-hidden text-sm sm:text-base">
                 <span className="absolute inset-0 dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-500 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                 <span className="relative">
-                  {user?.isLoggedIn ? "Channels" : "Signin with Google"}
+                  {user?.isLoggedIn ? "Channels" : "Sign In with Google"}
                 </span>
               </Link>
               {/* <button className="flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 dark:border-violet-600 border-violet-700 border-2 dark:text-violet-400 text-violet-700 rounded-full font-semibold hover:dark:bg-violet-600/10 hover:bg-violet-700/10 transition-all duration-300 text-sm sm:text-base">

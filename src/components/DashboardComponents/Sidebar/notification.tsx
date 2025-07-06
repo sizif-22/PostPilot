@@ -70,7 +70,6 @@ const NotificationSection = () => {
       </Link>
       <button
         onClick={() => {
-          console.log(notificationBar);
           openNotificationBar(!notificationBar);
         }}
         className="p-1 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">

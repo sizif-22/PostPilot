@@ -8,7 +8,8 @@ export const AccountToggle = () => {
     <div className="border-b h-16 flex items-center mb-4 border-stone-300 dark:border-stone-800">
       <button className="flex px-2 py-1 hover:bg-stone-200 rounded transition-colors relative gap-2 w-full items-center dark:hover:bg-stone-900">
         <img
-          src="https://api.dicebear.com/9.x/notionists/svg?seed=5"
+          // src="https://api.dicebear.com/9.x/notionists/svg?seed=5"
+          src={user?.avatar}
           alt="avatar"
           className="size-8 rounded shrink-0 bg-violet-500 shadow"
         />
