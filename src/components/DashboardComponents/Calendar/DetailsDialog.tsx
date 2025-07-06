@@ -243,65 +243,49 @@ export const DetailsDialog = ({
                 {/* Post Status */}
                 <div className="bg-white dark:bg-darkButtons p-3 rounded-lg border border-stone-200 dark:border-darkBorder">
                   <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
-                    {!selectedEvent.published && (
+                    {selectedEvent.scheduledDate && (
                       <>
                         <div className="w-2 h-2 rounded-full bg-violet-500 "></div>
                         <span className="font-medium dark:text-white">
                           Scheduled
                         </span>
+                      </>
+                    )}
+                    {!selectedEvent.published && (
+                      <>
                         <span className="text-stone-500 dark:text-stone-400">
                           •
                         </span>
                         Will be posted on{" "}
                       </>
                     )}
-                    {selectedEvent.scheduledDate ? (
-                      <>
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.scheduledDate,
-                            "Africa/Cairo"
-                          ).date
-                        }{" "}
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.scheduledDate,
-                            "Africa/Cairo"
-                          ).month
-                        }{" "}
-                        at{" "}
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.scheduledDate,
-                            "Africa/Cairo"
-                          ).time
-                        }
-                      </>
-                    ) : selectedEvent.date ? (
-                      <>
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.date.seconds,
-                            "Africa/Cairo"
-                          ).date
-                        }{" "}
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.date.seconds,
-                            "Africa/Cairo"
-                          ).month
-                        }{" "}
-                        at{" "}
-                        {
-                          formatDateInTimezone(
-                            selectedEvent.date.seconds,
-                            "Africa/Cairo"
-                          ).time
-                        }
-                      </>
-                    ) : (
-                      ""
-                    )}
+                    {selectedEvent.scheduledDate ||
+                      (selectedEvent.date && (
+                        <>
+                          {
+                            formatDateInTimezone(
+                              selectedEvent.scheduledDate ||
+                                selectedEvent.date.seconds,
+                              "Africa/Cairo"
+                            ).date
+                          }{" "}
+                          {
+                            formatDateInTimezone(
+                              selectedEvent.scheduledDate ||
+                                selectedEvent.date.seconds,
+                              "Africa/Cairo"
+                            ).month
+                          }{" "}
+                          at{" "}
+                          {
+                            formatDateInTimezone(
+                              selectedEvent.scheduledDate ||
+                                selectedEvent.date.seconds,
+                              "Africa/Cairo"
+                            ).time
+                          }
+                        </>
+                      ))}
                   </div>
                 </div>
               </div>

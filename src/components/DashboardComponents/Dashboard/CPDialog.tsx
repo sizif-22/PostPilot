@@ -161,7 +161,6 @@ export const CPDialog = ({
           clientTimeZone: selectedTimeZone,
         }),
       };
-
       if (channel?.id) {
         await createPost(newPost, channel.id);
       } else {

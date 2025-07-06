@@ -59,6 +59,7 @@ const createPost = async (post: Post, channelId: string) => {
     published: post.published,
     platforms: post.platforms,
     imageUrls: post.imageUrls,
+    date: fs.Timestamp.now(),
   };
 
   // Add scheduling information if present

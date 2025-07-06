@@ -194,7 +194,7 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
               }}
               data-month={month}
               data-day={day}
-              className={`relative group border font-medium transition-all hover:z-20 hover:border-violet-400 dark:hover:border-violet-600 border-[#00000005] dark:border-stone-700 aspect-square w-full min-h-[50px] sm:min-h-[80px] lg:min-h-[120px] ${
+              className={`relative group border font-medium transition-all hover:z-20 hover:border-violet-400 dark:hover:border-violet-600 border-[#00000005] dark:border-stone-700  w-full min-h-[50px] sm:min-h-[80px] lg:min-h-[170px] px-2 pt-12 pb-2 ${
                 hasEvents
                   ? "bg-violet-50 dark:bg-violet-950/30"
                   : "dark:bg-secondDarkBackground"
@@ -217,7 +217,8 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                 </span>
               )}
               {hasEvents && (
-                <div className="absolute top-8 sm:top-12 lg:top-14 left-1 right-1 lg:left-2 lg:right-2 flex flex-col gap-1">
+                <div className="top-8 sm:top-12 lg:top-14 left-1 right-1 lg:left-2 lg:right-2 flex flex-col gap-1 overflow-y-auto">
+                  {" "}
                   {postsForDay.map((post) => (
                     <button
                       key={post.id}
@@ -230,19 +231,14 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                               "h:mm a"
                             )
                           : post.date
-                          ? format(
-                              new Date(post.date.toDate()),
-                              "h:mm a"
-                            )
+                          ? format(new Date(post.date.toDate()), "h:mm a")
                           : ""
                       }`}>
                       {post.scheduledDate
                         ? format(new Date(post.scheduledDate * 1000), "h:mm a")
                         : post.date
-                          ?  format(
-                          new Date(post.date.toDate()),
-                          "h:mm a"
-                        ):""}
+                        ? format(new Date(post.date.toDate()), "h:mm a")
+                        : ""}
                       <div className="flex gap-1">
                         {post.platforms?.map((platform, index) =>
                           platform === "facebook" ? (
@@ -398,7 +394,9 @@ export const Select = ({
 }: SelectProps) => (
   <div className={`relative ${className} `}>
     {label && (
-      <label htmlFor={name} className="mb-2 block font-medium text-slate-800 dark:text-white">
+      <label
+        htmlFor={name}
+        className="mb-2 block font-medium text-slate-800 dark:text-white">
         {label}
       </label>
     )}
