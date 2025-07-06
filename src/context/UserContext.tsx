@@ -17,9 +17,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     isVerified: false,
     email: "",
     username: "",
-    profilePicture: "",
     name: "",
-    photoURL: "",
+    avatar:"",
     channels: [],
   }
   useEffect(() => {
