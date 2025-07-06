@@ -2,14 +2,19 @@ import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/context/UserContext";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   acceptJoiningToAChannel,
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-
-const NotificationSection = () => {
+import { IoChevronBackOutline } from "react-icons/io5";
+const NotificationSection = ({
+  pageName,
+}: {
+  pageName: "channels" | "channels/id";
+}) => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
@@ -18,7 +23,7 @@ const NotificationSection = () => {
     user?.notifications?.length || 0
   );
   const [newNotif, setNewNotif] = useState<any>(null);
-
+  const router = useRouter();
   // Detect new notification arrival
   useEffect(() => {
     const currentCount = user?.notifications?.length || 0;
@@ -63,8 +68,17 @@ const NotificationSection = () => {
           </Alert>
         </div>
       )}
+      <span
+        className="dark:text-white hover:dark:bg-darkBorder text-xl h-full flex items-center px-1"
+        onClick={() => {
+          pageName == "channels"
+            ? router.push("/home")
+            : router.push("/channels");
+        }}>
+        <IoChevronBackOutline />
+      </span>
       <Link href="/home">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
           PostPilot
         </h1>
       </Link>
@@ -72,7 +86,7 @@ const NotificationSection = () => {
         onClick={() => {
           openNotificationBar(!notificationBar);
         }}
-        className="p-1 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">
+        className="py-1 px-0.5 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">
         <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
         <div
           className={`w-2 h-2 absolute top-1.5 rounded-full right-2 bg-red-600 ${

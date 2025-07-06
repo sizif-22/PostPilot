@@ -364,10 +364,14 @@ export const Team = () => {
                   key={member.email}
                   className="border-b border-stone-200 dark:border-stone-800">
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-5">
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                        <span className="text-violet-700 font-medium">
-                          {member.name?.charAt(0)}
+                        <span className="flex items-center justify-center rounded-full border-2 border-violet-900">
+                          <img
+                            src={user?.avatar}
+                            className="size-10 rounded-full shrink-0 bg-violet-500 shadow"
+                            alt="avatar"
+                          />
                         </span>
                       </div>
                       <span

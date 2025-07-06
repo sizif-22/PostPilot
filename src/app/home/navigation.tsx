@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/DashboardComponents/Sidebar/ThemeToggle";
 import Link from "next/link";
+import Cookies from "js-cookie";
 import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
@@ -203,6 +204,15 @@ export const Navigation = () => {
                           variant={"default"}
                           className="mt-3">
                           Channels
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            Cookies.remove("postPilotUserCookie");
+                            window.location.reload();
+                          }}
+                          variant={"outline"}
+                          className="mt-3 text-red-700 hover:text-red-700">
+                          Log out
                         </Button>
                       </div>
                     </div>
