@@ -59,7 +59,7 @@ const ChannelsComponent = ({
                     {channel.authority}
                   </div>
                 </div>
-                <p className="text-sm text-stone-600 dark:text-stone-400">{channel.description}</p>
+                <p className="text-sm text-stone-600 dark:text-stone-400">{channel.description.substring(0,250)}{channel.description && channel.description.length>250 && '...'}</p>
                 <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-500">
                   <span>•</span>
                   <span>

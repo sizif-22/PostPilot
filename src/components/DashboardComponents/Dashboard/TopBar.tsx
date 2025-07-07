@@ -15,8 +15,9 @@ export const TopBar = ({ media }: { media: MediaItem[] }) => {
           <span className="text-sm font-bold block text-gray-900 dark:text-gray-100 transition-colors">
             {channel?.name}
           </span>
-          <span className="text-xs block text-stone-500 dark:text-stone-300 transition-colors">
-            {channel?.description}
+          <span className="text-xs block text-stone-500 transition-colors">
+            {channel?.description.substring(0, 120)}
+            {channel?.description && channel?.description.length > 120 && "..."}
           </span>
         </div>
         {(channel?.authority == "Contributor" ||
