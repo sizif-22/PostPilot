@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteMediaFolder } from "@/firebase/storage";
+
 export const Configuration = () => {
   const router = useRouter();
   const { id } = useParams();
@@ -27,6 +28,33 @@ export const Configuration = () => {
     channel?.description
   );
   // const isInstagramConnected = channel?.socialMedia?.instagram;
+
+  // Helper functions for PKCE
+  function base64URLEncode(array: Uint8Array): string {
+    // Fix for Type 'Uint8Array<ArrayBufferLike>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+    // Use Array.prototype.map and String.fromCharCode.apply for compatibility
+    let binary = "";
+    for (let i = 0; i < array.length; i++) {
+      binary += String.fromCharCode(array[i]);
+    }
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+  }
+
+  function generateCodeVerifier(): string {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return base64URLEncode(array);
+  }
+
+  async function generateCodeChallenge(codeVerifier: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(codeVerifier);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return base64URLEncode(new Uint8Array(hash));
+  }
 
   const handleFacebookConnect = () => {
     Cookies.set("currentChannel", id as string);
@@ -59,14 +87,35 @@ export const Configuration = () => {
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
     window.location.href = authUrl;
   };
-  const handleXConnect = () => {
+  // 1. Updated configuration.tsx - handleXConnect function
+  const handleXConnect = async () => {
+    // Generate a proper state parameter
+    const state = `${new Date().getTime()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
+
+    // Generate PKCE code verifier and challenge
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+    // Store in cookies for later use
     Cookies.set("currentChannel", id as string);
+    Cookies.set("xState", state, { expires: 1 / 24 }); // 1 hour
+    Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 }); // 1 hour
+
     const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/x";
     const SCOPE = "tweet.read tweet.write users.read offline.access";
-    const authUrl = `https://x.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&state=state&code_challenge=challenge&code_challenge_method=plain`;
+
+    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&scope=${encodeURIComponent(
+      SCOPE
+    )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+
     window.location.href = authUrl;
   };
+
   const confirmDelete = async () => {
     setIsDeletingChannel(true);
     if (channel?.TeamMembers && channel.id) {

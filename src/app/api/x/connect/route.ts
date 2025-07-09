@@ -1,13 +1,10 @@
+// 2. Updated route.ts - API handler
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+
 const CLIENT_ID = process.env.X_CLIENT_ID!;
 const CLIENT_SECRET = process.env.X_CLIENT_SECRET!;
 const REDIRECT_URI = process.env.X_REDIRECT_URI!;
-
-interface XOrganization {
-  id: string;
-  name: string;
-  urn: string;
-}
 
 interface XUserProfile {
   id: string;
@@ -15,15 +12,19 @@ interface XUserProfile {
   username: string;
 }
 
-interface XResponse {
-  access_token: string;
-  organizations: XOrganization[];
-  user: XUserProfile;
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const error = searchParams.get("error");
+
+  // Check for OAuth errors
+  if (error) {
+    return NextResponse.json(
+      { error: `OAuth error: ${error}` },
+      { status: 400 }
+    );
+  }
 
   if (!code) {
     return NextResponse.json(
@@ -33,58 +34,90 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. Exchange code for access token
+    // Get cookies
+    const cookieStore = cookies();
+    const storedState = cookieStore.get("xState")?.value;
+    const codeVerifier = cookieStore.get("xCodeVerifier")?.value;
+
+    // Verify state parameter
+    if (!state || state !== storedState) {
+      return NextResponse.json(
+        { error: "Invalid state parameter" },
+        { status: 400 }
+      );
+    }
+
+    if (!codeVerifier) {
+      return NextResponse.json(
+        { error: "Missing code verifier" },
+        { status: 400 }
+      );
+    }
+
+    // Exchange code for access token
+    const tokenParams = new URLSearchParams({
+      code,
+      grant_type: "authorization_code",
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: codeVerifier,
+    });
+
     const tokenRes = await fetch("https://api.twitter.com/2/oauth2/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " +
-          Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64"),
+        Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")}`,
       },
-      body: new URLSearchParams({
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: REDIRECT_URI,
-        client_id: CLIENT_ID,
-      }),
+      body: tokenParams,
     });
 
     const tokenData = await tokenRes.json();
+    
     if (!tokenRes.ok) {
+      console.error("Token exchange failed:", tokenData);
       return NextResponse.json(
-        { error: tokenData.error || "Failed to get access token" },
+        { error: tokenData.error_description || tokenData.error || "Failed to get access token" },
         { status: 400 }
       );
     }
+
     const access_token = tokenData.access_token;
 
-    // 2. Fetch user profile
+    // Fetch user profile
     const userRes = await fetch("https://api.twitter.com/2/users/me", {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
+
     const userData = await userRes.json();
+    
     if (!userRes.ok) {
+      console.error("User profile fetch failed:", userData);
       return NextResponse.json(
         { error: userData.error || "Failed to get user profile" },
         { status: 400 }
       );
     }
 
-    // 3. (Optional) Fetch organizations or managed accounts if available
-    // Twitter/X API does not have organizations like LinkedIn, so you may skip or adapt this part.
-
-    return NextResponse.json({
+    // Clean up cookies
+    const response = NextResponse.json({
       access_token,
-      organizations: [], // X API does not provide organizations, but you can adapt if you have a business API
+      organizations: [], // X doesn't have organizations like LinkedIn
       user: {
         id: userData.data.id,
         name: userData.data.name,
         username: userData.data.username,
       },
     });
+
+    // Clear the temporary cookies
+    response.cookies.set("xState", "", { expires: new Date(0) });
+    response.cookies.set("xCodeVerifier", "", { expires: new Date(0) });
+
+    return response;
+
   } catch (error: any) {
     console.error("Error in X connect:", error);
     return NextResponse.json(
