@@ -9,6 +9,7 @@ import {
   FiRefreshCcw,
   FiGlobe,
 } from "react-icons/fi";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { useChannel } from "@/context/ChannelContext";
 import { createPost } from "@/firebase/channel.firestore";
@@ -29,7 +30,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
-import { FaTiktok, FaLinkedin, FaTwitter } from "react-icons/fa6";
+import { FaTiktok, FaLinkedin,FaXTwitter } from "react-icons/fa6";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
 import {
@@ -188,12 +189,15 @@ export const CPDialog = ({
   };
 
   const isTextOnly = postText.trim() && selectedImages.length === 0;
-  const isFacebookOnly =
-    selectedPlatforms.length === 1 && selectedPlatforms[0] === "facebook";
+  const isFacebookOrXOnly =
+    selectedPlatforms.length === 1 &&
+    (selectedPlatforms[0] === "facebook" || selectedPlatforms[0] === "x");
+
   const isFormValid =
-    ((postText.trim() && selectedImages.length === 0 && isFacebookOnly) ||
+    ((postText.trim() && selectedImages.length === 0 && isFacebookOrXOnly) ||
       selectedImages.length > 0) &&
     selectedPlatforms.length > 0;
+
   const canSchedule = isFormValid && scheduledDate;
 
   const PostingHandler = async (postImmediately: boolean = true) => {
@@ -205,7 +209,7 @@ export const CPDialog = ({
       if (
         postText.trim() &&
         selectedImages.length === 0 &&
-        (!isFacebookOnly || selectedPlatforms.length === 0)
+        (!isFacebookOrXOnly || selectedPlatforms.length === 0)
       ) {
         throw new Error(
           "Text-only posts are only allowed on Facebook. Please add an image or video to post to other platforms."
@@ -422,7 +426,7 @@ export const CPDialog = ({
                     ? "border-black bg-black text-white dark:bg-darkBorder"
                     : "border-stone-200 hover:border-stone-300"
                 }`}>
-                <FaTwitter className="text-lg" />
+                <FaXTwitter className="text-lg" />
                 <span className="text-sm">X</span>
               </button>
             )}

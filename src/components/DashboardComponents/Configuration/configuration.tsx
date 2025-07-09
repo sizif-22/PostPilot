@@ -64,7 +64,7 @@ export const Configuration = () => {
     const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/x";
     const SCOPE = "tweet.read tweet.write users.read offline.access";
-    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&state=state&code_challenge=challenge&code_challenge_method=plain`;
+    const authUrl = `https://x.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&state=state&code_challenge=challenge&code_challenge_method=plain`;
     window.location.href = authUrl;
   };
   const confirmDelete = async () => {

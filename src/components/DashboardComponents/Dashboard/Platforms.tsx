@@ -1,9 +1,8 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
-import { FaTiktok } from "react-icons/fa6";
-
+import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FaXTwitter,FaTiktok } from "react-icons/fa6";
 export const Platforms = () => {
   const { channel } = useChannel();
 
@@ -85,7 +84,7 @@ export const Platforms = () => {
           )}
           {channel?.socialMedia?.x && (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
-              <FaTwitter className="text-blue-400 text-xl" />
+              <FaXTwitter  className="dark:text-white text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.x.name}

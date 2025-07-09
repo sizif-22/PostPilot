@@ -14,6 +14,12 @@ interface XOrganization {
   urn: string;
 }
 
+interface XUserProfile {
+  id: string;
+  name: string;
+  username: string;
+}
+
 export default function XCallbackPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -21,6 +27,10 @@ export default function XCallbackPage() {
   const [organizations, setOrganizations] = useState<XOrganization[]>([]);
   const [selectedOrganization, setSelectedOrganization] =
     useState<XOrganization | null>(null);
+  const [userProfile, setUserProfile] = useState<XUserProfile | null>(null);
+  const [selectedProfileType, setSelectedProfileType] = useState<
+    "user" | "org" | null
+  >(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,10 +61,11 @@ export default function XCallbackPage() {
 
         setAccessToken(data.access_token);
         setOrganizations(data.organizations || []);
+        setUserProfile(data.user || null);
 
-        if (data.organizations.length === 0) {
+        if ((data.organizations?.length || 0) === 0 && !data.user) {
           setError(
-            "No organizations found. Please make sure you are an administrator of at least one X organization."
+            "No organizations or user profile found. Please make sure you are an administrator of at least one X organization or have a valid X profile."
           );
         }
       } catch (error: any) {
@@ -69,7 +80,11 @@ export default function XCallbackPage() {
   }, []);
 
   const handleOrganizationSelect = async () => {
-    if (!selectedOrganization || !accessToken || !Cookies.get("currentChannel")) {
+    if (
+      (!selectedOrganization && selectedProfileType !== "user") ||
+      !accessToken ||
+      !Cookies.get("currentChannel")
+    ) {
       return;
     }
 
@@ -77,13 +92,30 @@ export default function XCallbackPage() {
       setLoading(true);
       const channelId = Cookies.get("currentChannel");
 
-      await updateDoc(doc(db, "Channels", channelId as string), {
-        "socialMedia.x": {
+      let socialMediaX;
+      if (selectedProfileType === "user" && userProfile) {
+        socialMediaX = {
+          name: userProfile.name,
+          username: userProfile.username,
+          accessToken: accessToken, // X access token for posting
+          userId: userProfile.id,
+          isPersonal: true,
+        };
+      } else if (selectedOrganization) {
+        socialMediaX = {
           name: selectedOrganization.name,
           urn: selectedOrganization.urn,
-          accessToken: accessToken,
+          accessToken: accessToken, // X access token for posting
           organizationId: selectedOrganization.id,
-        },
+          isPersonal: false,
+        };
+      } else {
+        throw new Error("No profile or organization selected");
+      }
+
+      await updateDoc(doc(db, "Channels", channelId as string), {
+        // Save X (Twitter) organization or user profile and access token for later posting
+        "socialMedia.x": socialMediaX,
       });
 
       router.push(`/channels/${channelId}`);
@@ -104,11 +136,15 @@ export default function XCallbackPage() {
         <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-8 max-w-md w-full mx-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
           <div className="flex items-center gap-3 mb-4">
             <FiAlertCircle className="text-red-500 text-2xl" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Connection Error</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Connection Error
+            </h2>
           </div>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => router.push(`/channels/${Cookies.get("currentChannel")}`)}
+            onClick={() =>
+              router.push(`/channels/${Cookies.get("currentChannel")}`)
+            }
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
             Back to Channel
           </button>
@@ -122,23 +158,69 @@ export default function XCallbackPage() {
       <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-8 max-w-2xl w-full shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
         <div className="flex items-center gap-3 mb-6">
           <FaTwitter className="text-blue-600 text-3xl" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Select X Organization</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Select X Organization
+          </h1>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-6">Choose the X organization you want to connect to PostPilot.</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Choose your X profile or an organization you want to connect to
+          PostPilot.
+        </p>
+
+        {/* User Profile Card */}
+        {userProfile && (
+          <div className="space-y-3 mb-6">
+            <div
+              onClick={() => {
+                setSelectedProfileType("user");
+                setSelectedOrganization(null);
+              }}
+              className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                selectedProfileType === "user"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  : "border-gray-200 dark:border-darkBorder hover:border-gray-300 dark:hover:border-gray-600"
+              }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <FaTwitter className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {userProfile.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      @{userProfile.username}
+                    </p>
+                  </div>
+                </div>
+                {selectedProfileType === "user" && (
+                  <FiCheck className="text-blue-500 text-2xl" />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {organizations.length === 0 ? (
           <div className="text-center py-8">
             <FiAlertCircle className="text-yellow-500 text-4xl mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">No organizations found.</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              No organizations found.
+            </p>
           </div>
         ) : (
           <div className="space-y-3 mb-6">
             {organizations.map((org) => (
               <div
                 key={org.id}
-                onClick={() => setSelectedOrganization(org)}
+                onClick={() => {
+                  setSelectedOrganization(org);
+                  setSelectedProfileType("org");
+                }}
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                  selectedProfileType === "org" &&
                   selectedOrganization?.id === org.id
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                     : "border-gray-200 dark:border-darkBorder hover:border-gray-300 dark:hover:border-gray-600"
@@ -149,13 +231,18 @@ export default function XCallbackPage() {
                       <FaTwitter className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">{org.name}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Organization ID: {org.id}</p>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        {org.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Organization ID: {org.id}
+                      </p>
                     </div>
                   </div>
-                  {selectedOrganization?.id === org.id && (
-                    <FiCheck className="text-blue-500 text-2xl" />
-                  )}
+                  {selectedProfileType === "org" &&
+                    selectedOrganization?.id === org.id && (
+                      <FiCheck className="text-blue-500 text-2xl" />
+                    )}
                 </div>
               </div>
             ))}
@@ -164,15 +251,21 @@ export default function XCallbackPage() {
 
         <div className="flex gap-3">
           <button
-            onClick={() => router.push(`/channels/${Cookies.get("currentChannel")}`)}
+            onClick={() =>
+              router.push(`/channels/${Cookies.get("currentChannel")}`)
+            }
             className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
             Cancel
           </button>
           <button
             onClick={handleOrganizationSelect}
-            disabled={!selectedOrganization}
+            disabled={!(selectedProfileType === "user" || selectedOrganization)}
             className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed">
-            {loading ? "Connecting..." : "Connect Organization"}
+            {loading
+              ? "Connecting..."
+              : selectedProfileType === "user"
+              ? "Connect Profile"
+              : "Connect Organization"}
           </button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import {
   FiX,
   FiRefreshCcw,
 } from "react-icons/fi";
-import { FaTiktok, FaLinkedin, FaTwitter } from "react-icons/fa6";
+import { FaTiktok, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { FaPlay } from "react-icons/fa";
 import { useChannel } from "@/context/ChannelContext";
 import { editPost } from "@/firebase/channel.firestore";
@@ -339,7 +339,7 @@ export function EditPostDialog({
                     ? "border-black bg-black text-white dark:bg-darkBorder"
                     : "border-stone-200 hover:border-stone-300"
                 }`}>
-                <FaTwitter className="text-lg" />
+                <FaXTwitter className="text-lg" />
                 <span className="text-sm">X</span>
               </button>
             )}

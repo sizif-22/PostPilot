@@ -2,7 +2,6 @@
 import React from "react";
 import {
   FiInstagram,
-  FiTwitter,
   FiLinkedin,
   FiYoutube,
   FiCalendar,
@@ -10,6 +9,7 @@ import {
   FiGlobe,
 } from "react-icons/fi";
 import { FaPlay, FaTiktok } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { DetailsDialog } from "../Calendar/DetailsDialog";
 import { useState, useEffect } from "react";
 import { FiFacebook } from "react-icons/fi";
@@ -165,10 +165,8 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                             <FiFacebook className="w-4 h-4" />
                           ) : platform === "instagram" ? (
                             <FiInstagram className="w-4 h-4" />
-                          ) : platform === "twitter" ? (
-                            <FiTwitter className="w-4 h-4" />
                           ) : platform === "x" ? (
-                            <FiTwitter className="w-4 h-4" />
+                            <FaXTwitter className="w-4 h-4" />
                           ) : platform === "linkedin" ? (
                             <FiLinkedin className="w-4 h-4" />
                           ) : platform === "youtube" ? (
