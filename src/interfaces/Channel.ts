@@ -42,9 +42,10 @@ export interface linkedinChannel {
 }
 export interface xChannel {
   name: string;
-  urn: string;
+  username: string;
   accessToken: string;
-  organizationId: string;
+  userId: string;
+  isPersonal: boolean;
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {

@@ -2,7 +2,7 @@
 import { useChannel } from "@/context/ChannelContext";
 import Link from "next/link";
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
-import { FaXTwitter,FaTiktok } from "react-icons/fa6";
+import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 export const Platforms = () => {
   const { channel } = useChannel();
 
@@ -48,10 +48,26 @@ export const Platforms = () => {
               <FaInstagram className="text-pink-600 text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">
-                  {channel.socialMedia.instagram.instagramUsername}
+                  {channel.socialMedia.instagram.instagramName}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Instagram Account
+                </p>
+              </div>
+            </Link>
+          )}
+          {channel?.socialMedia?.x && (
+            <Link
+              href={`https://x.com/${channel.socialMedia.x.username}`}
+              target="_blank"
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+              <FaXTwitter className="dark:text-white text-xl" />
+              <div>
+                <p className="font-medium dark:text-gray-100">
+                  {channel.socialMedia.x.name}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  X Account
                 </p>
               </div>
             </Link>
@@ -78,19 +94,6 @@ export const Platforms = () => {
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   LinkedIn Organization
-                </p>
-              </div>
-            </div>
-          )}
-          {channel?.socialMedia?.x && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
-              <FaXTwitter  className="dark:text-white text-xl" />
-              <div>
-                <p className="font-medium dark:text-gray-100">
-                  {channel.socialMedia.x.name}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  X Account
                 </p>
               </div>
             </div>

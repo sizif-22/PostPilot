@@ -216,40 +216,29 @@ export async function POST(request: Request) {
             }
             case "x": {
               try {
-                const response = await fetch(
-                  `https://postpilot-22.vercel.app/api/x/createpost`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      postId: postId,
-                      channelId: channelId,
-                    }),
-                  }
-                );
+                // Use the PostOnX function directly instead of making an API call
+                if (!channel.socialMedia?.x?.accessToken) return;
+                const result = await PostOnX({
+                  accessToken: channel.socialMedia?.x?.accessToken,
+                  pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
+                  message: post.message || post.content,
+                  imageUrls: post.imageUrls,
+                });
 
-                const success = response.ok;
-                console.log(
-                  success
-                    ? "Post Published successfully on X."
-                    : "Post didn't get published on X"
-                );
-
+                console.log("Post Published successfully on X.");
                 return {
                   platform: "x",
-                  success,
-                  message: success
-                    ? "Published successfully"
-                    : "Failed to publish",
+                  success: true,
+                  result,
+                  message: "Published successfully",
                 };
               } catch (error) {
                 console.error("Error posting to X:", error);
                 return {
                   platform: "x",
                   success: false,
-                  message: "Error occurred",
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
                 };
               }
             }
