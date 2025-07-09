@@ -255,8 +255,10 @@ export const Team = () => {
   const [memberOnDelete, setMemberOnDelete] = useState<TeamMember | null>(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [isDeletingMember, setIsDeletingMember] = useState(false);
   const { user } = useUser();
   const handleDeleteMember = async () => {
+    setIsDeletingMember(true);
     if (channel) {
       const memberToDelete = channel.TeamMembers.find(
         (m) => m.email === memberOnDelete?.email
@@ -276,6 +278,7 @@ export const Team = () => {
       }
     }
     setShowDeleteConfirm(false);
+    setIsDeletingMember(false);
   };
   const getRoleBadgeColor = (role: TeamMember["role"]) => {
     switch (role) {
@@ -460,8 +463,11 @@ export const Team = () => {
                   </button>
                   <button
                     onClick={() => handleDeleteMember()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded">
-                    Delete TeamMember
+                    disabled={isDeletingMember}
+                    className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded${
+                      isDeletingMember ? " opacity-60 cursor-not-allowed" : ""
+                    }`}>
+                    {isDeletingMember ? "Deleting..." : "Delete TeamMember"}
                   </button>
                 </div>
               </div>

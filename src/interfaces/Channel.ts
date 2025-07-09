@@ -66,4 +66,5 @@ export interface Post {
   message?: string;
   channelId?: string;
   clientTimeZone?: string;
+  facebookVideoType?: "default" | "reel";
 }

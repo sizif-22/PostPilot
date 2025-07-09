@@ -1,43 +1,32 @@
 import { MediaItem } from "@/interfaces/Media";
-import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function PostOnFacebook({
+  accessToken,
+  pageId,
+  message,
+  imageUrls,
+  facebookVideoType,
+}: {
+  imageUrls?: MediaItem[];
+  accessToken: any;
+  pageId: any;
+  message: any;
+  facebookVideoType?: "default" | "reel";
+}) {
   try {
-    const {
-      accessToken,
-      pageId,
-      message,
-      imageUrls,
-      facebookVideoType,
-    }: {
-      imageUrls: MediaItem[];
-      accessToken: any;
-      pageId: any;
-      message: any;
-      facebookVideoType?: "default" | "reel";
-    } = await request.json();
-    facebookVideoType && console.log(facebookVideoType);
+    console.log("Facebook video type:", facebookVideoType);
     // Validate required parameters
     if (!accessToken) {
-      return NextResponse.json(
-        { error: "Access token is required" },
-        { status: 400 }
-      );
+      throw new Error("Access token is required");
     }
 
     if (!pageId || pageId === "0" || pageId === 0) {
-      return NextResponse.json(
-        { error: "Valid page ID is required" },
-        { status: 400 }
-      );
+      throw new Error("Valid page ID is required");
     }
 
-    if (!message || message.trim() === "") {
-      return NextResponse.json(
-        { error: "Message content is required" },
-        { status: 400 }
-      );
-    }
+    //     if (!message || message.trim() === "") {
+    //       throw new Error("Message content is required");
+    //     }
 
     // Validate media types
     if (imageUrls && imageUrls.length > 0) {
@@ -47,23 +36,15 @@ export async function POST(request: Request) {
 
       // Check for mixed media
       if (hasVideos && hasImages) {
-        return NextResponse.json(
-          {
-            error:
-              "Cannot mix videos and images in the same post. Please select either all videos or all images.",
-          },
-          { status: 400 }
+        throw new Error(
+          "Cannot mix videos and images in the same post. Please select either all videos or all images."
         );
       }
 
       // Check for multiple videos
       if (videoCount > 1) {
-        return NextResponse.json(
-          {
-            error:
-              "Cannot post multiple videos at once. Please select only one video.",
-          },
-          { status: 400 }
+        throw new Error(
+          "Cannot post multiple videos at once. Please select only one video."
         );
       }
     }
@@ -94,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     interface PData {
-      message: string;
+      message?: string;
       caption?: string;
       access_token: string;
       url?: string;
@@ -118,6 +99,25 @@ export async function POST(request: Request) {
       if (imageUrls[0].isVideo) {
         // --- REEL LOGIC ---
         if (facebookVideoType === "reel") {
+          console.log("Publishing as Reel...");
+
+          // Validate Reel requirements
+          try {
+            // Get video metadata to check duration
+            const videoResponse = await fetch(imageUrls[0].url, {
+              method: "HEAD",
+            });
+            if (!videoResponse.ok) {
+              throw new Error("Could not access video file");
+            }
+
+            // Note: For more accurate duration checking, you might want to use a video processing service
+            // or implement client-side duration checking before sending to the API
+            console.log("Video URL for Reel:", imageUrls[0].url);
+          } catch (error) {
+            console.warn("Could not validate video metadata:", error);
+          }
+
           // Step 1: Initialize upload session
           const initRes = await fetch(
             `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
@@ -137,6 +137,10 @@ export async function POST(request: Request) {
             );
           }
           const { video_id, upload_url } = initData;
+          console.log("Reel upload session initialized:", {
+            video_id,
+            upload_url,
+          });
 
           // Step 2: Upload the video (hosted file)
           const uploadRes = await fetch(upload_url, {
@@ -152,6 +156,7 @@ export async function POST(request: Request) {
               uploadData.error?.message || "Failed to upload reel video"
             );
           }
+          console.log("Reel video uploaded successfully");
 
           // Step 3: Publish the reel
           const publishRes = await fetch(
@@ -174,10 +179,13 @@ export async function POST(request: Request) {
               publishData.error?.message || "Failed to publish reel"
             );
           }
-          return NextResponse.json(publishData);
+          console.log("Reel published successfully:", publishData);
+          return publishData;
         }
         // --- END REEL LOGIC ---
+
         // --- DEFAULT VIDEO LOGIC (existing) ---
+        console.log("Publishing as Default Video...");
         const videoData: any = {
           file_url: imageUrls[0].url,
           description: message,
@@ -205,9 +213,11 @@ export async function POST(request: Request) {
           console.error("Facebook Video API Error:", data);
           throw new Error(data.error?.message || "Failed to upload video");
         }
-        return NextResponse.json(data);
+        console.log("Default video published successfully:", data);
+        return data;
       } else {
         // Single image post
+        console.log("Publishing as Single Image...");
         postData.url = imageUrls[0].url;
         postData.caption = message;
 
@@ -241,10 +251,12 @@ export async function POST(request: Request) {
           throw new Error(data.error?.message || "Failed to create post");
         }
 
-        return NextResponse.json(data);
+        console.log("Single image published successfully:", data);
+        return data;
       }
     } else if (imageUrls && imageUrls.length > 1) {
       // Multiple images post
+      console.log("Publishing as Multiple Images...");
       for (const item of imageUrls) {
         if (item.isVideo) {
           const videoParams = {
@@ -334,9 +346,11 @@ export async function POST(request: Request) {
         throw new Error(data.error?.message || "Failed to create post");
       }
 
-      return NextResponse.json(data);
+      console.log("Multiple images published successfully:", data);
+      return data;
     } else {
       // Text-only post
+      console.log("Publishing as Text-only post...");
       const feedData: any = {
         message: postData.message,
         access_token: postData.access_token,
@@ -367,13 +381,11 @@ export async function POST(request: Request) {
         throw new Error(data.error?.message || "Failed to create post");
       }
 
-      return NextResponse.json(data);
+      console.log("Text-only post published successfully:", data);
+      return data;
     }
   } catch (error: any) {
     console.error("Facebook API Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    throw new Error(error.message || "Internal server error");
   }
 }

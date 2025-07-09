@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import { Channel, Post } from "@/interfaces/Channel";
+import { PostOnInstagram } from "../funcitons/instagram";
+import { PostOnFacebook } from "../funcitons/facebook";
 
 export async function POST(request: Request) {
   try {
@@ -78,35 +80,21 @@ export async function POST(request: Request) {
           switch (platform) {
             case "facebook": {
               try {
-                const response = await fetch(
-                  "https://postpilot-22.vercel.app/api/facebook/createpost",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      accessToken: channel.socialMedia?.facebook?.accessToken,
-                      pageId: channel.socialMedia?.facebook?.id,
-                      imageUrls: post.imageUrls,
-                      message: post.message || post.content,
-                    }),
-                  }
-                );
-
-                const success = response.ok;
                 console.log(
-                  success
-                    ? "Post Published successfully on Facebook."
-                    : "Post didn't get published on Facebook"
+                  "Facebook post facebookVideoType:",
+                  post.facebookVideoType
                 );
+                await PostOnFacebook({
+                  accessToken: channel.socialMedia?.facebook?.accessToken,
+                  pageId: channel.socialMedia?.facebook?.id,
+                  imageUrls: post.imageUrls,
+                  message: post.message || post.content,
+                  facebookVideoType: post.facebookVideoType,
+                });
 
                 return {
                   platform: "facebook",
-                  success,
-                  message: success
-                    ? "Published successfully"
-                    : "Failed to publish",
+                  success: true,
                 };
               } catch (error) {
                 console.error("Error posting to Facebook:", error);
@@ -119,43 +107,29 @@ export async function POST(request: Request) {
             }
             case "instagram": {
               try {
-                const response = await fetch(
-                  `https://postpilot-22.vercel.app/api/instagram/createpost`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      accessToken:
-                        channel.socialMedia?.instagram?.pageAccessToken,
-                      pageId: channel.socialMedia?.instagram?.instagramId,
-                      message: post.message || post.content,
-                      imageUrls: post.imageUrls,
-                    }),
-                  }
-                );
-
-                const success = response.ok;
-                console.log(
-                  success
-                    ? "Post Published successfully on Instagram."
-                    : "Post didn't get published on Instagram"
-                );
-
+                if (
+                  !channel.socialMedia?.instagram?.pageAccessToken ||
+                  !post.imageUrls
+                )
+                  return;
+                const result = await PostOnInstagram({
+                  accessToken: channel.socialMedia?.instagram?.pageAccessToken,
+                  pageId: channel.socialMedia?.instagram?.instagramId,
+                  message: post.message || post.content,
+                  imageUrls: post.imageUrls,
+                });
                 return {
                   platform: "instagram",
-                  success,
-                  message: success
-                    ? "Published successfully"
-                    : "Failed to publish",
+                  success: true,
+                  result,
                 };
               } catch (error) {
                 console.error("Error posting to Instagram:", error);
                 return {
                   platform: "instagram",
                   success: false,
-                  message: "Error occurred",
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
                 };
               }
             }
@@ -279,7 +253,14 @@ export async function POST(request: Request) {
     );
 
     const successfulPlatforms = validResults
-      .filter((r) => r.success)
+      .filter(
+        (r): r is { platform: string; success: true } =>
+          !!r &&
+          typeof r === "object" &&
+          "success" in r &&
+          r.success === true &&
+          "platform" in r
+      )
       .map((r) => r.platform);
 
     console.log("posted");

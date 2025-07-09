@@ -59,6 +59,7 @@ const createPost = async (post: Post, channelId: string) => {
     published: post.published,
     platforms: post.platforms,
     imageUrls: post.imageUrls,
+    facebookVideoType: post.facebookVideoType || "default",
     date: fs.Timestamp.now(),
   };
 

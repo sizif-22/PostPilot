@@ -12,6 +12,7 @@ import { FaPlay } from "react-icons/fa";
 import { useChannel } from "@/context/ChannelContext";
 import { editPost } from "@/firebase/channel.firestore";
 import { MediaItem } from "@/interfaces/Media";
+import { motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,13 @@ import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // Define the shape of a Post
 interface Post {
@@ -53,6 +61,13 @@ export function EditPostDialog({
   const [isUpdating, setIsUpdating] = useState(false);
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [facebookVideoType, setFacebookVideoType] = useState<
+    "default" | "reel"
+  >("default");
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
+  const [videoValidationErrors, setVideoValidationErrors] = useState<string[]>(
+    []
+  );
 
   // Initialize form with post data
   useEffect(() => {
@@ -64,6 +79,57 @@ export function EditPostDialog({
       setError(null);
     }
   }, [post]);
+
+  // Video validation effect (duration, resolution, aspect ratio)
+  useEffect(() => {
+    const validateVideoFile = async () => {
+      if (selectedImages.length === 1 && selectedImages[0].isVideo) {
+        const fileUrl = selectedImages[0].url;
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.src = fileUrl;
+        return new Promise<{
+          duration: number;
+          width: number;
+          height: number;
+          errors: string[];
+        }>((resolve) => {
+          video.onloadedmetadata = () => {
+            const errors: string[] = [];
+            if (video.duration < 3 || video.duration > 90) {
+              errors.push("Duration must be between 3 and 90 seconds.");
+            }
+            if (video.videoWidth < 540 || video.videoHeight < 960) {
+              errors.push("Resolution must be at least 540x960 pixels.");
+            }
+            const aspect = video.videoWidth / video.videoHeight;
+            if (Math.abs(aspect - 9 / 16) > 0.01) {
+              errors.push("Aspect ratio must be 9:16.");
+            }
+            resolve({
+              duration: video.duration,
+              width: video.videoWidth,
+              height: video.videoHeight,
+              errors,
+            });
+          };
+          video.onerror = () => {
+            resolve({
+              duration: 0,
+              width: 0,
+              height: 0,
+              errors: ["Could not load video metadata."],
+            });
+          };
+        });
+      }
+      return { duration: 0, width: 0, height: 0, errors: [] };
+    };
+    validateVideoFile().then(({ duration, width, height, errors }) => {
+      setVideoDuration(duration);
+      setVideoValidationErrors(errors);
+    });
+  }, [selectedImages]);
 
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
@@ -92,39 +158,68 @@ export function EditPostDialog({
 
   const handleUpdatePost = async () => {
     if (!post || !channel?.id) return;
-
     setIsUpdating(true);
     setError(null);
     try {
-      // Validate media types
+      // Platform-specific text-only post rule
+      if (
+        postText.trim() &&
+        selectedImages.length === 0 &&
+        (!selectedPlatforms.includes("facebook") ||
+          selectedPlatforms.length === 0)
+      ) {
+        throw new Error(
+          "Text-only posts are only allowed on Facebook. Please add an image or video to post to other platforms."
+        );
+      }
+      // Media validation
       if (selectedImages.length > 0) {
         const hasVideos = selectedImages.some((item) => item.isVideo);
         const hasImages = selectedImages.some((item) => !item.isVideo);
         const videoCount = selectedImages.filter((item) => item.isVideo).length;
-
         if (hasVideos && hasImages) {
           throw new Error(
             "Cannot mix videos and images in the same post. Please select either all videos or all images."
           );
         }
-
         if (videoCount > 1) {
           throw new Error(
             "Cannot post multiple videos at once. Please select only one video."
           );
         }
+        // Facebook Reel validation
+        if (
+          hasVideos &&
+          selectedPlatforms.includes("facebook") &&
+          facebookVideoType === "reel" &&
+          videoDuration !== null
+        ) {
+          if (videoDuration < 3) {
+            throw new Error(
+              "Videos must be at least 3 seconds long to be published as a Reel. Please select 'Default Video' instead."
+            );
+          }
+        }
+        // Instagram: Block videos < 3 seconds
+        if (
+          hasVideos &&
+          selectedPlatforms.includes("instagram") &&
+          videoDuration !== null &&
+          videoDuration < 3
+        ) {
+          throw new Error(
+            "Instagram videos must be at least 3 seconds long. Please select a longer video."
+          );
+        }
       }
-
       const updatedPost = {
         id: post.id,
         message: postText,
         platforms: selectedPlatforms,
         imageUrls: selectedImages,
+        facebookVideoType,
       };
-
-      // Update post in database
       await editPost(post.id, channel.id, updatedPost);
-
       setIsOpen(false);
     } catch (error: any) {
       console.error("Error updating post:", error);
@@ -134,8 +229,12 @@ export function EditPostDialog({
     }
   };
 
+  const isTextOnly = postText.trim() && selectedImages.length === 0;
+  const isFacebookOnly =
+    selectedPlatforms.length === 1 && selectedPlatforms[0] === "facebook";
   const isFormValid =
-    (postText.trim() || selectedImages.length > 0) &&
+    ((postText.trim() && selectedImages.length === 0 && isFacebookOnly) ||
+      selectedImages.length > 0) &&
     selectedPlatforms.length > 0;
 
   const hasChanges =
@@ -157,10 +256,14 @@ export function EditPostDialog({
         </DialogHeader>
 
         {error && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: 20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-4 left-1/2  z-50 w-full max-w-md mx-auto">
             <Alert
               variant="destructive"
-              className="bg-white dark:bg-[#1a1a1a] shadow-lg">
+              className="bg-white shadow-lg dark:bg-darkBackground select-none shadow-black/50">
               <AlertCircleIcon className="h-5 w-5 text-red-500" />
               <AlertTitle>Unable to update post</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -171,7 +274,7 @@ export function EditPostDialog({
                 <FiX />
               </button>
             </Alert>
-          </div>
+          </motion.div>
         )}
 
         {/* Platform Selection */}
@@ -302,7 +405,7 @@ export function EditPostDialog({
               <DialogTitle>Select Images</DialogTitle>
             </DialogHeader>
             <ScrollArea className="h-[400px] w-full rounded-md border p-4 dark:bg-secondDarkBackground dark:border-darkBorder">
-              <div className="grid grid-cols-4 gap-4 ">
+              <div className="grid grid-cols-4 gap-4 p-2">
                 {media
                   .filter((item) => !item.isVideo)
                   .map((item) => (
@@ -353,6 +456,59 @@ export function EditPostDialog({
             </ScrollArea>
           </DialogContent>
         </Dialog>
+
+        {/* Facebook Video Type (Reel/Default) */}
+        {selectedPlatforms.includes("facebook") &&
+          selectedImages.length === 1 &&
+          selectedImages[0].isVideo && (
+            <div className="mt-2">
+              <label className="block text-xs text-stone-700 dark:text-white/70 mb-1">
+                Facebook Video Type
+              </label>
+              {videoDuration !== null && (
+                <div className="mb-2 text-xs text-stone-600 dark:text-white/60">
+                  📹 Video duration: {videoDuration.toFixed(1)} seconds
+                </div>
+              )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label
+                      className={`flex items-center gap-2 ${
+                        videoValidationErrors.length > 0
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer"
+                      }`}>
+                      <Checkbox
+                        checked={facebookVideoType === "reel"}
+                        disabled={videoValidationErrors.length > 0}
+                        onCheckedChange={(checked: boolean) =>
+                          setFacebookVideoType(checked ? "reel" : "default")
+                        }
+                      />
+                      <span className="text-xs">
+                        Post as <b>Reel</b> (uncheck for Video)
+                        {videoValidationErrors.length > 0 && (
+                          <span className="text-red-500 ml-1">
+                            - Video does not meet Reel requirements
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  </TooltipTrigger>
+                  {videoValidationErrors.length > 0 && (
+                    <TooltipContent>
+                      <ul className="mb-2 text-xs text-red-500 list-disc ml-4">
+                        {videoValidationErrors.map((err, idx) => (
+                          <li key={idx}>{err}</li>
+                        ))}
+                      </ul>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center gap-2 pt-4 border-t border-stone-200 dark:border-darkBorder">

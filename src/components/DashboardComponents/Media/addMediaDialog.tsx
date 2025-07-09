@@ -34,9 +34,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ file, onRemove }) => {
           />
         ) : (
           <div className="relative flex items-center justify-center h-full">
-            <video
-              className="object-cover w-full h-full"
-              preload="metadata">
+            <video className="object-cover w-full h-full" preload="metadata">
               <source src={previewUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -77,6 +75,8 @@ const MediaDialog = ({
   const [selectedMedia, setSelectedMedia] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [open, setOpen] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
   const validateFileType = (file: File) => {
     const allowedImageTypes = [
       "image/jpeg",
@@ -102,8 +102,7 @@ const MediaDialog = ({
     );
   };
 
-  const handleNewMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const handleNewMedia = (files: File[]) => {
     const validFiles = files.filter((file) => validateFileType(file));
 
     if (validFiles.length > 0) {
@@ -121,6 +120,29 @@ const MediaDialog = ({
 
       setSelectedMedia((prev) => [...prev, ...validFiles]);
     }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    handleNewMedia(files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    handleNewMedia(files);
   };
 
   const handleRemoveMedia = (fileToRemove: File) => {
@@ -164,8 +186,21 @@ const MediaDialog = ({
     }
   };
 
+  const resetDialog = () => {
+    setSelectedMedia([]);
+    setUploadProgress(0);
+    setIsDragOver(false);
+  };
+
+  const handleDialogChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      resetDialog();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
         <button
           className="flex text-sm items-center gap-2 bg-stone-100 dark:text-white dark:bg-stone-900 transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded"
@@ -186,15 +221,20 @@ const MediaDialog = ({
             accept="image/jpeg,image/png,image/gif,image/tiff,image/heif,image/webp,image/heic,video/*"
             ref={inputRef}
             className="hidden"
-            onChange={handleNewMedia}
+            onChange={handleFileInputChange}
             multiple
           />
           {selectedMedia.length > 0 ? (
-            <>
+            <div>
               <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-stone-600 dark:text-gray-400">
                   {selectedMedia.length}{" "}
                   {selectedMedia.length === 1 ? "file" : "files"} selected
+                  {isDragOver && (
+                    <span className="ml-2 text-violet-600 dark:text-violet-400">
+                      - Drop to add more files
+                    </span>
+                  )}
                 </p>
                 <Button
                   variant="outline"
@@ -205,27 +245,58 @@ const MediaDialog = ({
                   Add More
                 </Button>
               </div>
-              <ScrollArea className="h-[400px] w-full rounded-md border dark:border-gray-700 p-4">
-                <div className="grid grid-cols-5 gap-3">
-                  {selectedMedia.map((file, index) => (
-                    <MediaPreview
-                      key={`${file.name}-${index}`}
-                      file={file}
-                      onRemove={handleRemoveMedia}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            </>
+              <div>
+                <ScrollArea
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={` h-[400px] w-full rounded-md border-2 dark:border-gray-700 p-4 transition-colors ${
+                    isDragOver
+                      ? "bg-violet-50 dark:bg-violet-950/20 border-2 border-dashed border-violet-500 rounded-lg"
+                      : ""
+                  }`}>
+                  <div className="grid grid-cols-5 gap-3">
+                    {selectedMedia.map((file, index) => (
+                      <MediaPreview
+                        key={`${file.name}-${index}`}
+                        file={file}
+                        onRemove={handleRemoveMedia}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
           ) : (
             <div
               onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-darkButtons transition-colors dark:border-darkBorder">
-              <FaImage className="w-12 h-12 text-stone-300 dark:text-gray-500 mb-4" />
-              <p className="text-stone-500 dark:text-gray-400">Drag and drop or click to upload</p>
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex flex-col items-center justify-center h-[300px] border-2 border-dashed rounded-lg cursor-pointer transition-colors dark:border-darkBorder ${
+                isDragOver
+                  ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20"
+                  : "border-stone-300 hover:bg-stone-50 dark:hover:bg-darkButtons"
+              }`}>
+              <FaImage
+                className={`w-12 h-12 mb-4 transition-colors ${
+                  isDragOver
+                    ? "text-violet-500"
+                    : "text-stone-300 dark:text-gray-500"
+                }`}
+              />
+              <p
+                className={`transition-colors ${
+                  isDragOver
+                    ? "text-violet-700 dark:text-violet-300"
+                    : "text-stone-500 dark:text-gray-400"
+                }`}>
+                {isDragOver
+                  ? "Drop files here"
+                  : "Drag and drop or click to upload"}
+              </p>
               <p className="text-stone-400 dark:text-gray-500 text-sm mt-2">
-                Supported formats: JPEG, PNG, GIF, TIFF, WEBP, MP4,
-                WEBM
+                Supported formats: JPEG, PNG, GIF, TIFF, WEBP, MP4, WEBM
               </p>
             </div>
           )}
@@ -257,7 +328,7 @@ const MediaDialog = ({
             <div className="space-x-2">
               <Button
                 variant="outline"
-                onClick={() => setSelectedMedia([])}
+                onClick={resetDialog}
                 disabled={selectedMedia.length === 0 || isUploading}
                 className="dark:bg-darkButtons dark:text-white dark:hover:bg-darkBorder">
                 Clear

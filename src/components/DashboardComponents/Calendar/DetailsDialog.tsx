@@ -43,6 +43,7 @@ export const DetailsDialog = ({
   const [editDialogPost, setEditDialogPost] = useState<EditDialogPost | null>(
     null
   );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -57,6 +58,7 @@ export const DetailsDialog = ({
     }
   };
   const confirmDelete = async () => {
+    setIsDeleting(true);
     if (channel && selectedEvent && selectedEvent.id) {
       await fetch("/api/lambda", {
         method: "DELETE",
@@ -69,6 +71,7 @@ export const DetailsDialog = ({
       setShowDeleteConfirm(false);
       setOpen(false);
     }
+    setIsDeleting(false);
   };
 
   // Helper to map selectedEvent to EditPostDialog Post shape
@@ -329,8 +332,13 @@ export const DetailsDialog = ({
                                 </button>
                                 <button
                                   onClick={confirmDelete}
-                                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded">
-                                  Delete Post
+                                  disabled={isDeleting}
+                                  className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded${
+                                    isDeleting
+                                      ? " opacity-60 cursor-not-allowed"
+                                      : ""
+                                  }`}>
+                                  {isDeleting ? "Deleting..." : "Delete Post"}
                                 </button>
                               </div>
                             </div>
