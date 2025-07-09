@@ -338,8 +338,7 @@ const PrivacyPolicyPage = () => {
                   Social Media Platforms
                 </h3>
                 <p className="text-gray-700">
-                  We share content and data with Facebook, Instagram,{" "}
-                   {/* Twitter, LinkedIn, */}
+                  We share content and data with Facebook, Instagram, Twitter, LinkedIn,
                     TikTok, and other connected platforms to provide our
                   automation services.
                 </p>

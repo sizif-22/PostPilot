@@ -4,6 +4,7 @@ import * as fs from "firebase/firestore";
 import { Channel, Post } from "@/interfaces/Channel";
 import { PostOnInstagram } from "../funcitons/instagram";
 import { PostOnFacebook } from "../funcitons/facebook";
+import { PostOnX } from "../funcitons/x";
 
 export async function POST(request: Request) {
   try {
@@ -208,6 +209,45 @@ export async function POST(request: Request) {
                 console.error("Error posting to LinkedIn:", error);
                 return {
                   platform: "linkedin",
+                  success: false,
+                  message: "Error occurred",
+                };
+              }
+            }
+            case "x": {
+              try {
+                const response = await fetch(
+                  `https://postpilot-22.vercel.app/api/x/createpost`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      postId: postId,
+                      channelId: channelId,
+                    }),
+                  }
+                );
+
+                const success = response.ok;
+                console.log(
+                  success
+                    ? "Post Published successfully on X."
+                    : "Post didn't get published on X"
+                );
+
+                return {
+                  platform: "x",
+                  success,
+                  message: success
+                    ? "Published successfully"
+                    : "Failed to publish",
+                };
+              } catch (error) {
+                console.error("Error posting to X:", error);
+                return {
+                  platform: "x",
                   success: false,
                   message: "Error occurred",
                 };

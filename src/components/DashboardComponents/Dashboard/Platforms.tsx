@@ -1,7 +1,7 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { FaTiktok } from "react-icons/fa6";
 
 export const Platforms = () => {
@@ -11,7 +11,8 @@ export const Platforms = () => {
     channel?.socialMedia?.facebook ||
     channel?.socialMedia?.instagram ||
     channel?.socialMedia?.tiktok ||
-    channel?.socialMedia?.linkedin;
+    channel?.socialMedia?.linkedin ||
+    channel?.socialMedia?.x;
 
   return (
     <div className="col-span-1 row-span-2 border shadow-sm dark:shadow-lg rounded-lg p-4 h-[50vh] dark:bg-transparent dark:border-darkBorder">
@@ -78,6 +79,19 @@ export const Platforms = () => {
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   LinkedIn Organization
+                </p>
+              </div>
+            </div>
+          )}
+          {channel?.socialMedia?.x && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+              <FaTwitter className="text-blue-400 text-xl" />
+              <div>
+                <p className="font-medium dark:text-gray-100">
+                  {channel.socialMedia.x.name}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  X Account
                 </p>
               </div>
             </div>

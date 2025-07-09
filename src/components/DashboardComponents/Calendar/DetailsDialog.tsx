@@ -9,7 +9,7 @@ import {
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
-import { FaPlay, FaLinkedin } from "react-icons/fa";
+import { FaPlay, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/lib/utils";
@@ -53,6 +53,8 @@ export const DetailsDialog = ({
         return <FiInstagram className="text-[#E4405F]" />;
       case "linkedin":
         return <FaLinkedin className="text-[#0A66C2]" />;
+      case "x":
+        return <FaTwitter className="text-[#000000]" />;
       default:
         return <FiGlobe className="text-stone-600" />;
     }
@@ -140,18 +142,22 @@ export const DetailsDialog = ({
                       <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                         <div className="flex items-center gap-1">
                           <FiClock className="text-stone-400 dark:text-stone-500" />
-                          {selectedEvent.scheduledDate
-                            ? formatDateInTimezone(
-                                selectedEvent.scheduledDate,
-                                "Africa/Cairo"
-                              ).time
-                            : selectedEvent.date
-                            ? formatDateInTimezone(
-                                selectedEvent.date.seconds,
-                                "Africa/Cairo"
-                              ).time
-                            : ""}{" "}
-                          at {/* {format(selectedEvent.date, "p")} */}
+                          {(() => {
+                            const timestamp =
+                              selectedEvent.scheduledDate ??
+                              selectedEvent.date?.seconds;
+                            if (!timestamp) return null;
+                            const formatted = formatDateInTimezone(
+                              timestamp,
+                              "Africa/Cairo"
+                            );
+                            return (
+                              <>
+                                {formatted.date} {formatted.month} at{" "}
+                                {formatted.time}
+                              </>
+                            );
+                          })()}
                         </div>
                         <span>•</span>
                         <div className="flex items-center gap-1">
@@ -262,33 +268,21 @@ export const DetailsDialog = ({
                         Will be posted on{" "}
                       </>
                     )}
-                    {selectedEvent.scheduledDate ||
-                      (selectedEvent.date && (
+                    {(() => {
+                      const timestamp =
+                        selectedEvent.scheduledDate ??
+                        selectedEvent.date?.seconds;
+                      if (!timestamp) return null;
+                      const formatted = formatDateInTimezone(
+                        timestamp,
+                        "Africa/Cairo"
+                      );
+                      return (
                         <>
-                          {
-                            formatDateInTimezone(
-                              selectedEvent.scheduledDate ||
-                                selectedEvent.date.seconds,
-                              "Africa/Cairo"
-                            ).date
-                          }{" "}
-                          {
-                            formatDateInTimezone(
-                              selectedEvent.scheduledDate ||
-                                selectedEvent.date.seconds,
-                              "Africa/Cairo"
-                            ).month
-                          }{" "}
-                          at{" "}
-                          {
-                            formatDateInTimezone(
-                              selectedEvent.scheduledDate ||
-                                selectedEvent.date.seconds,
-                              "Africa/Cairo"
-                            ).time
-                          }
+                          {formatted.date} {formatted.month} at {formatted.time}
                         </>
-                      ))}
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

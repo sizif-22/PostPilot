@@ -167,6 +167,8 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                             <FiInstagram className="w-4 h-4" />
                           ) : platform === "twitter" ? (
                             <FiTwitter className="w-4 h-4" />
+                          ) : platform === "x" ? (
+                            <FiTwitter className="w-4 h-4" />
                           ) : platform === "linkedin" ? (
                             <FiLinkedin className="w-4 h-4" />
                           ) : platform === "youtube" ? (

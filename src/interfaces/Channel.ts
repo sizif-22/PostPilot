@@ -40,12 +40,19 @@ export interface linkedinChannel {
   accessToken: string;
   organizationId: string;
 }
+export interface xChannel {
+  name: string;
+  urn: string;
+  accessToken: string;
+  organizationId: string;
+}
 export interface Channel extends ChannelBrief {
   socialMedia?: {
     facebook?: facebookChannel;
     instagram?: instagramChannel;
     tiktok?: tiktok;
     linkedin?: linkedinChannel;
+    x?: xChannel;
   };
   posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];

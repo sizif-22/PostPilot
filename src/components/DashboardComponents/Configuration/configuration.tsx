@@ -21,6 +21,7 @@ export const Configuration = () => {
   const isFacebookConnected = channel?.socialMedia?.facebook;
   const isTikTokConnected = channel?.socialMedia?.tiktok;
   const isLinkedInConnected = channel?.socialMedia?.linkedin;
+  const isXConnected = channel?.socialMedia?.x;
   const [nameInput, setNameInput] = useState<string | undefined>(channel?.name);
   const [descInput, setDescInput] = useState<string | undefined>(
     channel?.description
@@ -56,6 +57,14 @@ export const Configuration = () => {
     const SCOPE =
       "openid w_organization_social rw_organization_admin r_organization_social";
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
+    window.location.href = authUrl;
+  };
+  const handleXConnect = () => {
+    Cookies.set("currentChannel", id as string);
+    const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
+    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/x";
+    const SCOPE = "tweet.read tweet.write users.read offline.access";
+    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&state=state&code_challenge=challenge&code_challenge_method=plain`;
     window.location.href = authUrl;
   };
   const confirmDelete = async () => {
@@ -114,6 +123,16 @@ export const Configuration = () => {
       isConnected: isLinkedInConnected,
       connectedInfo: isLinkedInConnected
         ? `Connected to: ${isLinkedInConnected?.name}`
+        : null,
+    },
+    {
+      name: "X",
+      html: <span>X</span>,
+      description: "Connect your X account to enable posting",
+      connect: handleXConnect,
+      isConnected: isXConnected,
+      connectedInfo: isXConnected
+        ? `Connected to: ${isXConnected?.name}`
         : null,
     },
   ];

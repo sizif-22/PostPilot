@@ -29,7 +29,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
-import { FaTiktok, FaLinkedin } from "react-icons/fa6";
+import { FaTiktok, FaLinkedin, FaTwitter } from "react-icons/fa6";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
 import {
@@ -412,6 +412,18 @@ export const CPDialog = ({
                 }`}>
                 <FaLinkedin className="text-lg text-blue-700" />
                 <span className="text-sm">LinkedIn</span>
+              </button>
+            )}
+            {channel?.socialMedia?.x && (
+              <button
+                onClick={() => handlePlatformToggle("x")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder  ${
+                  selectedPlatforms.includes("x")
+                    ? "border-black bg-black text-white dark:bg-darkBorder"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}>
+                <FaTwitter className="text-lg" />
+                <span className="text-sm">X</span>
               </button>
             )}
           </div>
