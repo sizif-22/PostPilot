@@ -105,7 +105,8 @@ export const Configuration = () => {
 
     const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/x";
-    const SCOPE = "tweet.read tweet.write users.read offline.access";
+    const SCOPE =
+      "tweet.read tweet.write users.read offline.access media.write";
 
     const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI
