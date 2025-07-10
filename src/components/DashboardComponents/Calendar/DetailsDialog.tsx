@@ -9,6 +9,7 @@ import {
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
+import { FaXTwitter } from "react-icons/fa6";
 import { FaPlay, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
@@ -54,7 +55,7 @@ export const DetailsDialog = ({
       case "linkedin":
         return <FaLinkedin className="text-[#0A66C2]" />;
       case "x":
-        return <FaTwitter className="text-[#000000]" />;
+        return <FaXTwitter className="text-black dark:text-white" />;
       default:
         return <FiGlobe className="text-stone-600" />;
     }

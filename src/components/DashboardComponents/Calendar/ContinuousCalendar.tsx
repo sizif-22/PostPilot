@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/interfaces/Channel";
 import { FiFacebook, FiInstagram } from "react-icons/fi";
+import { FaXTwitter } from "react-icons/fa6";
 import { Timestamp } from "firebase/firestore";
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
@@ -245,6 +246,8 @@ export const ContinuousCalendar: React.FC<ContinuousCalendarProps> = ({
                             <FiFacebook key={index} />
                           ) : platform === "instagram" ? (
                             <FiInstagram key={index} />
+                          ) : platform === "x" ? (
+                            <FaXTwitter key={index}/>
                           ) : null
                         )}
                       </div>
