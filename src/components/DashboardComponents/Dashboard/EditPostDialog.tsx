@@ -187,6 +187,39 @@ export function EditPostDialog({
             "Cannot post multiple videos at once. Please select only one video."
           );
         }
+        // X (Twitter) validations
+        if (selectedPlatforms.includes("x")) {
+          // Image: < 30MB
+          if (hasImages) {
+            for (const img of selectedImages) {
+              // 'size' may be undefined if not available
+              if (typeof img.size === "number" && img.size > 30 * 1024 * 1024) {
+                throw new Error(
+                  "X: Each image must be less than 30MB. Please select a smaller image."
+                );
+              }
+            }
+          }
+          // Video: < 2m20s and < 512MB
+          if (hasVideos) {
+            if (videoDuration !== null && videoDuration > 140) {
+              throw new Error(
+                "X: Video must be less than 2 minutes and 20 seconds (140 seconds)."
+              );
+            }
+            for (const vid of selectedImages) {
+              // 'size' may be undefined if not available
+              if (
+                typeof vid.size === "number" &&
+                vid.size > 512 * 1024 * 1024
+              ) {
+                throw new Error(
+                  "X: Video must be less than 512MB. Please select a smaller video."
+                );
+              }
+            }
+          }
+        }
         // Facebook Reel validation
         if (
           hasVideos &&

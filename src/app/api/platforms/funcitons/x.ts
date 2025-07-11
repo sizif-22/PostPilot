@@ -1,4 +1,26 @@
 import { MediaItem } from "@/interfaces/Media";
+import { createHmac } from "crypto";
+import OAuth from "oauth-1.0a";
+
+const consumer_key = process.env.X_API_KEY;
+const consumer_secret = process.env.X_API_KEY_SECRET;
+const access_token = process.env.X_ACCESS_TOKEN;
+const token_secret = process.env.X_ACCESS_TOKEN_SECRET;
+
+const oauth = new OAuth({
+  consumer: {
+    key: consumer_key || "",
+    secret: consumer_secret || "",
+  },
+  signature_method: "HMAC-SHA1",
+  hash_function(base_string, key) {
+    return createHmac("sha1", key).update(base_string).digest("base64");
+  },
+});
+const token = {
+  key: access_token || "",
+  secret: token_secret || "",
+};
 
 // Test function to validate access token
 async function testAccessToken(accessToken: string): Promise<boolean> {
@@ -156,17 +178,12 @@ async function uploadMediaToX(
     console.log(
       `Media downloaded successfully. Type: ${mediaType}, Size: ${mediaBuffer.byteLength} bytes`
     );
-
-    // Check if it's a video
-    // const isVideo = mediaType.startsWith("video/");
-
     if (isVideo) {
-      console.log("Uploading as video using simple upload");
-      return await uploadVideoSimple(mediaBuffer, mediaType, accessToken);
+      console.log("Uploading as video using v1.1 API");
+      return await uploadVideoV1(mediaBuffer, mediaType, accessToken);
     } else {
-      console.log("Uploading as image using simple upload");
-      // For images, use simple upload
-      return await uploadImageSimple(mediaBuffer, mediaType, accessToken);
+      console.log("Uploading as image using v2 API");
+      return await uploadImageV2(mediaBuffer, mediaType, accessToken);
     }
   } catch (error) {
     console.error("Error uploading media to X:", error);
@@ -174,8 +191,8 @@ async function uploadMediaToX(
   }
 }
 
-// Simple upload for images
-async function uploadImageSimple(
+// Upload images using v2 API
+async function uploadImageV2(
   mediaBuffer: ArrayBuffer,
   mediaType: string,
   accessToken: string
@@ -191,7 +208,7 @@ async function uploadImageSimple(
       return null;
     }
 
-    // Twitter v2 /media/upload expects a JSON body with base64-encoded media in 'media'
+    // Twitter v2 /media/upload expects a JSON body with base64-encoded media
     const base64Data = Buffer.from(mediaBuffer).toString("base64");
     const body = JSON.stringify({
       media: base64Data,
@@ -228,8 +245,8 @@ async function uploadImageSimple(
   }
 }
 
-// Simple upload for videos
-async function uploadVideoSimple(
+// Video upload using Twitter API v1.1 (chunked upload)
+async function uploadVideoV1(
   mediaBuffer: ArrayBuffer,
   mediaType: string,
   accessToken: string
@@ -240,46 +257,220 @@ async function uploadVideoSimple(
       return null;
     }
 
-    // Twitter's docs: 512MB max for videos, but you may want to check your app's limits
+    // Twitter's limit: 512MB for videos
     if (mediaBuffer.byteLength > 512 * 1024 * 1024) {
       console.error("Video too large, must be under 512MB");
       return null;
     }
 
-    const base64Data = Buffer.from(mediaBuffer).toString("base64");
-    const body = JSON.stringify({
-      media: base64Data,
-      media_category: "tweet_video",
-      media_type: mediaType,
-    });
+    console.log(
+      `Starting v1.1 video upload. Size: ${mediaBuffer.byteLength} bytes, Type: ${mediaType}`
+    );
 
-    const response = await fetch("https://api.twitter.com/2/media/upload", {
+    const url = "https://upload.twitter.com/1.1/media/upload.json";
+    const params = {
+      command: "INIT",
+      total_bytes: mediaBuffer.byteLength.toString(),
+      media_type: "video/mp4",
+      media_category: "tweet_video",
+    };
+
+    const request_data = {
+      url: url + "?" + new URLSearchParams(params).toString(),
+      method: "POST",
+    };
+    const headers = oauth.toHeader(oauth.authorize(request_data, token));
+
+    // Step 1: INIT
+    const initResponse = await fetch(request_data.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        Authorization: headers.Authorization,
       },
-      body,
     });
 
-    console.log(`Video upload response status: ${response.status}`);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `Video upload failed: ${response.status} ${response.statusText}`
-      );
-      console.error("Error response body:", errorText);
+    if (!initResponse.ok) {
+      const errorText = await initResponse.text();
+      console.error(`INIT failed: ${initResponse.status} ${errorText}`);
       return null;
     }
 
-    const data = await response.json();
-    console.log("Video upload successful:", data);
-    return data.data?.id || null;
+    const initData = await initResponse.json();
+    const mediaId = initData.media_id_string;
+    console.log(`INIT successful. Media ID: ${mediaId}`);
+
+    // Step 2: APPEND (chunked upload)
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    const totalChunks = Math.ceil(mediaBuffer.byteLength / chunkSize);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, mediaBuffer.byteLength);
+      const chunk = mediaBuffer.slice(start, end);
+
+      const formData = new FormData();
+      formData.append("command", "APPEND");
+      formData.append("media_id", mediaId);
+      formData.append("segment_index", i.toString());
+      formData.append("media", new Blob([chunk], { type: mediaType }));
+
+      // For OAuth 1.0a with FormData, we need to include the form data in the signature
+      const formDataParams = new URLSearchParams();
+      formDataParams.append("command", "APPEND");
+      formDataParams.append("media_id", mediaId);
+      formDataParams.append("segment_index", i.toString());
+
+      const request_data = {
+        url: "https://upload.twitter.com/1.1/media/upload.json",
+        method: "POST",
+      };
+
+      const oauthHeaders = oauth.toHeader(oauth.authorize(request_data, token));
+
+      const appendResponse = await fetch(
+        "https://upload.twitter.com/1.1/media/upload.json",
+        {
+          method: "POST",
+          headers: {
+            ...oauthHeaders,
+          },
+          body: formData,
+        }
+      );
+
+      if (!appendResponse.ok) {
+        const errorText = await appendResponse.text();
+        console.error(
+          `APPEND failed for chunk ${i}: ${appendResponse.status} ${errorText}`
+        );
+        return null;
+      }
+
+      console.log(`Chunk ${i + 1}/${totalChunks} uploaded successfully`);
+    }
+
+    // Step 3: FINALIZE
+    const finalizeRequestData = {
+      url: "https://upload.twitter.com/1.1/media/upload.json",
+      method: "POST",
+    };
+
+    const finalFormData = new FormData();
+    finalFormData.set("command", "FINALIZE");
+    finalFormData.set("media_id", mediaId);
+
+    const finalizeOauthHeaders = oauth.toHeader(
+      oauth.authorize(finalizeRequestData, token)
+    );
+
+    const finalizeResponse = await fetch(
+      "https://upload.twitter.com/1.1/media/upload.json",
+      {
+        method: "POST",
+        headers: {
+          ...finalizeOauthHeaders,
+        },
+        body: finalFormData,
+      }
+    );
+
+    if (!finalizeResponse.ok) {
+      const errorText = await finalizeResponse.text();
+      console.error(`FINALIZE failed: ${finalizeResponse.status} ${errorText}`);
+      return null;
+    }
+
+    const finalizeData = await finalizeResponse.json();
+    console.log("Video upload finalized:", finalizeData);
+
+    // Step 4: Check processing status (for videos)
+    if (finalizeData.processing_info) {
+      console.log("Video is being processed...");
+      const processedMediaId = await waitForProcessing(mediaId, accessToken);
+      return processedMediaId;
+    }
+
+    return mediaId;
   } catch (error) {
-    console.error("Error in video upload:", error);
+    console.error("Error in v1.1 video upload:", error);
     return null;
   }
+}
+
+// Wait for video processing to complete
+async function waitForProcessing(
+  mediaId: string,
+  accessToken: string,
+  maxAttempts: number = 10
+): Promise<string | null> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const statusUrl = `https://upload.twitter.com/1.1/media/upload.json?command=STATUS&media_id=${mediaId}`;
+      const statusRequestData = {
+        url: statusUrl,
+        method: "GET",
+      };
+      const statusOauthHeaders = oauth.toHeader(
+        oauth.authorize(statusRequestData, token)
+      );
+
+      const statusResponse = await fetch(statusUrl, {
+        method: "GET",
+        headers: {
+          ...statusOauthHeaders,
+        },
+      });
+
+      if (!statusResponse.ok) {
+        const errorText = await statusResponse.text();
+        console.error(
+          `STATUS check failed: ${statusResponse.status} ${errorText}`
+        );
+        return null;
+      }
+
+      const statusData = await statusResponse.json();
+      console.log(
+        `Processing status (attempt ${attempt + 1}):`,
+        statusData.processing_info
+      );
+
+      if (statusData.processing_info) {
+        const state = statusData.processing_info.state;
+
+        if (state === "succeeded") {
+          console.log("Video processing completed successfully");
+          return mediaId;
+        } else if (state === "failed") {
+          console.error(
+            "Video processing failed:",
+            statusData.processing_info.error
+          );
+          return null;
+        } else if (state === "in_progress" || state === "pending") {
+          // Wait before checking again
+          const checkAfterSecs =
+            statusData.processing_info.check_after_secs || 5;
+          console.log(`Waiting ${checkAfterSecs} seconds before next check...`);
+          await new Promise((resolve) =>
+            setTimeout(resolve, checkAfterSecs * 1000)
+          );
+        }
+      } else {
+        // No processing info means it's ready
+        return mediaId;
+      }
+    } catch (error) {
+      console.error(
+        `Error checking processing status (attempt ${attempt + 1}):`,
+        error
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+  }
+
+  console.error("Max attempts reached waiting for video processing");
+  return null;
 }
 
 function getMediaTypeFromURL(url: string): string {
