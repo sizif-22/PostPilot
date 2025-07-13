@@ -21,6 +21,8 @@ export default function XCallbackPage() {
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<XUserProfile | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [expiresIn, setExpiresIn] = useState<number | null>(null);
 
   useEffect(() => {
     const handleXAuth = async () => {
@@ -50,7 +52,9 @@ export default function XCallbackPage() {
       }
 
       try {
-        const response = await fetch(`/api/x/connect?code=${code}&state=${state}`);
+        const response = await fetch(
+          `/api/x/connect?code=${code}&state=${state}`
+        );
         const data = await response.json();
 
         if (!response.ok) {
@@ -58,6 +62,8 @@ export default function XCallbackPage() {
         }
 
         setAccessToken(data.access_token);
+        setRefreshToken(data.refresh_token);
+        setExpiresIn(data.expires_in);
         setUserProfile(data.user || null);
 
         if (!data.user) {
@@ -75,7 +81,12 @@ export default function XCallbackPage() {
   }, []);
 
   const handleConnect = async () => {
-    if (!userProfile || !accessToken || !Cookies.get("currentChannel")) {
+    if (
+      !userProfile ||
+      !accessToken ||
+      !refreshToken ||
+      !Cookies.get("currentChannel")
+    ) {
       return;
     }
 
@@ -87,6 +98,11 @@ export default function XCallbackPage() {
         name: userProfile.name,
         username: userProfile.username,
         accessToken: accessToken,
+        refreshToken: refreshToken,
+        expiresIn: expiresIn,
+        tokenExpiry: expiresIn
+          ? new Date(Date.now() + expiresIn * 1000).toISOString()
+          : null,
         userId: userProfile.id,
         isPersonal: true,
       };
@@ -119,7 +135,9 @@ export default function XCallbackPage() {
           </div>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => router.push(`/channels/${Cookies.get("currentChannel")}`)}
+            onClick={() =>
+              router.push(`/channels/${Cookies.get("currentChannel")}`)
+            }
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
             Back to Channel
           </button>
@@ -163,7 +181,9 @@ export default function XCallbackPage() {
 
         <div className="flex gap-3">
           <button
-            onClick={() => router.push(`/channels/${Cookies.get("currentChannel")}`)}
+            onClick={() =>
+              router.push(`/channels/${Cookies.get("currentChannel")}`)
+            }
             className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
             Cancel
           </button>

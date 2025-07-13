@@ -56,17 +56,49 @@ export async function PostOnX({
   pageId, // Not used for X, but kept for interface compatibility
   message,
   imageUrls,
+  refreshToken,
+  tokenExpiry,
 }: {
   imageUrls?: MediaItem[];
   accessToken: string;
   pageId: string;
   message?: string;
+  refreshToken?: string;
+  tokenExpiry?: string;
 }) {
   try {
-    // First, validate the access token
-    const isTokenValid = await testAccessToken(accessToken);
-    if (!isTokenValid) {
-      throw new Error("Invalid or expired access token");
+    let currentAccessToken = accessToken;
+
+    // If we have refresh token and expiry, check if we need to refresh
+    if (refreshToken && tokenExpiry) {
+      try {
+        const { getValidXToken } = await import("@/lib/x-token-manager");
+        const tokenResult = await getValidXToken(
+          accessToken,
+          refreshToken,
+          tokenExpiry
+        );
+        currentAccessToken = tokenResult.accessToken;
+
+        // If token was refreshed, we should update the stored token
+        if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
+          console.log(
+            "X token was refreshed, new token data available for update"
+          );
+          // Note: You might want to update the stored token in your database here
+        }
+      } catch (refreshError) {
+        console.error("Failed to refresh X token:", refreshError);
+        throw new Error(
+          "Failed to refresh X access token. Please reconnect your X account."
+        );
+      }
+    } else {
+      // Fallback to old validation method if no refresh token
+      const isTokenValid = await testAccessToken(accessToken);
+      if (!isTokenValid) {
+        throw new Error("Invalid or expired access token");
+      }
     }
 
     let media_ids: string[] = [];
@@ -86,7 +118,7 @@ export async function PostOnX({
           const media_id = await uploadMediaToX(
             media.url,
             media.isVideo,
-            accessToken
+            currentAccessToken
           );
           if (!media_id) {
             throw new Error(`Failed to upload media: ${media.url}`);
@@ -111,7 +143,7 @@ export async function PostOnX({
     const response = await fetch("https://api.twitter.com/2/tweets", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${currentAccessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(tweetBody),

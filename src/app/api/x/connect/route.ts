@@ -67,32 +67,88 @@ export async function GET(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(
+          `${CLIENT_ID}:${CLIENT_SECRET}`
+        ).toString("base64")}`,
       },
       body: tokenParams,
     });
 
     const tokenData = await tokenRes.json();
-    
+
     if (!tokenRes.ok) {
       console.error("Token exchange failed:", tokenData);
       return NextResponse.json(
-        { error: tokenData.error_description || tokenData.error || "Failed to get access token" },
+        {
+          error:
+            tokenData.error_description ||
+            tokenData.error ||
+            "Failed to get access token",
+        },
         { status: 400 }
       );
     }
 
-    const access_token = tokenData.access_token;
+    // Check if we got a refresh token (required for long-lived tokens)
+    if (!tokenData.refresh_token) {
+      console.error(
+        "No refresh token received. Make sure 'offline.access' scope is requested."
+      );
+      return NextResponse.json(
+        {
+          error:
+            "No refresh token received. Please ensure 'offline.access' scope is requested.",
+        },
+        { status: 400 }
+      );
+    }
 
-    // Fetch user profile
+    // Exchange refresh token for long-lived access token
+    const refreshParams = new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: tokenData.refresh_token,
+      client_id: CLIENT_ID,
+    });
+
+    const refreshRes = await fetch("https://api.twitter.com/2/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(
+          `${CLIENT_ID}:${CLIENT_SECRET}`
+        ).toString("base64")}`,
+      },
+      body: refreshParams,
+    });
+
+    const refreshData = await refreshRes.json();
+
+    if (!refreshRes.ok) {
+      console.error("Refresh token exchange failed:", refreshData);
+      return NextResponse.json(
+        {
+          error:
+            refreshData.error_description ||
+            refreshData.error ||
+            "Failed to get long-lived access token",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use the long-lived access token
+    const longLivedAccessToken = refreshData.access_token;
+    const newRefreshToken = refreshData.refresh_token; // X provides a new refresh token
+
+    // Fetch user profile with long-lived token
     const userRes = await fetch("https://api.twitter.com/2/users/me", {
       headers: {
-        Authorization: `Bearer ${access_token}`,
+        Authorization: `Bearer ${longLivedAccessToken}`,
       },
     });
 
     const userData = await userRes.json();
-    
+
     if (!userRes.ok) {
       console.error("User profile fetch failed:", userData);
       return NextResponse.json(
@@ -103,7 +159,9 @@ export async function GET(request: Request) {
 
     // Clean up cookies
     const response = NextResponse.json({
-      access_token,
+      access_token: longLivedAccessToken,
+      refresh_token: newRefreshToken,
+      expires_in: refreshData.expires_in,
       organizations: [], // X doesn't have organizations like LinkedIn
       user: {
         id: userData.data.id,
@@ -117,7 +175,6 @@ export async function GET(request: Request) {
     response.cookies.set("xCodeVerifier", "", { expires: new Date(0) });
 
     return response;
-
   } catch (error: any) {
     console.error("Error in X connect:", error);
     return NextResponse.json(
