@@ -1,11 +1,13 @@
 "use client";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
 import { FaGoogle } from "react-icons/fa";
 import { addUserWithGoogle } from "@/firebase/auth";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 export const Hero = () => {
+  const router = useRouter();
   const { user } = useUser();
   return (
     <section className="min-h-screen flex items-center px-6 sm:px-6 md:px-10 pt-16 sm:pt-20">
@@ -28,21 +30,16 @@ export const Hero = () => {
               PostPilot's intelligent automation platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
-              <Link
-                href={user?.isLoggedIn ? "/channels" : ""}
-                onClick={() => {
-                  !user?.isLoggedIn && addUserWithGoogle();
-                }}
-                className="group px-4 sm:px-5 py-1 sm:py-3 dark:bg-violet-600 bg-violet-700 text-white rounded-sm font-semibold transition-all duration-300 relative overflow-hidden text-sm sm:text-base">
-                <span className="absolute inset-0 dark:bg-gradient-to-r dark:from-violet-400 dark:to-white bg-gradient-to-r from-violet-500 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                <span className="relative">
-                  {user?.isLoggedIn ? "Channels" : "Sign In with Google"}
-                </span>
-              </Link>
-              {/* <button className="flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 dark:border-violet-600 border-violet-700 border-2 dark:text-violet-400 text-violet-700 rounded-full font-semibold hover:dark:bg-violet-600/10 hover:bg-violet-700/10 transition-all duration-300 text-sm sm:text-base">
-               <PlayIcon className="w-4 h-4" />
-               <span>Watch Demo</span>
-             </button> */}
+              {user?.isLoggedIn ? (
+                <Button onClick={() => router.push("/channels")}>
+                  Channels
+                </Button>
+              ) : (
+                <Button onClick={() => addUserWithGoogle()}>
+                  <FaGoogle />
+                  Sign In with Google
+                </Button>
+              )}
             </div>
           </motion.div>
           <motion.div
