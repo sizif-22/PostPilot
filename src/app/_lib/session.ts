@@ -59,6 +59,7 @@ export async function getSession() {
     };
   } catch (error) {
     console.error("Session verification failed:", error);
+    deleteSession();
     return null;
   }
 }
