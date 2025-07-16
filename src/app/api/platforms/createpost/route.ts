@@ -231,6 +231,13 @@ export async function POST(request: Request) {
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,
+                  ...(channel.socialMedia.x.refreshToken &&
+                  channel.socialMedia.x.tokenExpiry
+                    ? {
+                        refreshToken: channel.socialMedia.x.refreshToken,
+                        tokenExpiry: channel.socialMedia.x.tokenExpiry,
+                      }
+                    : {}),
                 });
 
                 console.log("Post Published successfully on X.");

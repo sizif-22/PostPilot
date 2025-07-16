@@ -46,6 +46,8 @@ export interface xChannel {
   accessToken: string;
   userId: string;
   isPersonal: boolean;
+  refreshToken?: string;
+  tokenExpiry?: string;
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {
