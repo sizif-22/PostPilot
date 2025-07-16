@@ -94,7 +94,7 @@ export default function XCallbackPage() {
     try {
       setLoading(true);
       const channelId = Cookies.get("currentChannel");
-      const encryptedAccessToken = encrypt(accessToken);
+      const encryptedAccessToken: string = await encrypt(accessToken);
       const socialMediaX = {
         name: userProfile.name,
         username: userProfile.username,

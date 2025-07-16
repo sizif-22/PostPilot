@@ -154,7 +154,7 @@ const Connection = () => {
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
       // Always update facebook
-      const encryptedAccessToken = encrypt(rest.access_token);
+      const encryptedAccessToken: string = await encrypt(rest.access_token);
       const facebookData = {
         name: rest.name,
         id: rest.id,
@@ -170,7 +170,7 @@ const Connection = () => {
         if (!igProfileRes.ok)
           throw new Error("Failed to fetch Instagram profile");
         const igProfile = await igProfileRes.json();
-        const encryptedAccessToken = encrypt(rest.access_token);
+        const encryptedAccessToken: string = await encrypt(rest.access_token);
         updateData["socialMedia.instagram"] = {
           pageId: rest.id,
           pageName: rest.name,
