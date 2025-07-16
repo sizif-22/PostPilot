@@ -1,15 +1,24 @@
-import { initializeApp } from "firebase-admin/app";
+import * as admin from "firebase-admin";
 
+let serverApp: admin.app.App;
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_STORGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_MEASUREMENT_ID,
-};
+if (admin.apps.length === 0) {
+  const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
-const serverApp = initializeApp(firebaseConfig);
+  if (!projectId) {
+    throw new Error("NEXT_PUBLIC_PROJECT_ID environment variable is required");
+  }
+  if (process.env.FIREBASE_PRIVATE_KEY)
+    serverApp = admin.initializeApp({
+      projectId: projectId,
+      credential: admin.credential.cert({
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      }),
+    });
+} else {
+  serverApp = admin.app();
+}
 
+export { serverApp };

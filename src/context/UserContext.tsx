@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { checkLoggedIn } from "@/firebase/auth";
+// import { checkLoggedIn } from "@/firebase/auth";
 import { getUser } from "@/firebase/user.firestore";
 import { User } from "@/interfaces/User";
 interface UserContextType {
@@ -10,30 +10,20 @@ interface UserContextType {
 export const UserContext = createContext<UserContextType | undefined>(
   undefined
 );
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserProvider = ({ children ,isLoggedIn,email }: { children: React.ReactNode,isLoggedIn:boolean,email:string }) => {
   const [user, setUser] = useState<User | null>(null);
-  const dummyUser = {
-    isLoggedIn: false,
-    isVerified: false,
-    email: "",
-    username: "",
-    name: "",
-    avatar:"",
-    channels: [],
-  }
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     const checkAuth = async () => {
-      const authUser = await checkLoggedIn();
-      if (authUser) {
+      if (isLoggedIn) {
         // Start real-time listener for user data
-        unsubscribe = getUser(authUser.email, (userData) => {
+        unsubscribe = getUser(email, (userData) => {
           setUser(userData);
         });
       } else {
-        setUser(dummyUser);
-      }  
+        setUser(null);
+      }
     };
 
     checkAuth();

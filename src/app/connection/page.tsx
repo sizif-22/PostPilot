@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { facebookChannel, Page } from "@/interfaces/Channel";
+import { encrypt } from "@/utils/encryption";
 interface BusinessAccount {
   id: string;
   name: string;
@@ -153,10 +154,11 @@ const Connection = () => {
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
       // Always update facebook
+      const encryptedAccessToken = encrypt(rest.access_token);
       const facebookData = {
         name: rest.name,
         id: rest.id,
-        accessToken: rest.access_token,
+        accessToken: encryptedAccessToken,
       };
       let updateData: any = { "socialMedia.facebook": facebookData };
       // If instagram_id exists, fetch Instagram profile data
@@ -168,10 +170,11 @@ const Connection = () => {
         if (!igProfileRes.ok)
           throw new Error("Failed to fetch Instagram profile");
         const igProfile = await igProfileRes.json();
+        const encryptedAccessToken = encrypt(rest.access_token);
         updateData["socialMedia.instagram"] = {
           pageId: rest.id,
           pageName: rest.name,
-          pageAccessToken: rest.access_token,
+          pageAccessToken: encryptedAccessToken,
           instagramId: rest.instagram_id,
           instagramUsername: igProfile.username || "",
           instagramName: igProfile.name || "",

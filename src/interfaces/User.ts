@@ -8,8 +8,8 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
-  isLoggedIn: boolean;
-  isVerified: boolean;
+  // isLoggedIn: boolean;
+  // isVerified: boolean;
   channels: UserChannel[];
   notifications?: Notification[];
 }

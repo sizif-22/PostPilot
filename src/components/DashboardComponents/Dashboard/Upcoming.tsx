@@ -16,7 +16,7 @@ import { FiFacebook } from "react-icons/fi";
 import Image from "next/image";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
-import { formatDateInTimezone } from "@/lib/utils";
+import { formatDateInTimezone } from "@/utils/timezone";
 import { MediaItem } from "@/interfaces/Media";
 
 // Get all available timezones

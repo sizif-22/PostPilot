@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
 import { FaGoogle } from "react-icons/fa";
-import { addUserWithGoogle } from "@/firebase/auth";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { signInWithGoogle } from "@/firebase/auth";
 export const Hero = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -30,12 +30,16 @@ export const Hero = () => {
               PostPilot's intelligent automation platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
-              {user?.isLoggedIn ? (
+              {user ? (
                 <Button onClick={() => router.push("/channels")}>
                   Channels
                 </Button>
               ) : (
-                <Button onClick={() => addUserWithGoogle()}>
+                <Button
+                  onClick={async () => {
+                    await signInWithGoogle();
+                    window.location.href = "/";
+                  }}>
                   <FaGoogle />
                   Sign In with Google
                 </Button>

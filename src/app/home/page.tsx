@@ -13,7 +13,6 @@ export default function Home() {
   const { user } = useUser();
   return (
     <>
-      {user ? (
         <main className="min-h-screen transition-colors duration-300 dark:bg-black light:bg-gradient-to-b from-violet-100 via-violet-50 to-white">
           {/* Navigation */}
           <Navigation />
@@ -39,9 +38,6 @@ export default function Home() {
           {/* Footer */}
           <Footer />
         </main>
-      ) : (
-        <Loading />
-      )}
     </>
   );
 }

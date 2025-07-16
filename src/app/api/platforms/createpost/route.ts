@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import { Channel, Post } from "@/interfaces/Channel";
-import { PostOnInstagram } from "../funcitons/instagram";
-import { PostOnFacebook } from "../funcitons/facebook";
-import { PostOnX } from "../funcitons/x";
+import { PostOnInstagram } from "../functions/instagram";
+import { PostOnFacebook } from "../functions/facebook";
+import { PostOnX } from "../functions/x";
+import { decrypt } from "@/utils/encryption";
 
 export async function POST(request: Request) {
   try {
@@ -76,7 +77,6 @@ export async function POST(request: Request) {
       .filter((platform) => platform && typeof platform === "string") // Filter out invalid platforms
       .map(async (platform) => {
         console.log("Processing platform:", platform);
-
         try {
           switch (platform) {
             case "facebook": {
@@ -85,8 +85,12 @@ export async function POST(request: Request) {
                   "Facebook post facebookVideoType:",
                   post.facebookVideoType
                 );
+                if (!channel.socialMedia?.facebook?.accessToken)
+                  throw new Error("access_Token is undefined");
                 await PostOnFacebook({
-                  accessToken: channel.socialMedia?.facebook?.accessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia?.facebook?.accessToken
+                  ),
                   pageId: channel.socialMedia?.facebook?.id,
                   imageUrls: post.imageUrls,
                   message: post.message || post.content,
@@ -114,7 +118,9 @@ export async function POST(request: Request) {
                 )
                   return;
                 const result = await PostOnInstagram({
-                  accessToken: channel.socialMedia?.instagram?.pageAccessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia?.instagram?.pageAccessToken
+                  ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,
@@ -219,7 +225,9 @@ export async function POST(request: Request) {
                 // Use the PostOnX function directly instead of making an API call
                 if (!channel.socialMedia?.x?.accessToken) return;
                 const result = await PostOnX({
-                  accessToken: channel.socialMedia?.x?.accessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia?.x?.accessToken
+                  ),
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,

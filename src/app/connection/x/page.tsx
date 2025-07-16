@@ -8,6 +8,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import Loading from "@/components/ui/Loading";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
+import { encrypt } from "@/utils/encryption";
 
 interface XUserProfile {
   id: string;
@@ -93,11 +94,11 @@ export default function XCallbackPage() {
     try {
       setLoading(true);
       const channelId = Cookies.get("currentChannel");
-
+      const encryptedAccessToken = encrypt(accessToken);
       const socialMediaX = {
         name: userProfile.name,
         username: userProfile.username,
-        accessToken: accessToken,
+        accessToken: encryptedAccessToken,
         refreshToken: refreshToken,
         expiresIn: expiresIn,
         tokenExpiry: expiresIn

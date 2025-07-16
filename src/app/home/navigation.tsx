@@ -4,8 +4,8 @@ import { ThemeToggle } from "@/components/DashboardComponents/Sidebar/ThemeToggl
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { useUser } from "@/context/UserContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
@@ -17,6 +17,7 @@ import {
   acceptJoiningToAChannel,
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
+import { logOut } from "./action";
 
 export const Navigation = () => {
   const router = useRouter();
@@ -89,7 +90,7 @@ export const Navigation = () => {
               </Link>
             ))}
             <ThemeToggle />
-            {user?.isLoggedIn && (
+            {user && (
               <>
                 <span className="text-black dark:text-white">|</span>
                 <button
@@ -206,8 +207,8 @@ export const Navigation = () => {
                           Channels
                         </Button>
                         <Button
-                          onClick={() => {
-                            Cookies.remove("postPilotUserCookie");
+                          onClick={async () => {
+                            await logOut();
                             window.location.reload();
                           }}
                           variant={"outline"}

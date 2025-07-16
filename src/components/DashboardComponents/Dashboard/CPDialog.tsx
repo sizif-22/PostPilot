@@ -19,7 +19,7 @@ import {
   getCurrentTimeInTimezone,
   getMinScheduleDateTime,
   getSortedTimezones,
-} from "@/lib/utils";
+} from "@/utils/timezone";
 import { MediaItem } from "@/interfaces/Media";
 import {
   Dialog,

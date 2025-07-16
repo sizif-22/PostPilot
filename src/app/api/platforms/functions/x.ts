@@ -72,7 +72,7 @@ export async function PostOnX({
     // If we have refresh token and expiry, check if we need to refresh
     if (refreshToken && tokenExpiry) {
       try {
-        const { getValidXToken } = await import("@/lib/x-token-manager");
+        const { getValidXToken } = await import("@/utils/x-token-manager");
         const tokenResult = await getValidXToken(
           accessToken,
           refreshToken,

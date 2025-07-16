@@ -1,7 +1,7 @@
 // 2. Updated route.ts - API handler
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
+import Cookies from "js-cookie";
 const CLIENT_ID = process.env.X_CLIENT_ID!;
 const CLIENT_SECRET = process.env.X_CLIENT_SECRET!;
 const REDIRECT_URI = process.env.X_REDIRECT_URI!;
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
   try {
     // Get cookies
     const cookieStore = cookies();
-    const storedState = cookieStore.get("xState")?.value;
-    const codeVerifier = cookieStore.get("xCodeVerifier")?.value;
+    const storedState = Cookies.get("xState");
+    const codeVerifier = Cookies.get("xCodeVerifier");
 
     // Verify state parameter
     if (!state || state !== storedState) {

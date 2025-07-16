@@ -13,7 +13,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { FaPlay, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
-import { formatDateInTimezone } from "@/lib/utils";
+import { formatDateInTimezone } from "@/utils/timezone";
 import { deletePost } from "@/firebase/channel.firestore";
 import { EditPostDialog } from "../Dashboard/EditPostDialog";
 import { MediaItem } from "@/interfaces/Media";

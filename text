@@ -56,3 +56,6 @@ You are using Firebase Authentication with Google and Facebook providers, which 
    4. Hardcoded Avatar: The user's avatar is hardcoded.
        * Recommendation: You should use the photoURL provided by the authentication provider. You have it commented out in your code, so
          it seems you are aware of it. You can fall back to a default avatar if the provider doesn't supply one.
+
+
+         
