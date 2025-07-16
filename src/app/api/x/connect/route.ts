@@ -35,9 +35,9 @@ export async function GET(request: Request) {
 
   try {
     // Get cookies
-    const cookieStore = cookies();
-    const storedState = Cookies.get("xState");
-    const codeVerifier = Cookies.get("xCodeVerifier");
+    const cookieStore = await cookies();
+    const storedState = cookieStore.get("xState")?.value;
+    const codeVerifier = cookieStore.get("xCodeVerifier")?.value;
 
     // Verify state parameter
     if (!state || state !== storedState) {

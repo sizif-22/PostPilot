@@ -9,6 +9,7 @@ interface XTokenData {
 
 export async function refreshXToken(refreshToken: string): Promise<XTokenData> {
   try {
+    
     const response = await fetch("/api/x/refresh", {
       method: "POST",
       headers: {

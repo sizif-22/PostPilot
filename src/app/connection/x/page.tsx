@@ -95,11 +95,12 @@ export default function XCallbackPage() {
       setLoading(true);
       const channelId = Cookies.get("currentChannel");
       const encryptedAccessToken: string = await encrypt(accessToken);
+      const encryptedRefreshToken: string = await encrypt(refreshToken);
       const socialMediaX = {
         name: userProfile.name,
         username: userProfile.username,
         accessToken: encryptedAccessToken,
-        refreshToken: refreshToken,
+        refreshToken: encryptedRefreshToken,
         expiresIn: expiresIn,
         tokenExpiry: expiresIn
           ? new Date(Date.now() + expiresIn * 1000).toISOString()
