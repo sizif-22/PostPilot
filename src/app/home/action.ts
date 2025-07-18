@@ -36,5 +36,5 @@ export async function signInServer(idToken: string, formDate: FormDate) {
 }
 
 export async function logOut() {
-  await deleteSession();
+  deleteSession();
 }

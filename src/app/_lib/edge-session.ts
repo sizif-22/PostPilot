@@ -1,18 +1,20 @@
+"use server";
 import { SignJWT, jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
+import { getSession } from "./session";
 
 const key = new TextEncoder().encode(process.env.SECRET);
-export const cookie = {
+const cookie = {
   name: "session",
   options: { httpOnly: true, secure: true, sameSite: "lax", path: "/" },
-  duration: 10 * 24 * 60 * 60 * 1000,
+  duration: 7 * 24 * 60 * 60 * 1000,
 };
 
 export async function encrypt(payload: any) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("10days")
+    .setExpirationTime("7days")
     .sign(key);
 }
 
@@ -28,8 +30,10 @@ export async function decrypt(session: string) {
 }
 
 export async function getSessionFromCookie(req: NextRequest) {
+  // const session = await getSession();
   const sessionCookie = req.cookies.get(cookie.name)?.value;
-  if (!sessionCookie) {
+  if (sessionCookie == null ) {
+    req.cookies.delete(cookie.name);
     return null;
   }
   return await decrypt(sessionCookie);

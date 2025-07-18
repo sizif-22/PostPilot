@@ -5,7 +5,7 @@ import { Channel, Post } from "@/interfaces/Channel";
 import { PostOnInstagram } from "../functions/instagram";
 import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
-import { decrypt } from "@/utils/encryption";
+import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
 
 export async function POST(request: Request) {
   try {
@@ -85,12 +85,43 @@ export async function POST(request: Request) {
                   "Facebook post facebookVideoType:",
                   post.facebookVideoType
                 );
-                if (!channel.socialMedia?.facebook?.accessToken)
-                  throw new Error("access_Token is undefined");
+
+                const facebookAccessToken =
+                  channel.socialMedia?.facebook?.accessToken;
+                if (!facebookAccessToken) {
+                  throw new Error("Facebook access token is undefined");
+                }
+
+                // Validate encrypted token format
+                if (!isValidEncryptedFormat(facebookAccessToken)) {
+                  throw new Error(
+                    "Facebook access token is not in valid encrypted format"
+                  );
+                }
+
+                console.log("SECRET: ", process.env.SECRET);
+
+                let decryptedAccessToken: string;
+                try {
+                  decryptedAccessToken = await decrypt(facebookAccessToken);
+                } catch (decryptError) {
+                  console.error(
+                    "Failed to decrypt Facebook access token:",
+                    decryptError
+                  );
+                  throw new Error(
+                    `Token decryption failed: ${
+                      decryptError instanceof Error
+                        ? decryptError.message
+                        : String(decryptError)
+                    }`
+                  );
+                }
+
+                console.log("Facebook access token decrypted successfully");
+
                 await PostOnFacebook({
-                  accessToken: await decrypt(
-                    channel.socialMedia?.facebook?.accessToken
-                  ),
+                  accessToken: decryptedAccessToken,
                   pageId: channel.socialMedia?.facebook?.id,
                   imageUrls: post.imageUrls,
                   message: post.message || post.content,
@@ -106,25 +137,53 @@ export async function POST(request: Request) {
                 return {
                   platform: "facebook",
                   success: false,
-                  message: "Error occurred",
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
                 };
               }
             }
             case "instagram": {
               try {
-                if (
-                  !channel.socialMedia?.instagram?.pageAccessToken ||
-                  !post.imageUrls
-                )
-                  return;
+                const instagramAccessToken =
+                  channel.socialMedia?.instagram?.pageAccessToken;
+                if (!instagramAccessToken || !post.imageUrls) {
+                  throw new Error(
+                    "Instagram access token or image URLs missing"
+                  );
+                }
+
+                // Validate encrypted token format
+                if (!isValidEncryptedFormat(instagramAccessToken)) {
+                  throw new Error(
+                    "Instagram access token is not in valid encrypted format"
+                  );
+                }
+
+                let decryptedAccessToken: string;
+                try {
+                  decryptedAccessToken = await decrypt(instagramAccessToken);
+                } catch (decryptError) {
+                  console.error(
+                    "Failed to decrypt Instagram access token:",
+                    decryptError
+                  );
+                  throw new Error(
+                    `Token decryption failed: ${
+                      decryptError instanceof Error
+                        ? decryptError.message
+                        : String(decryptError)
+                    }`
+                  );
+                }
+                if (!channel.socialMedia?.instagram?.instagramId)
+                  throw new Error("l2");
                 const result = await PostOnInstagram({
-                  accessToken: await decrypt(
-                    channel.socialMedia?.instagram?.pageAccessToken
-                  ),
+                  accessToken: decryptedAccessToken,
                   pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,
                 });
+
                 return {
                   platform: "instagram",
                   success: true,
@@ -222,12 +281,38 @@ export async function POST(request: Request) {
             }
             case "x": {
               try {
-                // Use the PostOnX function directly instead of making an API call
-                if (!channel.socialMedia?.x?.accessToken) return;
+                const xAccessToken = channel.socialMedia?.x?.accessToken;
+                if (!xAccessToken) {
+                  throw new Error("X access token is undefined");
+                }
+
+                // Validate encrypted token format
+                if (!isValidEncryptedFormat(xAccessToken)) {
+                  throw new Error(
+                    "X access token is not in valid encrypted format"
+                  );
+                }
+
+                let decryptedAccessToken: string;
+                try {
+                  decryptedAccessToken = await decrypt(xAccessToken);
+                } catch (decryptError) {
+                  console.error(
+                    "Failed to decrypt X access token:",
+                    decryptError
+                  );
+                  throw new Error(
+                    `Token decryption failed: ${
+                      decryptError instanceof Error
+                        ? decryptError.message
+                        : String(decryptError)
+                    }`
+                  );
+                }
+                if (!channel.socialMedia || !channel || !channel.socialMedia.x)
+                  throw new Error("L2");
                 const result = await PostOnX({
-                  accessToken: await decrypt(
-                    channel.socialMedia?.x?.accessToken
-                  ),
+                  accessToken: decryptedAccessToken,
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,

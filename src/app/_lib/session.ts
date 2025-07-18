@@ -2,10 +2,15 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { serverApp } from "@/firebase-admin/config";
+import { logOut } from "../home/action";
 import { getAuth } from "firebase-admin/auth";
-import { encrypt, decrypt, cookie } from "./edge-session";
+import { encrypt, decrypt } from "./edge-session";
 import { NextResponse } from "next/server";
-
+const cookie = {
+  name: "session",
+  options: { httpOnly: true, secure: true, sameSite: "lax", path: "/" },
+  duration: 10 * 24 * 60 * 60 * 1000,
+};
 export async function createSession(idToken: string) {
   try {
     // Verify the token with explicit project ID check
@@ -58,14 +63,11 @@ export async function getSession() {
       email: decoded.email,
     };
   } catch (error) {
-    console.error("Session verification failed:", error);
-    deleteSession();
     return null;
   }
 }
 
 export async function deleteSession() {
-  (await cookies()).delete(cookie.name);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  return NextResponse.redirect(`${baseUrl}/`);
+  const cookieStore = await cookies();
+  cookieStore.delete("session");
 }
