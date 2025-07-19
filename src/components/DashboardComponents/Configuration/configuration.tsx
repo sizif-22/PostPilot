@@ -76,7 +76,7 @@ export const Configuration = () => {
     const scope = "user.info.basic,video.publish,video.upload";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
     console.log("client id:", authUrl);
-    // window.location.href = authUrl;
+    window.location.href = authUrl;
   };
   const handleLinkedInConnect = () => {
     Cookies.set("currentChannel", id as string);
