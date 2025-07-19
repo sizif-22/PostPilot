@@ -154,6 +154,7 @@ const Connection = () => {
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
       // Always update facebook
+      // console.log("SECRET:", process.env.SECRET);
       const encryptedAccessToken: string = await encrypt(rest.access_token);
       const facebookData = {
         name: rest.name,

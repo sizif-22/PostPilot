@@ -4,7 +4,7 @@ const ALGORITHM = "aes-256-cbc";
 const IV_LENGTH = 16; // AES block size
 
 function getKey() {
-  const secret = process.env.SECRET || "";
+  const secret = process.env.NEXT_PUBLIC_SECRET || "";
   
   if (!secret) {
     throw new Error("SECRET environment variable is not set");
