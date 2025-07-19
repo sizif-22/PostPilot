@@ -6,6 +6,7 @@ import { PostOnInstagram } from "../functions/instagram";
 import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
 import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
+import { PostOnTiktok } from "../functions/tiktok";
 
 export async function POST(request: Request) {
   try {
@@ -81,47 +82,12 @@ export async function POST(request: Request) {
           switch (platform) {
             case "facebook": {
               try {
-                console.log(
-                  "Facebook post facebookVideoType:",
-                  post.facebookVideoType
-                );
-
-                const facebookAccessToken =
-                  channel.socialMedia?.facebook?.accessToken;
-                if (!facebookAccessToken) {
-                  throw new Error("Facebook access token is undefined");
-                }
-
-                // Validate encrypted token format
-                if (!isValidEncryptedFormat(facebookAccessToken)) {
-                  throw new Error(
-                    "Facebook access token is not in valid encrypted format"
-                  );
-                }
-
-                console.log("SECRET: ", process.env.SECRET);
-
-                let decryptedAccessToken: string;
-                try {
-                  decryptedAccessToken = await decrypt(facebookAccessToken);
-                } catch (decryptError) {
-                  console.error(
-                    "Failed to decrypt Facebook access token:",
-                    decryptError
-                  );
-                  throw new Error(
-                    `Token decryption failed: ${
-                      decryptError instanceof Error
-                        ? decryptError.message
-                        : String(decryptError)
-                    }`
-                  );
-                }
-
-                console.log("Facebook access token decrypted successfully");
-
+                if (!channel.socialMedia?.facebook?.accessToken)
+                  throw new Error("Facebook access_token not found");
                 await PostOnFacebook({
-                  accessToken: decryptedAccessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia?.facebook?.accessToken
+                  ),
                   pageId: channel.socialMedia?.facebook?.id,
                   imageUrls: post.imageUrls,
                   message: post.message || post.content,
@@ -151,34 +117,12 @@ export async function POST(request: Request) {
                     "Instagram access token or image URLs missing"
                   );
                 }
-
-                // Validate encrypted token format
-                if (!isValidEncryptedFormat(instagramAccessToken)) {
-                  throw new Error(
-                    "Instagram access token is not in valid encrypted format"
-                  );
-                }
-
-                let decryptedAccessToken: string;
-                try {
-                  decryptedAccessToken = await decrypt(instagramAccessToken);
-                } catch (decryptError) {
-                  console.error(
-                    "Failed to decrypt Instagram access token:",
-                    decryptError
-                  );
-                  throw new Error(
-                    `Token decryption failed: ${
-                      decryptError instanceof Error
-                        ? decryptError.message
-                        : String(decryptError)
-                    }`
-                  );
-                }
                 if (!channel.socialMedia?.instagram?.instagramId)
-                  throw new Error("l2");
+                  throw new Error("Instagram access_token not found.");
                 const result = await PostOnInstagram({
-                  accessToken: decryptedAccessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia.instagram.pageAccessToken
+                  ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message || post.content,
                   imageUrls: post.imageUrls,
@@ -201,42 +145,34 @@ export async function POST(request: Request) {
             }
             case "tiktok": {
               try {
-                const response = await fetch(
-                  `https://postpilot-22.vercel.app/api/tiktok/createpost`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      accessToken: channel.socialMedia?.tiktok?.accessToken,
-                      openId: channel.socialMedia?.tiktok?.openId,
-                      message: post.message || post.content,
-                      imageUrls: post.imageUrls,
-                    }),
-                  }
-                );
-
-                const success = response.ok;
-                console.log(
-                  success
-                    ? "Post Published successfully on TikTok."
-                    : "Post didn't get published on TikTok"
-                );
+                if (
+                  !channel.socialMedia?.tiktok?.accessToken ||
+                  !post.imageUrls ||
+                  !channel.socialMedia.tiktok.openId
+                ) {
+                  throw new Error(
+                    "Tiktok access token, image or openId URLs missing"
+                  );
+                }
+                const result = await PostOnTiktok({
+                  accessToken: channel.socialMedia.tiktok.accessToken,
+                  openId: channel.socialMedia.tiktok.openId,
+                  message: post.message || post.content,
+                  imageUrls: post.imageUrls,
+                });
 
                 return {
-                  platform: "tiktok",
-                  success,
-                  message: success
-                    ? "Published successfully"
-                    : "Failed to publish",
+                  platform: "Tiktok",
+                  success: true,
+                  result,
                 };
               } catch (error) {
-                console.error("Error posting to TikTok:", error);
+                console.error("Error posting to Tiktok:", error);
                 return {
-                  platform: "tiktok",
+                  platform: "Tiktok",
                   success: false,
-                  message: "Error occurred",
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
                 };
               }
             }

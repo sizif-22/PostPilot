@@ -34,9 +34,6 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.facebook.name}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Facebook Page
-                </p>
               </div>
             </Link>
           )}
@@ -50,8 +47,18 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.instagram.instagramName}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Instagram Account
+              </div>
+            </Link>
+          )}
+          {channel?.socialMedia?.tiktok && (
+            <Link
+             href={`https://tiktok.com/@${channel.socialMedia.tiktok.username}`}
+              target="_blank"
+             className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+              <FaTiktok className="text-black dark:text-white text-xl" />
+              <div>
+                <p className="font-medium dark:text-gray-100">
+                  {channel.socialMedia.tiktok.name || "TikTok User"}
                 </p>
               </div>
             </Link>
@@ -66,24 +73,8 @@ export const Platforms = () => {
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.x.name}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  X Account
-                </p>
               </div>
             </Link>
-          )}
-          {channel?.socialMedia?.tiktok && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
-              <FaTiktok className="text-black dark:text-white text-xl" />
-              <div>
-                <p className="font-medium dark:text-gray-100">
-                  {channel.socialMedia.tiktok.name || "TikTok User"}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  TikTok Account
-                </p>
-              </div>
-            </div>
           )}
           {channel?.socialMedia?.linkedin && (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
@@ -91,9 +82,6 @@ export const Platforms = () => {
               <div>
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.linkedin.name}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  LinkedIn Organization
                 </p>
               </div>
             </div>
