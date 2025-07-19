@@ -66,13 +66,13 @@ const TiktokPage = () => {
         console.log("Granted scopes:", scope);
 
         // Step 2: Get user information using the access token
+        // Try the basic user info endpoint first
         const userInfoResponse = await fetch(
-          "https://open.tiktokapis.com/v2/user/info/?fields=display_name,username,avatar_url",
+          "https://open.tiktokapis.com/v2/user/info/?fields=display_name,username",
           {
             method: "GET",
             headers: {
               Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
             },
           }
         );
