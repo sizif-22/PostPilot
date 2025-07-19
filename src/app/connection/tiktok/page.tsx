@@ -26,13 +26,13 @@ const TiktokPage = () => {
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
-            body: JSON.stringify({
-              client_key: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY,
-              client_secret: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET,
+            body: new URLSearchParams({
+              client_key: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY!,
+              client_secret: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET!,
               code,
               redirect_uri: "https://postpilot-22.vercel.app/connection/tiktok",
               grant_type: "authorization_code",
-            }),
+            }).toString(),
           }
         );
         if (!response.ok) {
@@ -40,6 +40,7 @@ const TiktokPage = () => {
         }
         const data = await response.json();
         const shortAccessToken = data.access_token;
+        const refreshToken = data.refresh_token;
         const openId = data.open_id;
         const tokenType = data.token_type;
 
@@ -50,12 +51,12 @@ const TiktokPage = () => {
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
-            body: JSON.stringify({
-              client_key: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY,
-              client_secret: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET,
+            body: new URLSearchParams({
+              client_key: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY!,
+              client_secret: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET!,
               grant_type: "refresh_token",
-              refresh_token: shortAccessToken,
-            }),
+              refresh_token: refreshToken,
+            }).toString(),
           }
         );
         if (!response2.ok) {
@@ -73,10 +74,12 @@ const TiktokPage = () => {
           }
         );
         if (!response3.ok) {
+          const errorBody = await response3.text();
+          console.log("User info error:", errorBody);
           throw new Error("Failed to get the user data");
         }
         const data3 = await response3.json();
-        const name = data3.user.display_name;
+        const name = data3.user?.display_name || "";
 
         await updateDoc(doc(db, "Channels", id as string), {
           "socialMedia.tiktok": {
