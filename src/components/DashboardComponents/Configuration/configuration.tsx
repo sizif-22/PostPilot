@@ -73,7 +73,7 @@ export const Configuration = () => {
     Cookies.set("currentChannel", id as string);
     const TIKTOK_CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/tiktok";
-    const scope = "user.info.basic,video.publish,video.upload user.info.profile";
+    const scope = "user.info.basic,video.publish,video.upload,user.info.profile";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${encodeURIComponent(
       scope
     )}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
