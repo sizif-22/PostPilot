@@ -32,6 +32,7 @@ export interface instagramChannel {
 export interface tiktok {
   accessToken: string;
   name?: string;
+  username: string;
   openId: string;
 }
 export interface linkedinChannel {

@@ -65,11 +65,11 @@ const TiktokPage = () => {
         const longAccessToken = (await response2.json()).access_token;
 
         const response3 = await fetch(
-          "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,display_name",
+          "https://open.tiktokapis.com/v2/user/info/?fields=display_name,username",
           {
             method: "GET",
             headers: {
-              Authorization: `${tokenType} ${longAccessToken}`,
+              Authorization: `Bearer ${shortAccessToken}`,
             },
           }
         );
@@ -80,12 +80,14 @@ const TiktokPage = () => {
         }
         const data3 = await response3.json();
         const name = data3.user?.display_name || "";
+        const username = data3.user?.username || "";
 
         await updateDoc(doc(db, "Channels", id as string), {
           "socialMedia.tiktok": {
             name,
             accessToken: longAccessToken,
             openId,
+            username,
           },
         });
       } catch (error: any) {
