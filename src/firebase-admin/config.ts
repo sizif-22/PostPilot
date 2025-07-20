@@ -12,7 +12,7 @@ if (admin.apps.length === 0) {
     serverApp = admin.initializeApp({
       projectId: projectId,
       credential: admin.credential.cert({
-        projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+        projectId,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       }),

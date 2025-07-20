@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UserProvider } from "@/context/UserContext";
-import { deleteSession, getSession } from "./_lib/session";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { headers } from "next/headers";
+
+import "./globals.css";
 import { cookies } from "next/headers";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,26 +19,33 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  "use server";
-  const session = await getSession();
-  const isLoggedIn = !!session;
-  const email = session?.email ?? "";
-  if (!isLoggedIn) {
-    ("use server");
-    deleteSession();
-  }
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const origin = `${protocol}://${host}`;
+
+  const session = (await cookies()).get("session")?.value;
+
+  const res = await fetch(`${origin}/api/auth/me`, {
+    method: "GET",
+    headers: {
+      Cookie: session ? `session=${session}` : "",
+    },
+  });
+  const data = await res.json();
+  const email: string | null = data?.email;
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} text-stone-950 bg-stone-100`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange>
-          <UserProvider isLoggedIn={isLoggedIn} email={email}>
-            {children}
-          </UserProvider>
-        </ThemeProvider>
+        <NotificationProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange>
+            <UserProvider email={email}>{children}</UserProvider>
+          </ThemeProvider>
+        </NotificationProvider>
       </body>
     </html>
   );

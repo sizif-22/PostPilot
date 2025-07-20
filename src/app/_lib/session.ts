@@ -1,73 +1,32 @@
 import "server-only";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { serverApp } from "@/firebase-admin/config";
-import { logOut } from "../home/action";
 import { getAuth } from "firebase-admin/auth";
-import { encrypt, decrypt } from "./edge-session";
-import { NextResponse } from "next/server";
-const cookie = {
-  name: "session",
-  options: { httpOnly: true, secure: true, sameSite: "lax", path: "/" },
-  duration: 10 * 24 * 60 * 60 * 1000,
-};
-export async function createSession(idToken: string) {
+import { cookies } from "next/headers";
+import { serverApp } from "@/firebase-admin/config";
+
+export async function login(idToken: string) {
   try {
-    // Verify the token with explicit project ID check
-    const decoded = await getAuth(serverApp).verifyIdToken(idToken, true);
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    const sessionCookie = await getAuth(serverApp).createSessionCookie(
+      idToken,
+      {
+        expiresIn,
+      }
+    );
+    console.log("Session cookie created successfully");
 
-    // Additional validation to ensure the token is for the correct project
-    const expectedProjectId = process.env.NEXT_PUBLIC_PROJECT_ID;
-    if (decoded.aud !== expectedProjectId) {
-      throw new Error(
-        `Token audience mismatch. Expected: ${expectedProjectId}, Got: ${decoded.aud}`
-      );
-    }
-
-    const expires = new Date(Date.now() + cookie.duration);
-    const session = await encrypt({ idToken, expires });
-    (await cookies()).set(cookie.name, session, {
-      ...cookie.options,
-      expires,
+    (await cookies()).set("session", sessionCookie, {
+      httpOnly: true,
+      secure: true,
       sameSite: "lax",
+      path: "/",
+      maxAge: expiresIn / 1000,
     });
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    return NextResponse.redirect(`${baseUrl}/`);
+    console.log("Cookie set successfully");
   } catch (error) {
-    console.error("Session creation failed:", error);
+    console.error("Error in login:", error);
     throw error;
   }
 }
-
-export async function getSession() {
-  try {
-    const sessionCookie = (await cookies()).get(cookie.name)?.value;
-    if (!sessionCookie) {
-      return null;
-    }
-
-    const payload = await decrypt(sessionCookie);
-    if (!payload || typeof payload.idToken !== "string") {
-      return null;
-    }
-
-    const decoded = await getAuth(serverApp).verifyIdToken(
-      payload.idToken,
-      true
-    );
-    if (!decoded.email) {
-      return null;
-    }
-
-    return {
-      email: decoded.email,
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-export async function deleteSession() {
-  const cookieStore = await cookies();
-  cookieStore.delete("session");
+export async function logout() {
+  (await cookies()).delete("session");
 }

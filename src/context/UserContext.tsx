@@ -10,13 +10,20 @@ interface UserContextType {
 export const UserContext = createContext<UserContextType | undefined>(
   undefined
 );
-export const UserProvider = ({ children ,isLoggedIn,email }: { children: React.ReactNode,isLoggedIn:boolean,email:string }) => {
+
+export const UserProvider = ({
+  children,
+  email,
+}: {
+  children: React.ReactNode;
+  email: string | null;
+}) => {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     const checkAuth = async () => {
-      if (isLoggedIn) {
+      if (email) {
         // Start real-time listener for user data
         unsubscribe = getUser(email, (userData) => {
           setUser(userData);
@@ -43,7 +50,7 @@ export const UserProvider = ({ children ,isLoggedIn,email }: { children: React.R
   );
 };
 
-export const useUser = () => {
+export const useUser = ():UserContextType => {
   const context = useContext(UserContext);
   if (!context) {
     throw new Error("useUser must be used within a UserProvider");

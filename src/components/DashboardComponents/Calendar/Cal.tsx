@@ -5,20 +5,25 @@ import { ContinuousCalendarProps, daysOfWeek, monthNames } from "./interfaces";
 import { PostCard } from "./PostCard";
 import { ReactSortable } from "react-sortablejs";
 
-
-
-export const Cal: React.FC<ContinuousCalendarProps> = ({
+export const Cal: React.FC<ContinuousCalendarProps & {
+  onPostMove?: (postId: string, newDay: number, newMonth: number, newYear: number) => void;
+}> = ({
   onEventSelect,
   highlightedDates = [],
+  onPostMove,
 }) => {
   const today = new Date();
   const dayRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(0);
+  const [draggedPost, setDraggedPost] = useState<any>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  
   const monthOptions = monthNames.map((month, index) => ({
     name: month,
     value: `${index}`,
   }));
+
   useEffect(() => {
     handleTodayClick();
   }, []);
@@ -78,6 +83,35 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
   const handleTodayClick = () => {
     setYear(today.getFullYear());
     scrollToDay(today.getMonth(), today.getDate());
+  };
+
+  // Handle drag start
+  const handleDragStart = (post: any) => {
+    setDraggedPost(post);
+    setIsDragging(true);
+  };
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    setDraggedPost(null);
+    setIsDragging(false);
+  };
+
+  // Handle drop on a day
+  const handleDrop = (targetMonth: number, targetDay: number, targetYear: number) => {
+    if (draggedPost && onPostMove) {
+      // Only move if it's a different day
+      const currentDate = highlightedDates.find(date => 
+        date.posts.some(p => p.id === draggedPost.id)
+      );
+      
+      if (!currentDate || currentDate.day !== targetDay || 
+          currentDate.month !== targetMonth || currentDate.year !== targetYear) {
+        onPostMove(draggedPost.id, targetDay, targetMonth, targetYear);
+      }
+    }
+    setDraggedPost(null);
+    setIsDragging(false);
   };
 
   const generateCalendar = useMemo(() => {
@@ -141,6 +175,10 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
             ) || [];
           const hasEvents = postsForDay.length > 0;
 
+          // Check if this is a valid drop target (not past dates for future months)
+          const isValidDropTarget = month >= 0;
+          const isDragOver = isDragging && isValidDropTarget;
+
           return (
             <div
               key={`${month}-${day}`}
@@ -149,11 +187,27 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
               }}
               data-month={month}
               data-day={day}
-              className={`relative group border font-medium transition-all hover:z-20 hover:border-violet-400 dark:hover:border-violet-600 border-[#00000005] dark:border-stone-700  w-full min-h-[50px] sm:min-h-[80px] lg:min-h-[200px] px-2 pt-12 pb-2 ${
+              className={`relative group border font-medium transition-all hover:z-20 hover:border-violet-400 dark:hover:border-violet-600 border-[#00000005] dark:border-stone-700 w-full min-h-[50px] sm:min-h-[80px] lg:min-h-[200px] px-2 pt-12 pb-2 ${
                 hasEvents
                   ? "bg-violet-50 dark:bg-violet-950/30"
                   : "dark:bg-secondDarkBackground"
-              }`}>
+              } ${
+                isDragOver 
+                  ? "ring-2 ring-violet-400 ring-offset-2 dark:ring-violet-500 bg-violet-100 dark:bg-violet-900/50" 
+                  : ""
+              }`}
+              onDragOver={(e) => {
+                if (isValidDropTarget) {
+                  e.preventDefault();
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (isValidDropTarget) {
+                  handleDrop(month, day, year);
+                }
+              }}
+            >
               <span
                 className={`absolute left-1 top-1 flex size-6 items-center rounded-full justify-center text-xs sm:size-7 sm:text-sm lg:left-2 lg:top-2 lg:size-8 lg:text-base ${
                   isToday
@@ -172,15 +226,57 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
                 </span>
               )}
               {hasEvents && (
-                <div className="top-8 sm:top-12 lg:top-14 left-1 right-1 lg:left-2 lg:right-2 flex flex-col gap-1 overflow-y-auto">
-                  {" "}
-                  {postsForDay.slice(0, 2).map((post) => (
-                    <PostCard
-                      key={post.id}
-                      callbackFunc={() => onEventSelect?.(post)}
-                      post={post}
-                    />
-                  ))}
+                <div className="absolute top-8 sm:top-12 lg:top-14 left-1 right-1 lg:left-2 lg:right-2 flex flex-col gap-1 overflow-y-auto max-h-[calc(100%-40px)] sm:max-h-[calc(100%-50px)] lg:max-h-[calc(100%-60px)]">
+                  <ReactSortable
+                    list={postsForDay.slice(0, 2).filter(post => post.id !== undefined).map(post => ({
+                      ...post,
+                      id: post.id as string | number, // Ensure id is string | number
+                      chosen: false
+                    }))}
+                    setList={() => {}} // We handle the actual movement via onPostMove
+                    group={{
+                      name: "posts",
+                      pull: true,
+                      put: true
+                    }}
+                    animation={200}
+                    delay={2}
+                    ghostClass="opacity-50"
+                    chosenClass="ring-2 ring-violet-400"
+                    dragClass="rotate-3 scale-105 shadow-lg z-50"
+                    onStart={(evt) => {
+                      const post = postsForDay[evt.oldIndex!];
+                      handleDragStart(post);
+                    }}
+                    onEnd={(evt) => {
+                      handleDragEnd();
+                      
+                      // Handle drop if it's on a different day
+                      const dropTarget = evt.to.closest('[data-month][data-day]');
+                      if (dropTarget && draggedPost) {
+                        const targetMonth = parseInt(dropTarget.getAttribute('data-month')!);
+                        const targetDay = parseInt(dropTarget.getAttribute('data-day')!);
+                        
+                        if (targetMonth >= 0) { // Valid month
+                          handleDrop(targetMonth, targetDay, year);
+                        }
+                      }
+                    }}
+                    className="flex flex-col gap-1"
+                  >
+                    {postsForDay.slice(0, 2).map((post) => (
+                      <div
+                        key={post.id}
+                        className="cursor-move"
+                        draggable={true}
+                      >
+                        <PostCard
+                          callbackFunc={() => onEventSelect?.(post)}
+                          post={post}
+                        />
+                      </div>
+                    ))}
+                  </ReactSortable>
                   {postsForDay.length > 2 && (
                     <div className="w-full text-left px-1.5 flex justify-between py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400 transition-colors">
                       {postsForDay.length === 3
@@ -190,6 +286,12 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
                   )}
                 </div>
               )}
+              {/* Drop zone indicator when dragging */}
+              {isDragging && isValidDropTarget && !hasEvents && (
+                <div className="absolute inset-2 border-2 border-dashed border-violet-400 dark:border-violet-500 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">Drop here</span>
+                </div>
+              )}
             </div>
           );
         })}
@@ -197,7 +299,7 @@ export const Cal: React.FC<ContinuousCalendarProps> = ({
     ));
 
     return calendar;
-  }, [year, highlightedDates, onEventSelect]);
+  }, [year, highlightedDates, onEventSelect, isDragging, draggedPost]);
 
   useEffect(() => {
     const calendarContainer = document.querySelector(".calendar-container");

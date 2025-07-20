@@ -2,11 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/DashboardComponents/Sidebar/ThemeToggle";
 import Link from "next/link";
-import Cookies from "js-cookie";
 import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useNotification } from "@/context/NotificationContext";
 import {
   HoverCard,
   HoverCardContent,
@@ -36,6 +36,7 @@ export const Navigation = () => {
       href: "/privacy-policy",
     },
   ];
+  const { setNotification } = useNotification();
   const notificationRef = useRef<HTMLDivElement>(null);
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
@@ -81,6 +82,17 @@ export const Navigation = () => {
             PostPilot
           </h1>
           <div className="flex items-center gap-2 sm:gap-6">
+            <Button
+              onClick={() => {
+                console.log("Hi");
+                try {
+                  setNotification("Hi");
+                } catch (error) {
+                  console.log(error);
+                }
+              }}>
+              notification
+            </Button>
             {Buttons.map((button, index) => (
               <Link
                 key={index}

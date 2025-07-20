@@ -123,3 +123,6 @@ select{
      background-color: #6e4ea1;
      border-radius: 10px;
 }
+.Notification {
+     @apply absolute bottom-10 right-10 z-[1000] bg-gray-800 text-white p-4 rounded-md shadow-lg transition-opacity duration-300;
+}

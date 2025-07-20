@@ -1,43 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionFromCookie } from "./app/_lib/edge-session";
 
-const protectedRoutes = ["/channels", "connection"];
-const publicRoutes = ["/home"];
+const protectedRoutes = ["/channels", "/connection"];
 
 export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isPublicRoute = publicRoutes.includes(path);
-  // if (isPublicRoute) {
-  //   const session = await getSessionFromCookie(req);
-  //   if (!session) {
-  //     const response = NextResponse.redirect(new URL(path, req.nextUrl));
-  //     response.cookies.delete("session");
-  //     return response;
-  //   }
-  // }
   const isProtectedRoute = protectedRoutes.some((prefix) =>
     path.startsWith(prefix)
   );
-  if (req.nextUrl.pathname == "/") {
-    const session = await getSessionFromCookie(req);
+  if (path === "/") {
+    const session = req.cookies.get("session")?.value;
     if (!session) {
-      const response = NextResponse.redirect(new URL("/home", req.nextUrl));
-      response.cookies.delete("session");
-      return response;
-    } else {
-      return NextResponse.redirect(new URL("/channels", req.nextUrl));
+      return NextResponse.redirect(new URL("/home", req.nextUrl));
     }
+    return NextResponse.redirect(new URL("/channels", req.nextUrl));
   }
   if (isProtectedRoute) {
-    const session = await getSessionFromCookie(req);
-    if (!session) {
-      const response = NextResponse.redirect(new URL("/home", req.nextUrl));
-      response.cookies.delete("session");
-      return response;
-    }
-  }
+    const origin = req.nextUrl.origin;
+    const res = await fetch(`${origin}/api/auth/verify`, {
+      method: "GET",
+      headers: {
+        Cookie: req.headers.get("Cookie") || "",
+      },
+    });
 
-  return NextResponse.next();
+    if (res.status !== 200) {
+      return NextResponse.redirect(new URL("/home", req.nextUrl));
+    }
+    return NextResponse.next();
+  }
 }
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],

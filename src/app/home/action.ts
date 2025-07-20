@@ -3,7 +3,7 @@ import { db } from "@/firebase/config";
 import { addUser } from "@/firebase/user.firestore";
 import { User } from "@/interfaces/User";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { createSession , deleteSession } from "../_lib/session";
+import { login, logout } from "../_lib/session";
 
 export interface FormDate {
   name: string;
@@ -12,7 +12,7 @@ export interface FormDate {
 
 export async function signInServer(idToken: string, formDate: FormDate) {
   try {
-    await createSession(idToken);
+    await login(idToken);
 
     const userQuery = query(
       collection(db, "Users"),
@@ -36,5 +36,5 @@ export async function signInServer(idToken: string, formDate: FormDate) {
 }
 
 export async function logOut() {
-  deleteSession();
+  await logout();
 }
