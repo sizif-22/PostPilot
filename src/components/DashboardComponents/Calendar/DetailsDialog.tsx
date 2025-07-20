@@ -9,14 +9,15 @@ import {
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
-import { FaXTwitter } from "react-icons/fa6";
-import { FaPlay, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaXTwitter , FaTiktok } from "react-icons/fa6";
+import { FaPlay, FaLinkedin } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/utils/timezone";
 import { deletePost } from "@/firebase/channel.firestore";
 import { EditPostDialog } from "../Dashboard/EditPostDialog";
 import { MediaItem } from "@/interfaces/Media";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 // Local type to match EditPostDialog's Post interface
 type EditDialogPost = {
@@ -56,6 +57,8 @@ export const DetailsDialog = ({
         return <FaLinkedin className="text-[#0A66C2]" />;
       case "x":
         return <FaXTwitter className="text-black dark:text-white" />;
+      case "tiktok":
+        return <FaTiktok className="text-black dark:text-white" />;
       default:
         return <FiGlobe className="text-stone-600" />;
     }
@@ -108,6 +111,7 @@ export const DetailsDialog = ({
           label="Post Details"
           className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50"
           onClick={() => setOpen(false)}>
+          <DialogTitle></DialogTitle>
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white dark:bg-darkBackground rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">

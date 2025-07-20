@@ -17,9 +17,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  "use server";
   const session = await getSession();
   const isLoggedIn = !!session;
-  const email = session?.email ?? '';
+  const email = session?.email ?? "";
+  if (!isLoggedIn) {
+    ("use server");
+    deleteSession();
+  }
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} text-stone-950 bg-stone-100`}>
@@ -28,7 +33,9 @@ export default async function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <UserProvider isLoggedIn={isLoggedIn} email={email}>{children}</UserProvider>
+          <UserProvider isLoggedIn={isLoggedIn} email={email}>
+            {children}
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

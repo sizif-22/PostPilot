@@ -6,20 +6,7 @@ import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { Timestamp } from "firebase/firestore";
 import { MediaItem } from "@/interfaces/Media";
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+import { Cal } from "./Cal";
 export const Calendar = ({ media }: { media: MediaItem[] }) => {
   const [selectedEvent, setSelectedEvent] = useState<Post | null>(null);
   const { channel } = useChannel();
@@ -90,7 +77,7 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
 
   return (
     <>
-      <ContinuousCalendar
+      <Cal
         highlightedDates={highlightedDates}
         onEventSelect={handleEventSelect}
       />
