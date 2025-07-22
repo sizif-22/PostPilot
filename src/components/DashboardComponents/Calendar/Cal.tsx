@@ -5,6 +5,8 @@ import { ContinuousCalendarProps, daysOfWeek, monthNames } from "./interfaces";
 import { PostCard } from "./PostCard";
 import { ReactSortable } from "react-sortablejs";
 import { Post } from "@/interfaces/Channel";
+import { AllPostsDialog } from "./AllPostsDialog";
+
 export const Cal: React.FC<
   ContinuousCalendarProps & {
     onPostMove?: (
@@ -21,6 +23,13 @@ export const Cal: React.FC<
   const [selectedMonth, setSelectedMonth] = useState<number>(0);
   const [draggedPost, setDraggedPost] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // State for the all posts dialog
+  const [showAllPostsDialog, setShowAllPostsDialog] = useState(false);
+  const [selectedDayPosts, setSelectedDayPosts] = useState<{
+    posts: Post[];
+    date: { day: number; month: number; year: number };
+  } | null>(null);
 
   const monthOptions = monthNames.map((month, index) => ({
     name: month,
@@ -88,6 +97,15 @@ export const Cal: React.FC<
     scrollToDay(today.getMonth(), today.getDate());
   };
 
+  // Handle showing all posts dialog
+  const handleShowAllPosts = (posts: Post[], day: number, month: number) => {
+    setSelectedDayPosts({
+      posts,
+      date: { day, month, year },
+    });
+    setShowAllPostsDialog(true);
+  };
+
   // Handle drag start
   const handleDragStart = (post: any) => {
     setDraggedPost(post);
@@ -107,7 +125,6 @@ export const Cal: React.FC<
     targetYear: number
   ) => {
     if (draggedPost && onPostMove) {
-      // Only move if it's a different day
       const currentDate = highlightedDates.find((date) =>
         date.posts.some((p) => p.id === draggedPost.id)
       );
@@ -118,7 +135,7 @@ export const Cal: React.FC<
         currentDate.month !== targetMonth ||
         currentDate.year !== targetYear
       ) {
-        console.log("DraggedPost:",draggedPost)
+        console.log("DraggedPost:", draggedPost);
         onPostMove(draggedPost, targetDay, targetMonth, targetYear);
       }
     }
@@ -181,10 +198,7 @@ export const Cal: React.FC<
             (date) =>
               date.day === day && date.month === month && date.year === year
           );
-          const postsForDay =
-            dateData?.posts.sort(
-              (a, b) => (a.scheduledDate || 0) - (b.scheduledDate || 0)
-            ) || [];
+          const postsForDay = dateData?.posts || [];
           const hasEvents = postsForDay.length > 0;
 
           // Check if this is a valid drop target (not past dates for future months)
@@ -241,17 +255,13 @@ export const Cal: React.FC<
                         id: post.id as string | number, // Ensure id is string or number
                         chosen: false,
                       }))}
-                    setList={() => {}} // We handle the actual movement via onPostMove
+                    setList={() => {}}
                     group={{
                       name: "posts",
                       pull: true,
-                      put: true,
+                      put: false,
                     }}
-                    animation={200}
-                    delay={2}
-                    ghostClass="sortable-ghost"
-                    chosenClass="sortable-chosen"
-                    dragClass="sortable-drag"
+                    sort={false}
                     onStart={(evt) => {
                       const post = postsForDay[evt.oldIndex!];
                       handleDragStart(post);
@@ -282,7 +292,7 @@ export const Cal: React.FC<
                       <div
                         key={post.id}
                         className="cursor-move"
-                        draggable={true}>
+                        >
                         <PostCard
                           callbackFunc={() => onEventSelect?.(post)}
                           post={post}
@@ -291,22 +301,18 @@ export const Cal: React.FC<
                     ))}
                   </ReactSortable>
                   {postsForDay.length > 2 && (
-                    <div className="w-full text-left px-1.5 flex justify-between py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400 transition-colors">
+                    <button
+                      onClick={() =>
+                        handleShowAllPosts(postsForDay, day, month)
+                      }
+                      className="w-full text-left px-1.5 flex justify-between py-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400 transition-colors">
                       {postsForDay.length === 3
                         ? "There is 1 more ..."
                         : `There are ${postsForDay.length - 2} more ...`}
-                    </div>
+                    </button>
                   )}
                 </div>
               )}
-              {/* Drop zone indicator when dragging */}
-              {/* {isDragging && isValidDropTarget && !hasEvents && (
-                <div className="absolute inset-2 border-2 border-dashed border-violet-400 dark:border-violet-500 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">
-                    Drop here
-                  </span>
-                </div>
-              )} */}
             </div>
           );
         })}
@@ -350,100 +356,102 @@ export const Cal: React.FC<
   }, []);
 
   return (
-    <div className="calendar-container text-slate-800 dark:text-white bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          .sortable-ghost {
-            opacity: 0.5 !important;
-          }
-          .sortable-chosen {
-            box-shadow: 0 0 0 2px rgb(139 92 246) !important;
-            transform: scale(1.02) !important;
-          }
-          .sortable-drag {
-            transform: rotate(3deg) scale(1.05) !important;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
-            z-index: 1000 !important;
-          }
-        `,
-        }}
-      />
-      <div className="sticky top-0 z-50  w-full rounded-t-2xl bg-white dark:bg-secondDarkBackground px-2 pt-3 sm:px-5 sm:pt-7">
-        <div className="mb-2 flex w-full  sm:flex-row sm:items-center justify-between gap-2 sm:gap-6">
-          <div className="flex items-center gap-2">
-            <Select
-              name="month"
-              value={`${selectedMonth}`}
-              options={monthOptions}
-              onChange={handleMonthChange}
-              className="border-violet-400 dark:text-white"
-            />
-            <button
-              onClick={handleTodayClick}
-              className="rounded-lg border border-stone-300 dark:border-darkBorder bg-white dark:bg-darkButtons px-2 py-1 text-sm font-medium text-stone-900 dark:text-white hover:bg-darkBorder transition-all dark:hover:bg-stone-700 focus:outline-none sm:px-3 sm:py-1.5 lg:px-5 lg:py-2.5">
-              Today
-            </button>
-          </div>
-          <div className="flex w-fit items-center justify-between">
-            <button
-              onClick={handlePrevYear}
-              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
-              <svg
-                className="size-4 sm:size-5 text-stone-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24">
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m15 19-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <h1 className="min-w-12 sm:min-w-16 text-center text-base sm:text-lg font-semibold lg:min-w-20 lg:text-xl dark:text-white">
-              {year}
-            </h1>
-            <button
-              onClick={handleNextYear}
-              className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
-              <svg
-                className="size-4 sm:size-5 text-stone-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24">
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m9 5 7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div className="grid w-full grid-cols-7 justify-between text-slate-500 dark:text-stone-400">
-          {daysOfWeek.map((day, index) => (
-            <div
-              key={index}
-              className="w-full border-b border-slate-200 dark:border-stone-700 py-1 sm:py-2 text-center text-xs sm:text-sm font-semibold">
-              {day}
+    <>
+      <div className="calendar-container text-slate-800 dark:text-white bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+        <div className="sticky top-0 z-50  w-full rounded-t-2xl bg-white dark:bg-secondDarkBackground px-2 pt-3 sm:px-5 sm:pt-7">
+          <div className="mb-2 flex w-full  sm:flex-row sm:items-center justify-between gap-2 sm:gap-6">
+            <div className="flex items-center gap-2">
+              <Select
+                name="month"
+                value={`${selectedMonth}`}
+                options={monthOptions}
+                onChange={handleMonthChange}
+                className="border-violet-400 dark:text-white"
+              />
+              <button
+                onClick={handleTodayClick}
+                className="rounded-lg border border-stone-300 dark:border-darkBorder bg-white dark:bg-darkButtons px-2 py-1 text-sm font-medium text-stone-900 dark:text-white hover:bg-darkBorder transition-all dark:hover:bg-stone-700 focus:outline-none sm:px-3 sm:py-1.5 lg:px-5 lg:py-2.5">
+                Today
+              </button>
             </div>
-          ))}
+            <div className="flex w-fit items-center justify-between">
+              <button
+                onClick={handlePrevYear}
+                className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
+                <svg
+                  className="size-4 sm:size-5 text-stone-800 dark:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m15 19-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <h1 className="min-w-12 sm:min-w-16 text-center text-base sm:text-lg font-semibold lg:min-w-20 lg:text-xl dark:text-white">
+                {year}
+              </h1>
+              <button
+                onClick={handleNextYear}
+                className="rounded-full border border-slate-300 dark:border-stone-700 p-1 transition-colors hover:bg-slate-100 dark:hover:bg-stone-700 focus:outline-none sm:p-2">
+                <svg
+                  className="size-4 sm:size-5 text-stone-800 dark:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m9 5 7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="grid w-full grid-cols-7 justify-between text-slate-500 dark:text-stone-400">
+            {daysOfWeek.map((day, index) => (
+              <div
+                key={index}
+                className="w-full border-b border-slate-200 dark:border-stone-700 py-1 sm:py-2 text-center text-xs sm:text-sm font-semibold">
+                {day}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="w-full gap-1 sm:gap-2 px-2 sm:px-5 lg:px-8 pt-2 sm:pt-4 lg:pt-6">
+          {generateCalendar}
         </div>
       </div>
-      <div className="w-full gap-1 sm:gap-2 px-2 sm:px-5 lg:px-8 pt-2 sm:pt-4 lg:pt-6">
-        {generateCalendar}
-      </div>
-    </div>
+
+      {/* All Posts Dialog */}
+      {selectedDayPosts && (
+        <AllPostsDialog
+          open={showAllPostsDialog}
+          onClose={() => {
+            setShowAllPostsDialog(false);
+            setSelectedDayPosts(null);
+          }}
+          posts={selectedDayPosts.posts}
+          date={selectedDayPosts.date}
+          onEventSelect={onEventSelect}
+          onPostMove={onPostMove}
+          monthNames={monthNames}
+          handleDragStart={handleDragStart}
+          handleDragEnd={handleDragEnd}
+        />
+      )}
+    </>
   );
 };
