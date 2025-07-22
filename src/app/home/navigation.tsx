@@ -18,7 +18,7 @@ import {
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
 import { logOut } from "./action";
-
+import { NotificationConfig } from "@/context/NotificationContext";
 export const Navigation = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -36,7 +36,7 @@ export const Navigation = () => {
       href: "/privacy-policy",
     },
   ];
-  const { setNotification } = useNotification();
+  const { addNotification } = useNotification();
   const notificationRef = useRef<HTMLDivElement>(null);
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
@@ -82,17 +82,27 @@ export const Navigation = () => {
             PostPilot
           </h1>
           <div className="flex items-center gap-2 sm:gap-6">
-            <Button
+            {/* <Button
               onClick={() => {
-                console.log("Hi");
-                try {
-                  setNotification("Hi");
-                } catch (error) {
-                  console.log(error);
-                }
+                addNotification({
+                  messageOnProgress: "on Progress",
+                  func: [new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                      console.log("promise");
+                      resolve("✅");
+                    }, 3000);
+                  }),new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                      console.log("promise");
+                      resolve("✅");
+                    }, 3000);
+                  })],
+                  successMessage: "Done!!",
+                  failMessage: "Failed",
+                } as NotificationConfig);
               }}>
               notification
-            </Button>
+            </Button> */}
             {Buttons.map((button, index) => (
               <Link
                 key={index}

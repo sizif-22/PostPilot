@@ -12,7 +12,7 @@ export async function PostOnFacebook({
   pageId: any;
   message: any;
   facebookVideoType?: "default" | "reel";
-}) {
+}):Promise<any> {
   try {
     console.log("Facebook video type:", facebookVideoType);
     // Validate required parameters
