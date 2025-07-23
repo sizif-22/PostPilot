@@ -3,7 +3,7 @@ import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import React, { useState, useMemo } from "react";
 import { ContinuousCalendar } from "./ContinuousCalendar";
-import { DetailsDialog } from "./DetailsDialog";
+import { NewDetailsDialog } from "./NewDetailsDialog";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { Timestamp } from "firebase/firestore";
@@ -179,7 +179,7 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
         highlightedDates={highlightedDates}
         onEventSelect={handleEventSelect}
       />
-      <DetailsDialog
+      <NewDetailsDialog
         selectedEvent={selectedEvent}
         setSelectedEvent={setSelectedEvent}
         open={!!selectedEvent}

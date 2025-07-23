@@ -12,6 +12,7 @@ import { useUser } from "@/context/UserContext";
 import { MediaItem } from "@/interfaces/Media";
 import { UserChannel } from "@/interfaces/User";
 import Loading from "@/components/ui/Loading";
+import { Issues } from "../Issues/Issues";
 
 export default function ChannelDashboard({ id }: { id: string }) {
   const { user } = useUser();
@@ -152,6 +153,8 @@ export default function ChannelDashboard({ id }: { id: string }) {
                 storageUsed={storageUsed}
                 isLoading={isLoading}
               />
+            ) : route === "Issues" ? (
+              <Issues />
             ) : (
               <Configuration />
             )}

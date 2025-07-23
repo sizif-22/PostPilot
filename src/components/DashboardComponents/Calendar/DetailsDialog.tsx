@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Command } from "cmdk";
 import {
   FiX,
-  FiMoreHorizontal,
+  FiMessageSquare,
   FiFacebook,
   FiInstagram,
   FiGlobe,
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
-import { FaXTwitter , FaTiktok } from "react-icons/fa6";
+import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { FaPlay, FaLinkedin } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
@@ -80,7 +80,6 @@ export const DetailsDialog = ({
     setIsDeleting(false);
   };
 
-  // Helper to map selectedEvent to EditPostDialog Post shape
   const getEditDialogPost = (event: Post | null): EditDialogPost | null => {
     if (!event) return null;
     return {
@@ -114,8 +113,7 @@ export const DetailsDialog = ({
           <DialogTitle></DialogTitle>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-darkBackground rounded-lg w-full max-h-[99vh] max-w-xl mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
-            {/* Header */}
+            className="bg-white dark:bg-darkBackground rounded-lg w-full max-h-[99vh] max-w-[70vw] mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
             <div className="px-4 flex items-center justify-between  border-b border-stone-200 dark:border-darkBorder h-[9vh]">
               <div className="flex sticky top-0 justify-between w-full items-center">
                 <h3 className="text-lg font-semibold dark:text-white">
@@ -128,11 +126,75 @@ export const DetailsDialog = ({
                 </button>
               </div>
             </div>
+            <div className="grid w-full bg-stone-50 dark:bg-secondDarkBackground h-[70vh] grid-cols-5">
+              {selectedEvent.imageUrls && (
+                <div
+                  className={` overflow-hidden border col-span-2 border-stone-200 dark:border-darkBorder grid gap-1 ${
+                    selectedEvent.imageUrls.length === 1
+                      ? "grid-cols-1"
+                      : "grid-cols-2"
+                  }`}>
+                  {selectedEvent.imageUrls
+                    ?.slice(0, 3)
+                    .map((image, index) => {
+                      const isLastImage =
+                        index === 2 &&
+                        (selectedEvent.imageUrls?.length ?? 0) > 3;
+                      const remainingCount =
+                        (selectedEvent.imageUrls?.length ?? 0) - 3;
 
-            {/* Post Preview */}
-            <div className="p-4 overflow-y-auto max-h-[80vh]">
-              <div className="bg-stone-50 dark:bg-secondDarkBackground rounded-lg p-4 space-y-4">
-                {/* Post Header */}
+                      return (
+                        <div
+                          key={index}
+                          className={`relative ${
+                            (selectedEvent.imageUrls?.length ?? 0) >= 3 &&
+                            index === 0
+                              ? "row-span-2"
+                              : ""
+                          }`}>
+                          {image.isVideo ? (
+                            <>
+                              <video
+                                className="w-full h-full object-cover"
+                                preload="metadata">
+                                <source src={image.url} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                                  <FaPlay
+                                    size={24}
+                                    className="text-white"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={image.url}
+                              alt={`Post image ${index + 1}`}
+                              className={`w-full h-full object-cover ${
+                                isLastImage
+                                  ? "brightness-50 blur-[2px]"
+                                  : ""
+                              }`}
+                              style={{ minHeight: "200px" }}
+                            />
+                          )}
+
+                          {isLastImage && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-white text-3xl font-bold">
+                                +{remainingCount}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+              <div className="col-span-3 flex flex-col p-4 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex gap-3">
                     <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
@@ -175,86 +237,14 @@ export const DetailsDialog = ({
                       </div>
                     </div>
                   </div>
-                  <button className="p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full transition-colors">
-                    <FiMoreHorizontal className="text-stone-500 dark:text-stone-400" />
-                  </button>
                 </div>
 
-                {/* Post Content */}
                 <div className="space-y-3">
                   <p className="text-[15px] whitespace-pre-wrap dark:text-white">
                     {selectedEvent.content || selectedEvent.message}
                   </p>
-                  {selectedEvent.imageUrls && (
-                    <div
-                      className={`rounded-lg overflow-hidden border border-stone-200 dark:border-darkBorder grid gap-1 ${
-                        selectedEvent.imageUrls.length === 1
-                          ? "grid-cols-1"
-                          : "grid-cols-2"
-                      }`}>
-                      {selectedEvent.imageUrls
-                        ?.slice(0, 3)
-                        .map((image, index) => {
-                          const isLastImage =
-                            index === 2 &&
-                            (selectedEvent.imageUrls?.length ?? 0) > 3;
-                          const remainingCount =
-                            (selectedEvent.imageUrls?.length ?? 0) - 3;
-
-                          return (
-                            <div
-                              key={index}
-                              className={`relative ${
-                                (selectedEvent.imageUrls?.length ?? 0) >= 3 &&
-                                index === 0
-                                  ? "row-span-2"
-                                  : ""
-                              }`}>
-                              {image.isVideo ? (
-                                <>
-                                  <video
-                                    className="w-full h-full object-cover"
-                                    preload="metadata">
-                                    <source src={image.url} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                  </video>
-                                  <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                                      <FaPlay
-                                        size={24}
-                                        className="text-white"
-                                      />
-                                    </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <img
-                                  src={image.url}
-                                  alt={`Post image ${index + 1}`}
-                                  className={`w-full h-full object-cover ${
-                                    isLastImage
-                                      ? "brightness-50 blur-[2px]"
-                                      : ""
-                                  }`}
-                                  style={{ minHeight: "200px" }}
-                                />
-                              )}
-
-                              {isLastImage && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-white text-3xl font-bold">
-                                    +{remainingCount}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
                 </div>
 
-                {/* Post Status */}
                 <div className="bg-white dark:bg-darkButtons p-3 rounded-lg border border-stone-200 dark:border-darkBorder">
                   <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                     {selectedEvent.scheduledDate && (
@@ -290,10 +280,29 @@ export const DetailsDialog = ({
                     })()}
                   </div>
                 </div>
+
+                {/* Comment Section */}
+                <div className="border-t border-stone-200 dark:border-darkBorder pt-4">
+                  <h4 className="font-semibold dark:text-white mb-2">Comments & Issues</h4>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-700 flex-shrink-0"></div>
+                    <div className="w-full">
+                      <textarea
+                        placeholder="Add a comment or raise an issue..."
+                        className="w-full p-2 border border-stone-300 dark:border-darkBorder rounded-md bg-transparent dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        rows={3}
+                      ></textarea>
+                      <div className="flex justify-end mt-2">
+                        <button className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-700 dark:hover:bg-violet-800 rounded-lg transition-colors">
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Footer Actions */}
             {(channel?.authority == "Owner" ||
               channel?.authority == "Contributor") &&
               !selectedEvent.published &&

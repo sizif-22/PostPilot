@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 
 const Loading = () => {
   return (
-    <div className="flex justify-center items-center h-screen dark:bg-black light:bg-gradient-to-b from-violet-100 via-violet-50 to-white">
+    <div className="flex justify-center w-full items-center h-screen dark:bg-black light:bg-gradient-to-b from-violet-100 via-violet-50 to-white">
     <StyledWrapper>
       <div className="loader" />
     </StyledWrapper>

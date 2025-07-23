@@ -19,7 +19,7 @@ const ChannelsComponent = ({
     const fetchChannels = async () => {
       if (channels.length > 0) {
         const briefs = await getChannelBriefs(channels);
-        const sortedBriefs = Object.values(briefs).sort((a, b) => {
+        const sortedBriefs = (Object.values(briefs) as ChannelBrief[]).sort((a, b) => {
           const dateA = a.createdAt.toDate
             ? a.createdAt.toDate()
             : new Date(a.createdAt.seconds * 1000);
@@ -80,10 +80,10 @@ const ChannelsComponent = ({
 };
 
 const Page = () => {
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const [createNewChannel, setCreateNewChannel] = useState(false);
 
-  if (!user?.channels) {
+  if (loading || !user) {
     return <Loading />;
   }
   return (

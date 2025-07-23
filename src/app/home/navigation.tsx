@@ -18,7 +18,9 @@ import {
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
 import { logOut } from "./action";
+import { Notification as UserNotification } from "@/interfaces/User"; // Alias to avoid conflict
 import { NotificationConfig } from "@/context/NotificationContext";
+
 export const Navigation = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -43,7 +45,8 @@ export const Navigation = () => {
   const [lastNotifCount, setLastNotifCount] = useState<number>(
     user?.notifications?.length || 0
   );
-  const [newNotif, setNewNotif] = useState<any>(null);
+  const [newNotif, setNewNotif] = useState<UserNotification | null>(null);
+
   // Detect new notification arrival
   useEffect(() => {
     const currentCount = user?.notifications?.length || 0;
@@ -57,8 +60,7 @@ export const Navigation = () => {
       setTimeout(() => setShowNewAlert(false), 3000);
     }
     setLastNotifCount(currentCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.notifications]);
+  }, [user?.notifications, lastNotifCount]); // Added lastNotifCount to dependencies
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -123,8 +125,8 @@ export const Navigation = () => {
                   <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
                   <div
                     className={`w-2 h-2 absolute top-1.5 rounded-full right-2 bg-red-600 ${
-                      (user?.notifications == undefined ||
-                        user?.notifications?.length == 0) &&
+                      (user.notifications == undefined ||
+                        user.notifications.length == 0) &&
                       "hidden"
                     }`}></div>
                 </button>
@@ -133,14 +135,14 @@ export const Navigation = () => {
                   className={`absolute top-16 right-40 z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
                     !notificationBar && "hidden"
                   }`}>
-                  {user?.notifications == undefined ||
-                  user?.notifications?.length == 0 ? (
+                  {user.notifications == undefined ||
+                  user.notifications.length == 0 ? (
                     <div className="flex justify-center items-center py-8 text-gray-400 text-sm">
                       No notifications at the moment
                     </div>
                   ) : (
                     <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-700/50">
-                      {user?.notifications?.map((notification, index) => (
+                      {user.notifications.map((notification: UserNotification, index: number) => (
                         <div
                           key={index}
                           className="p-4 hover:bg-white/5 transition-all duration-200">

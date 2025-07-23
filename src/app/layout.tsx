@@ -43,7 +43,7 @@ export default async function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-            <UserProvider email={email}>{children}</UserProvider>
+            <UserProvider>{children}</UserProvider>
           </ThemeProvider>
         </NotificationProvider>
       </body>

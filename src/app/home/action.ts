@@ -21,6 +21,7 @@ export async function signInServer(idToken: string, formDate: FormDate) {
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) {
       const userData: User = {
+        uid: "", // Placeholder for uid, will be populated from Firebase Auth
         name: formDate.name || "",
         email: formDate.email || "",
         avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=5",

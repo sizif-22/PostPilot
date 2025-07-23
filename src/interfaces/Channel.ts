@@ -61,21 +61,21 @@ export interface Channel extends ChannelBrief {
   posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];
 }
-export interface Post {
+export type Post = {
   id?: string;
-  ruleName?: string;
-  fid?: string;
-  title?: string;
-  date?: Timestamp;
-  platforms?: string[];
   content?: string;
-  imageUrls?: MediaItem[];
-  published: boolean;
-  scheduledDate?: number;
-  accessToken?: string;
-  pageId?: string;
   message?: string;
-  channelId?: string;
+  platforms?: string[];
+  imageUrls?: any[];
+  videoUrls?: any[];
+  scheduledDate?: number;
+  date?: any;
+  status?: string;
+  live?: boolean;
+  ruleName?: string;
+  published?: boolean;
+  comments?: any[];
+  facebookVideoType?: string;
+  title?: string;
   clientTimeZone?: string;
-  facebookVideoType?: "default" | "reel";
-}
+};

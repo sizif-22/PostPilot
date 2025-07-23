@@ -8,6 +8,8 @@ import {
   FiInstagram,
   FiImage,
 } from "react-icons/fi";
+import { CiWarning } from "react-icons/ci";
+
 import { IoAnalyticsSharp } from "react-icons/io5";
 import { TbPresentationAnalytics } from "react-icons/tb";
 import { useChannel } from "@/context/ChannelContext";
@@ -39,6 +41,10 @@ export const RouteSelect = ({
     {
       Icon: FiUsers,
       title: "Team",
+    },
+    {
+      Icon: CiWarning,
+      title: "Issues",
     },
   ];
   return (
@@ -121,7 +127,7 @@ export const SettingsSection = ({
             />
             <ThemeToggle className="h-full rounded" />
           </>
-        ):(
+        ) : (
           <div className="flex items-center justify-center w-full">
             <ThemeToggle className=" rounded" />
           </div>

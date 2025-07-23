@@ -5,13 +5,14 @@ export interface UserChannel {
   authority: Authority;
 }
 export interface User {
+  uid: string;
   name: string;
   email: string;
   avatar: string;
-  // isLoggedIn: boolean;
-  // isVerified: boolean;
   channels: UserChannel[];
   notifications?: Notification[];
+  displayName?: string;
+  photoURL?: string;
 }
 export interface TMBrief {
   name: string;

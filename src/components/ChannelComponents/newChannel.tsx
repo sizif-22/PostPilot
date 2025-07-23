@@ -6,14 +6,17 @@ import { createChannel } from "@/firebase/channel.firestore";
 import { useUser } from "@/context/UserContext";
 import { Timestamp } from "firebase/firestore";
 import { Channel } from "@/interfaces/Channel";
+import { User } from "@/interfaces/User"; // Explicitly import our User interface
+
 export const NewChannel = ({
   setCreateNewChannel,
 }: {
   setCreateNewChannel: (value: boolean) => void;
 }) => {
-  const { user } = useUser();
+  const { user }: { user: User | null } = useUser(); // Explicitly type user
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
+
   const handleCreateChannel = async () => {
     if (channelName && user?.email && user.name) {
       const channel: Channel = {
@@ -25,8 +28,8 @@ export const NewChannel = ({
         posts: {},
         TeamMembers: [
           {
-            name: user?.name,
-            email: user?.email,
+            name: user.name,
+            email: user.email,
             role: "Owner",
             status: "active",
           },

@@ -44,11 +44,11 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 -z-40" onClick={onClose} />
+      <div className="fixed inset-0 w-screen parent h-screen bg-black/50 -z-40" onClick={onClose} />
 
       {/* Dialog Container */}
       <div className="fixed inset-0 z-50 grid grid-cols-3 items-center justify-items-center pointer-events-none">
-        <Draggable nodeRef={nodeRef}>
+        <Draggable bounds="parent" nodeRef={nodeRef}>
           <div
             ref={nodeRef}
             className="bg-white dark:bg-secondDarkBackground rounded-lg shadow-xl w-[18vw] max-w-2xl h-[90vh] overflow-hidden border-2 dark:border-white border-black pointer-events-auto">

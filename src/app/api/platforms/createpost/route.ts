@@ -91,7 +91,7 @@ export async function POST(request: Request) {
                   pageId: channel.socialMedia?.facebook?.id,
                   imageUrls: post.imageUrls,
                   message: post.message || post.content,
-                  facebookVideoType: post.facebookVideoType,
+                  facebookVideoType: post.facebookVideoType as "default" | "reel" | undefined,
                 });
 
                 return {

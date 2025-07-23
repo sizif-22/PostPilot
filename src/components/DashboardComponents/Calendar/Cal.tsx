@@ -248,6 +248,13 @@ export const Cal: React.FC<
                 <div className="absolute top-8 sm:top-12 lg:top-14 left-1 right-1 lg:left-2 lg:right-2 flex flex-col gap-1 overflow-y-auto max-h-[calc(100%-40px)] sm:max-h-[calc(100%-50px)] lg:max-h-[calc(100%-60px)]">
                   <ReactSortable
                     list={postsForDay
+                      .sort((a, b) => {
+                        const aDate: number =
+                          a.scheduledDate || a.date?.seconds || 10000000000000;
+                        const bDate: number =
+                          b.scheduledDate || b.date?.seconds || 10000000000001;
+                        return aDate - bDate;
+                      })
                       .slice(0, 2)
                       .filter((post) => post.id !== undefined)
                       .map((post) => ({
@@ -289,10 +296,7 @@ export const Cal: React.FC<
                     }}
                     className="flex flex-col gap-1">
                     {postsForDay.slice(0, 2).map((post) => (
-                      <div
-                        key={post.id}
-                        className="cursor-move"
-                        >
+                      <div key={post.id} className="cursor-move">
                         <PostCard
                           callbackFunc={() => onEventSelect?.(post)}
                           post={post}
