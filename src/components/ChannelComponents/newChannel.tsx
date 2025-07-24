@@ -30,6 +30,7 @@ export const NewChannel = ({
           {
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
             role: "Owner",
             status: "active",
           },
@@ -81,7 +82,9 @@ export const NewChannel = ({
               </p>
               <div className="flex flex-col gap-2 w-full border-2 border-stone-200 dark:border-darkBorder rounded-lg px-4 py-2 mt-4">
                 <div className="flex flex-col items-start w-full py-2 gap-2">
-                  <h2 className="text-lg font-medium dark:text-white">Channel Name</h2>
+                  <h2 className="text-lg font-medium dark:text-white">
+                    Channel Name
+                  </h2>
                   <input
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
@@ -89,7 +92,9 @@ export const NewChannel = ({
                     className="w-1/2 border-2 border-stone-200 dark:border-darkBorder rounded-lg px-4 py-2 dark:bg-darkButtons dark:text-white"
                   />
                   <hr className="w-full border-stone-200 dark:border-gray-700 my-2" />
-                  <h2 className="text-lg font-medium dark:text-white">Channel Description</h2>
+                  <h2 className="text-lg font-medium dark:text-white">
+                    Channel Description
+                  </h2>
                   <textarea
                     value={channelDescription}
                     onChange={(e) => setChannelDescription(e.target.value)}

@@ -26,6 +26,7 @@ import {
   deleteTeamMember,
 } from "@/firebase/channel.firestore";
 import { useChannel } from "@/context/ChannelContext";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 interface MemberDialogProps {
   open: boolean;
@@ -43,6 +44,7 @@ const MemberDialog = ({
   interface formDateInterface {
     email?: string;
     name?: string;
+    avatar?: string;
     role: Authority;
   }
   const [formData, setFormData] = useState<formDateInterface>(
@@ -86,6 +88,7 @@ const MemberDialog = ({
       ...formData,
       email: member.email,
       name: member.name,
+      avatar: member.avatar,
     });
     setSelectedMember(member);
     setSearchQuery("");
@@ -103,6 +106,7 @@ const MemberDialog = ({
       onClick={() => onOpenChange(false)}
       label="Member Details"
       className="fixed inset-0 bg-stone-950/50 dark:bg-darkButtons flex items-center justify-center z-50">
+      <DialogTitle></DialogTitle>
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-white dark:bg-secondDarkBackground rounded-lg w-full max-w-md mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] overflow-hidden">
@@ -371,7 +375,7 @@ export const Team = () => {
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
                         <span className="flex items-center justify-center rounded-full border-2 border-violet-900">
                           <img
-                            src={user?.avatar}
+                            src={member.avatar}
                             className="size-10 rounded-full shrink-0 bg-violet-500 shadow"
                             alt="avatar"
                           />

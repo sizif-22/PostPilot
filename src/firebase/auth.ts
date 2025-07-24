@@ -20,6 +20,7 @@ const signInWithGoogle = async () => {
     if (!result.user.displayName || !result.user.email)
       throw new Error("Name or Email not found");
     await signInServer(idToken, {
+      avatar: result.user.photoURL || undefined,
       name: result.user.displayName,
       email: result.user.email,
     });

@@ -132,8 +132,8 @@ export const NewDetailsDialog = ({
         priority: 'medium' as 'medium',
         reportedBy: {
           id: user.uid,
-          name: user.displayName || 'Anonymous',
-          avatar: user.photoURL || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
+          name: user.name || 'Anonymous',
+          avatar: user.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
         },
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -142,7 +142,7 @@ export const NewDetailsDialog = ({
       await createIssue(newIssue);
     } else {
       await addCommentToPost(selectedEvent.id!, channel!.id, {
-        author: user.displayName || 'Anonymous',
+        author: user.name || 'Anonymous',
         content: commentText,
         createdAt: new Date(),
         type: 'comment',
@@ -151,7 +151,7 @@ export const NewDetailsDialog = ({
 
     const newComment: Comment = {
       id: Date.now().toString(),
-      author: user.displayName || 'Anonymous',
+      author: user.name || 'Anonymous',
       content: commentText,
       createdAt: { seconds: Date.now() / 1000 },
       type: commentType,

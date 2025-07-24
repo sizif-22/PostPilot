@@ -4,7 +4,7 @@ import { useUser } from "@/context/UserContext";
 import Image from "next/image";
 import { FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signInWithGoogle } from "@/firebase/auth";
 export const Hero = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ export const Hero = () => {
               PostPilot's intelligent automation platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
-              {user ? (
+              {user?.email ? (
                 <Button onClick={() => router.push("/channels")}>
                   Channels
                 </Button>

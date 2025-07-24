@@ -114,7 +114,7 @@ export const Navigation = () => {
               </Link>
             ))}
             <ThemeToggle />
-            {user && (
+            {user?.email && (
               <>
                 <span className="text-black dark:text-white">|</span>
                 <button

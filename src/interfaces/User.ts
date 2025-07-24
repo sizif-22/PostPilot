@@ -11,12 +11,11 @@ export interface User {
   avatar: string;
   channels: UserChannel[];
   notifications?: Notification[];
-  displayName?: string;
-  photoURL?: string;
 }
 export interface TMBrief {
   name: string;
   email: string;
+  avatar: string;
 }
 export interface TeamMember extends TMBrief {
   role: Authority;

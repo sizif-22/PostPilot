@@ -6,6 +6,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { login, logout } from "../_lib/session";
 
 export interface FormDate {
+  avatar?:string;
   name: string;
   email: string;
 }
@@ -21,13 +22,12 @@ export async function signInServer(idToken: string, formDate: FormDate) {
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) {
       const userData: User = {
-        uid: "", // Placeholder for uid, will be populated from Firebase Auth
+        uid: "",
         name: formDate.name || "",
         email: formDate.email || "",
-        avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=5",
+        avatar: formDate.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
         channels: [],
       };
-      // If no user exists, add a new document
       await addUser(userData);
       console.log("New user added to Firestore.");
     }

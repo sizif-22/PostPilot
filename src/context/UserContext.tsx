@@ -1,69 +1,58 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
-import { auth, db } from "@/firebase/config";
-import { onAuthStateChanged, User as FirebaseAuthUser } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { User, UserChannel, Notification } from "@/interfaces/User";
-
+import React, { createContext, useState, useContext, useEffect } from "react";
+// import { checkLoggedIn } from "@/firebase/auth";
+import { getUser } from "@/firebase/user.firestore";
+import { User } from "@/interfaces/User";
 interface UserContextType {
   user: User | null;
-  loading: boolean;
+  setUser: (user: User | null) => void;
 }
+export const UserContext = createContext<UserContextType | undefined>(
+  undefined
+);
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
-
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserProvider = ({
+  children,
+  email,
+}: {
+  children: React.ReactNode;
+  email: string | null;
+}) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const userDocRef = doc(db, "Users", firebaseUser.email!);
-        const userDocSnap = await getDoc(userDocRef);
+    let unsubscribe: (() => void) | undefined;
 
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          const customUser: User = {
-            uid: firebaseUser.uid,
-            name: userData.name || firebaseUser.displayName || "",
-            email: firebaseUser.email!,
-            avatar: userData.avatar || firebaseUser.photoURL || "",
-            channels: userData.channels || [],
-            notifications: userData.notifications || [],
-          };
-          setUser(customUser);
-        } else {
-          // If user document doesn't exist, create a basic one
-          const customUser: User = {
-            uid: firebaseUser.uid,
-            name: firebaseUser.displayName || "",
-            email: firebaseUser.email!,
-            avatar: firebaseUser.photoURL || "",
-            channels: [],
-            notifications: [],
-          };
-          setUser(customUser);
-        }
+    const checkAuth = async () => {
+      if (email) {
+        // Start real-time listener for user data
+        unsubscribe = getUser(email, (userData) => {
+          setUser(userData);
+        });
       } else {
         setUser(null);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    checkAuth();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading }}>
+    <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export const useUser = () => {
+export const useUser = ():UserContextType => {
   const context = useContext(UserContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useUser must be used within a UserProvider");
   }
   return context;

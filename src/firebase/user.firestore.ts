@@ -1,6 +1,6 @@
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
-import { User, TMBrief, TeamMember, Authority } from "@/interfaces/User";
+import { User, TMBrief } from "@/interfaces/User";
 import { Notification } from "@/interfaces/User";
 import { Channel } from "@/interfaces/Channel";
 
@@ -33,6 +33,7 @@ export const getTeamMembers = async (partOfEmail: string) => {
       return {
         name: doc.data().name,
         email: doc.id,
+        avatar: doc.data().avatar,
       } as TMBrief;
     });
   return result;
