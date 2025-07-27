@@ -6,7 +6,8 @@ import { PostCard } from "./PostCard";
 import { ReactSortable } from "react-sortablejs";
 import { Post } from "@/interfaces/Channel";
 import { AllPostsDialog } from "./AllPostsDialog";
-
+import { useUser } from "@/context/UserContext";
+import { useChannel } from "@/context/ChannelContext";
 export const Cal: React.FC<
   ContinuousCalendarProps & {
     onPostMove?: (
@@ -17,6 +18,8 @@ export const Cal: React.FC<
     ) => void;
   }
 > = ({ onEventSelect, highlightedDates = [], onPostMove }) => {
+  const { user } = useUser();
+  const { channel } = useChannel();
   const today = new Date();
   const dayRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -259,7 +262,7 @@ export const Cal: React.FC<
                       .filter((post) => post.id !== undefined)
                       .map((post) => ({
                         ...post,
-                        id: post.id as string | number, // Ensure id is string or number
+                        id: post.id as string | number,
                         chosen: false,
                       }))}
                     setList={() => {}}
@@ -268,6 +271,7 @@ export const Cal: React.FC<
                       pull: true,
                       put: false,
                     }}
+                    filter={".disable-sortable"}
                     sort={false}
                     onStart={(evt) => {
                       const post = postsForDay[evt.oldIndex!];
@@ -276,7 +280,6 @@ export const Cal: React.FC<
                     onEnd={(evt) => {
                       handleDragEnd();
 
-                      // Handle drop if it's on a different day
                       const dropTarget = evt.to.closest(
                         "[data-month][data-day]"
                       );
@@ -289,14 +292,17 @@ export const Cal: React.FC<
                         );
 
                         if (targetMonth >= 0) {
-                          // Valid month
                           handleDrop(targetMonth, targetDay, year);
                         }
                       }
                     }}
                     className="flex flex-col gap-1">
                     {postsForDay.slice(0, 2).map((post) => (
-                      <div key={post.id} className="cursor-move">
+                      <div
+                        key={post.id}
+                        className={` ${
+                          channel?.authority == "Reviewer" && "disable-sortable"
+                        }  `}>
                         <PostCard
                           callbackFunc={() => onEventSelect?.(post)}
                           post={post}

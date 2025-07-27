@@ -13,13 +13,19 @@ import { MediaItem } from "@/interfaces/Media";
 import { UserChannel } from "@/interfaces/User";
 import Loading from "@/components/ui/Loading";
 import { Issues } from "../Issues/Issues";
-
+import { useRouter } from "next/navigation";
 export default function ChannelDashboard({ id }: { id: string }) {
+  const router = useRouter();
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [storageUsed, setStorageUsed] = useState(0);
-  const [route, setRoute] = useState("Dashboard");
+  const [route, setRoute] = useState<string | null>(null);
+  useEffect(() => {
+    const path = window.location.hash.slice(1);
+    if (!path) setRoute("Dashboard");
+    else setRoute(path);
+  }, []);
 
   const userChannel = user?.channels.find(
     (channel: UserChannel) => channel.id === id
@@ -32,6 +38,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
   }, [user]);
 
   const Navigation = (route: string) => {
+    router.push(`#${route}`);
     setRoute(route);
   };
 
@@ -123,7 +130,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
     }
   }, [id, fetchImgs]);
 
-  if (isLoading) {
+  if (isLoading || !route) {
     return <Loading />;
   }
 

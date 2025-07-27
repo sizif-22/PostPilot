@@ -2,7 +2,7 @@ import React from "react";
 import { Post } from "@/interfaces/Channel";
 import { PostCard } from "./PostCard";
 import { ReactSortable } from "react-sortablejs";
-import { monthNames } from "./interfaces";
+import { useChannel } from "@/context/ChannelContext";
 import Draggable from "react-draggable";
 interface AllPostsDialogProps {
   open: boolean;
@@ -28,13 +28,11 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
   date,
   monthNames,
   onEventSelect,
-  onPostMove,
   handleDragStart,
   handleDragEnd,
 }) => {
-  const [draggedPost, setDraggedPost] = React.useState<Post | null>(null);
   const nodeRef = React.useRef(null);
-
+  const { channel } = useChannel();
   if (!open) return null;
 
   const formatDate = (date: { day: number; month: number; year: number }) => {
@@ -44,14 +42,17 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 w-screen parent h-screen bg-black/50 -z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 w-screen parent h-screen -z-40"
+        onClick={onClose}
+      />
 
       {/* Dialog Container */}
       <div className="fixed inset-0 z-50 grid grid-cols-3 items-center justify-items-center pointer-events-none">
         <Draggable bounds="parent" nodeRef={nodeRef}>
           <div
             ref={nodeRef}
-            className="bg-white dark:bg-secondDarkBackground rounded-lg shadow-xl w-[18vw] max-w-2xl h-[90vh] overflow-hidden border-2 dark:border-white border-black pointer-events-auto">
+            className="bg-white dark:bg-secondDarkBackground rounded-lg shadow-xl w-[18vw] max-w-2xl h-[90vh] pb-6 overflow-hidden border-2 dark:border-white border-black pointer-events-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-stone-700">
               <div>
@@ -82,7 +83,7 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
             </div>
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+            <div className="p-6 overflow-y-auto h-full">
               <div className="space-y-3">
                 <ReactSortable
                   list={posts
@@ -92,12 +93,13 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
                       id: post.id as string | number,
                       chosen: false,
                     }))}
-                  setList={() => {}} // We handle movement via onPostMove
+                  setList={() => {}}
                   group={{
                     name: "posts-dialog",
                     pull: true,
                     put: false,
                   }}
+                  filter={".disable-sortable"}
                   sort={false}
                   onStart={(evt) => {
                     const post = posts[evt.oldIndex!];
@@ -109,7 +111,11 @@ export const AllPostsDialog: React.FC<AllPostsDialogProps> = ({
                   }}
                   className="space-y-3">
                   {posts.map((post) => (
-                    <div key={post.id} className="cursor-move" draggable={true}>
+                    <div
+                      key={post.id}
+                      className={` ${
+                        channel?.authority == "Reviewer" && "disable-sortable"
+                      }  `}>
                       <PostCard
                         callbackFunc={() => onEventSelect?.(post)}
                         post={post}

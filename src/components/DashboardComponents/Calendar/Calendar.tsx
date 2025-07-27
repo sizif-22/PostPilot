@@ -180,8 +180,8 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
         onEventSelect={handleEventSelect}
       />
       <NewDetailsDialog
-        selectedEvent={selectedEvent}
-        setSelectedEvent={setSelectedEvent}
+        selectedPost={selectedEvent}
+        setSelectedPost={setSelectedEvent}
         open={!!selectedEvent}
         setOpen={setSelectedEvent}
         media={media}

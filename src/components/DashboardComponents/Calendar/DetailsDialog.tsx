@@ -84,7 +84,7 @@ export const DetailsDialog = ({
     if (!event) return null;
     return {
       id: event.id || "",
-      message: event.content || event.message || "",
+      message: event.message || "",
       platforms: event.platforms || [],
       media: event.imageUrls || [],
     };
@@ -241,7 +241,7 @@ export const DetailsDialog = ({
 
                 <div className="space-y-3">
                   <p className="text-[15px] whitespace-pre-wrap dark:text-white">
-                    {selectedEvent.content || selectedEvent.message}
+                    {selectedEvent.message}
                   </p>
                 </div>
 

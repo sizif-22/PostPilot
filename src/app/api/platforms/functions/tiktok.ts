@@ -152,43 +152,7 @@ export async function PostOnTiktok({
         console.log(`Uploaded chunk ${chunkIndex + 1}/${numOfChunks}`);
       }
 
-      const res2 = await fetch("https://open.tiktokapis.com/v2/post/publish/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publish_id: initData.data.publish_id,
-          text: message || "",
-        }),
-      });
-
-      if (!res2.ok) {
-        let errorMessage = `HTTP ${res2.status}: ${res2.statusText}`;
-        
-        try {
-          // Check if response is JSON
-          const contentType = res2.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            const data = await res2.json();
-            console.error("failed to publish the video:", data);
-            errorMessage = data.error?.message || data.message || errorMessage;
-          } else {
-            // If not JSON, get text response for debugging
-            const textResponse = await res2.text();
-            console.error("Non-JSON error response:", textResponse);
-            // Don't include the full HTML response in the error message
-            errorMessage = `${errorMessage} (received HTML response)`;
-          }
-        } catch (parseError) {
-          console.error("Error parsing response:", parseError);
-        }
-        
-        throw new Error(`Failed to publish video: ${errorMessage}`);
-      }
-
-      const publishData = await res2.json();
+      const publishData = await response.json();
       console.log("TikTok publish response:", publishData);
 
       return {

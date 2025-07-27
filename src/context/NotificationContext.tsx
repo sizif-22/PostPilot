@@ -57,7 +57,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Wait for the promise to resolve
       // await config.fun;
-      await Promise.all(config.func)
+      await Promise.all(config.func);
 
       // Update to success notification
       setNotificationPool((prev) =>
@@ -105,7 +105,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     <NotificationContext.Provider value={{ addNotification }}>
       <div className="w-screen h-screen relative">
         {/* Notification Pool - Fixed position at bottom right */}
-        <div className="Notification fixed bottom-5 right-5 z-50 space-y-2 max-w-sm">
+        <div className="Notification ">
           {notificationPool.map((notification) => (
             <div
               key={notification.id}

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Command } from "cmdk";
 import {
   FiX,
-  FiMessageSquare,
   FiFacebook,
   FiInstagram,
   FiGlobe,
@@ -10,6 +9,10 @@ import {
   FiAlertCircle,
   FiMessageCircle,
   FiAlertTriangle,
+  FiEdit3,
+  FiTrash2,
+  FiFileText,
+  FiSend,
 } from "react-icons/fi";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { FaPlay, FaLinkedin } from "react-icons/fa";
@@ -22,13 +25,14 @@ import { MediaItem } from "@/interfaces/Media";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { createIssue } from "@/firebase/issue.firestore";
 import { useUser } from "@/context/UserContext";
+import Image from "next/image";
 
 interface Comment {
   id: string;
   author: string;
   content: string;
   createdAt: any;
-  type: 'comment' | 'issue';
+  type: "comment" | "issue";
 }
 
 type EditDialogPost = {
@@ -38,17 +42,17 @@ type EditDialogPost = {
   media: any[];
 };
 
-type CommentType = 'comment' | 'issue';
+type CommentType = "comment" | "issue";
 
 export const NewDetailsDialog = ({
-  selectedEvent,
-  setSelectedEvent,
+  selectedPost,
+  setSelectedPost,
   open,
   setOpen,
   media,
 }: {
-  selectedEvent: Post | null;
-  setSelectedEvent: (event: Post | null) => void;
+  selectedPost: Post | null;
+  setSelectedPost: (event: Post | null) => void;
   open: boolean;
   setOpen: any;
   media: MediaItem[];
@@ -60,47 +64,47 @@ export const NewDetailsDialog = ({
     null
   );
   const [isDeleting, setIsDeleting] = useState(false);
-  const [commentType, setCommentType] = useState<CommentType>('comment');
-  const [commentText, setCommentText] = useState('');
+  const [commentType, setCommentType] = useState<CommentType>("comment");
+  const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const { user } = useUser();
 
   useEffect(() => {
-    if (selectedEvent && selectedEvent.comments) {
-      setComments(selectedEvent.comments as Comment[]);
+    if (selectedPost && selectedPost.comments) {
+      setComments(selectedPost.comments as Comment[]);
     } else {
       setComments([]);
     }
-  }, [selectedEvent]);
+  }, [selectedPost]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case "facebook":
-        return <FiFacebook className="text-[#1877F2]" />;
+        return <FiFacebook className="text-[#1877F2] w-5 h-5" />;
       case "instagram":
-        return <FiInstagram className="text-[#E4405F]" />;
+        return <FiInstagram className="text-[#E4405F] w-5 h-5" />;
       case "linkedin":
-        return <FaLinkedin className="text-[#0A66C2]" />;
+        return <FaLinkedin className="text-[#0A66C2] w-5 h-5" />;
       case "x":
-        return <FaXTwitter className="text-black dark:text-white" />;
+        return <FaXTwitter className="text-gray-800 dark:text-white w-5 h-5" />;
       case "tiktok":
-        return <FaTiktok className="text-black dark:text-white" />;
+        return <FaTiktok className="text-gray-800 dark:text-white w-5 h-5" />;
       default:
-        return <FiGlobe className="text-stone-600" />;
+        return <FiGlobe className="text-stone-600 w-5 h-5" />;
     }
   };
 
   const confirmDelete = async () => {
     setIsDeleting(true);
-    if (channel && selectedEvent && selectedEvent.id) {
+    if (channel && selectedPost && selectedPost.id) {
       await fetch("/api/lambda", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ruleNames: [selectedEvent?.ruleName] }),
+        body: JSON.stringify({ ruleNames: [selectedPost?.ruleName] }),
       });
-      await deletePost(selectedEvent?.id, channel?.id);
+      await deletePost(selectedPost?.id, channel?.id);
       setShowDeleteConfirm(false);
       setOpen(false);
     }
@@ -111,29 +115,30 @@ export const NewDetailsDialog = ({
     if (!event) return null;
     return {
       id: event.id || "",
-      message: event.content || event.message || "",
+      message: event.message || "",
       platforms: event.platforms || [],
       media: event.imageUrls || [],
     };
   };
 
   const handleSubmitComment = async () => {
-    if (!commentText.trim() || !selectedEvent || !user) return;
+    if (!commentText.trim() || !selectedPost || !user) return;
 
-    if (commentType === 'issue') {
+    if (commentType === "issue") {
       const newIssue = {
-        postId: selectedEvent.id!,
-        postContent: selectedEvent.content || selectedEvent.message || '',
-        postScheduledDate: selectedEvent.scheduledDate,
-        postPlatforms: selectedEvent.platforms || [],
-        title: 'New Issue Reported',
+        postId: selectedPost.id!,
+        postContent: selectedPost.message || "",
+        postScheduledDate: selectedPost.scheduledDate,
+        postPlatforms: selectedPost.platforms || [],
+        title: "New Issue Reported",
         description: commentText,
-        status: 'open' as 'open',
-        priority: 'medium' as 'medium',
+        status: "open" as "open",
+        priority: "medium" as "medium",
         reportedBy: {
           id: user.uid,
-          name: user.name || 'Anonymous',
-          avatar: user.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
+          name: user.name || "Anonymous",
+          avatar:
+            user.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
         },
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -141,30 +146,42 @@ export const NewDetailsDialog = ({
       };
       await createIssue(newIssue);
     } else {
-      await addCommentToPost(selectedEvent.id!, channel!.id, {
-        author: user.name || 'Anonymous',
+      await addCommentToPost(selectedPost.id!, channel!.id, {
+        author: user.name || "Anonymous",
         content: commentText,
         createdAt: new Date(),
-        type: 'comment',
+        type: "comment",
       });
     }
 
     const newComment: Comment = {
       id: Date.now().toString(),
-      author: user.name || 'Anonymous',
+      author: user.name || "Anonymous",
       content: commentText,
       createdAt: { seconds: Date.now() / 1000 },
       type: commentType,
     };
     setComments([...comments, newComment]);
 
-    setCommentText('');
+    setCommentText("");
   };
 
   const getPlaceholderText = () => {
-    return commentType === 'comment'
+    return commentType === "comment"
       ? "Share your thoughts about this post..."
       : "Describe the issue you've identified...";
+  };
+
+  const formatCommentDate = (timestamp: any) => {
+    const date = timestamp?.seconds
+      ? new Date(timestamp.seconds * 1000)
+      : new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -175,388 +192,283 @@ export const NewDetailsDialog = ({
         post={editDialogPost}
         media={media}
       />
-      {selectedEvent && (
+      {selectedPost && (
         <Command.Dialog
           open={open && !isEditDialogOpen}
           onOpenChange={(openVal) => {
             if (!openVal) {
               setOpen(false);
-              setSelectedEvent(null);
+              setSelectedPost(null);
             }
           }}
           label="Post Details"
-          className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50"
-          onClick={() => setOpen(false)}>
-          <DialogTitle></DialogTitle>
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setOpen(false);
+            }
+          }}>
+          <DialogTitle className="sr-only">Post Details</DialogTitle>
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-darkBackground rounded-xl w-full max-h-[95vh] max-w-[80vw] mx-4 shadow-2xl dark:shadow-[0_8px_64px_0_rgba(0,0,0,0.6)] overflow-hidden border border-stone-200 dark:border-darkBorder">
+            className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] w-full max-w-6xl grid overflow-hidden ${
+              selectedPost?.imageUrls && selectedPost.imageUrls.length > 0
+                ? "grid-cols-14"
+                : "grid-cols-9"
+            }`}
+            onClick={(e) => e.stopPropagation()}>
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+              <FiX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </button>
 
-            {/* Header */}
-            <div className="px-6 py-4 flex items-center justify-between border-b border-stone-200 dark:border-darkBorder bg-stone-50 dark:bg-secondDarkBackground">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                  <FiMessageSquare className="text-violet-600 dark:text-violet-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold dark:text-white">
-                    Scheduled Post Preview
-                  </h3>
-                  <p className="text-sm text-stone-500 dark:text-stone-400">
-                    Review and manage your scheduled content
-                  </p>
+            {/* Media Section */}
+            {selectedPost?.imageUrls && selectedPost.imageUrls.length > 0 && (
+              <div className="col-span-1 lg:col-span-5 bg-gray-50 dark:bg-secondDarkBackground flex items-center justify-center min-h-[300px] lg:min-h-full">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={selectedPost.imageUrls[0].url}
+                    width={1000}
+                    height={1000}
+                    alt="Post media"
+                    className="w-full h-full object-contain border-r dark:border-darkBorder"
+                  />
+                  {selectedPost.imageUrls.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-2 py-1 rounded-full">
+                      +{selectedPost.imageUrls.length - 1} more
+                    </div>
+                  )}
                 </div>
               </div>
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="hover:bg-stone-200 dark:hover:bg-stone-700 p-2 rounded-full transition-colors">
-                <FiX className="text-stone-500 dark:text-stone-400 w-5 h-5" />
-              </button>
-            </div>
+            )}
 
-            {/* Main Content */}
-            <div className="flex h-[calc(95vh-200px)]">
-              {/* Media Section */}
-              {selectedEvent.imageUrls && selectedEvent.imageUrls.length > 0 && (
-                <div className="w-2/5 bg-stone-100 dark:bg-secondDarkBackground border-r border-stone-200 dark:border-darkBorder">
-                  <div className="h-full overflow-hidden flex items-center justify-center">
-                    <div className={`w-full h-full grid gap-1 p-2 ${
-                      selectedEvent.imageUrls.length === 1
-                        ? "grid-cols-1"
-                        : "grid-cols-2"
-                    }`}>
-                      {selectedEvent.imageUrls
-                        ?.slice(0, 3)
-                        .map((image, index) => {
-                          const isLastImage =
-                            index === 2 &&
-                            (selectedEvent.imageUrls?.length ?? 0) > 3;
-                          const remainingCount =
-                            (selectedEvent.imageUrls?.length ?? 0) - 3;
-
-                          return (
-                            <div
-                              key={index}
-                              className={`relative rounded-lg overflow-hidden bg-transparent ${
-                                (selectedEvent.imageUrls?.length ?? 0) >= 3 &&
-                                index === 0
-                                  ? "row-span-2"
-                                  : ""
-                              }`}>
-                              {image.isVideo ? (
-                                <>
-                                  <video
-                                    className="w-full h-full object-cover"
-                                    preload="metadata">
-                                    <source src={image.url} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                  </video>
-                                  <div className="absolute inset-0 transition-all duration-300 flex items-center justify-center cursor-pointer">
-                                    <div className="w-12 h-12 rounded-full bg-white/20 hover:bg-black/15 transition-all backdrop-blur-sm flex items-center justify-center">
-                                      <FaPlay size={16} className="text-white ml-1" />
-                                    </div>
-                                  </div>
-                                </> 
-                              ) : (
-                                <img
-                                  src={image.url}
-                                  alt={`Post image ${index + 1}`}
-                                  className={`w-full h-full object-cover ${
-                                    isLastImage
-                                      ? "brightness-50 blur-[2px]"
-                                      : ""
-                                  }`}
-                                  style={{ minHeight: "200px" }}
-                                />
-                              )}
-
-                              {isLastImage && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-white text-2xl font-bold">
-                                    +{remainingCount}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+            {/* Post Content Section */}
+            <div className="col-span-1 lg:col-span-5 flex flex-col p-6 space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Platforms:
+                    </span>
+                    <div className="flex space-x-2">
+                      {selectedPost?.platforms?.map((platform, index) => (
+                        <div
+                          key={platform}
+                          className="flex items-center justify-center">
+                          {getPlatformIcon(platform)}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Content Section */}
-              <div className={`${selectedEvent.imageUrls && selectedEvent.imageUrls.length > 0 ? 'w-3/5' : 'w-full'} flex flex-col`}>
-                <div className="flex-1 p-6 overflow-y-auto">
-                  {/* Post Author Info */}
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-violet-600 dark:text-violet-400 font-semibold text-lg">
-                        {channel?.socialMedia?.facebook?.name?.slice(0, 1) || 'U'}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg dark:text-white mb-1">
-                        {channel?.socialMedia?.facebook?.name || 'Unknown User'}
-                      </h4>
-                      <div className="flex items-center gap-3 text-sm text-stone-500 dark:text-stone-400">
+                
+              </div>
+              <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                         <div className="flex items-center gap-1">
-                          <FiClock className="w-4 h-4" />
+                          <FiClock className="text-stone-400 dark:text-stone-500" />
                           {(() => {
                             const timestamp =
-                              selectedEvent.scheduledDate ??
-                              selectedEvent.date?.seconds;
-                            if (!timestamp) return 'No date set';
+                              selectedPost.scheduledDate ??
+                              selectedPost.date?.seconds;
+                            if (!timestamp) return null;
                             const formatted = formatDateInTimezone(
                               timestamp,
                               "Africa/Cairo"
                             );
-                            return `${formatted.date} ${formatted.month} at ${formatted.time}`;
+                            return (
+                              <>
+                                {formatted.date} {formatted.month} at{" "}
+                                {formatted.time}
+                              </>
+                            );
                           })()}
                         </div>
-                        {selectedEvent?.platforms && selectedEvent.platforms.length > 0 && (
-                          <>
-                            <span>•</span>
-                            <div className="flex items-center gap-2">
-                              {selectedEvent.platforms.map((platform) => (
-                                <span key={platform} className="flex items-center">
-                                  {getPlatformIcon(platform)}
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Post Content */}
-                  <div className="mb-6">
-                    <p className="text-base leading-relaxed whitespace-pre-wrap dark:text-white">
-                      {selectedEvent.content || selectedEvent.message || 'No content available'}
-                    </p>
-                  </div>
-
-                  {/* Schedule Status */}
-                  <div className="bg-stone-50 dark:bg-darkButtons p-4 rounded-xl border border-stone-200 dark:border-darkBorder mb-6">
-                    <div className="flex items-center gap-3">
-                      {selectedEvent.scheduledDate && (
-                        <>
-                          <div className="w-3 h-3 rounded-full bg-violet-500 animate-pulse"></div>
-                          <span className="font-medium text-stone-700 dark:text-white">
-                            Scheduled
-                          </span>
-                        </>
-                      )}
-                      {!selectedEvent.published && (
-                        <>
-                          <span className="text-stone-400 dark:text-stone-500">•</span>
-                          <span className="text-stone-600 dark:text-stone-300">
-                            Will be posted on{" "}
-                            {(() => {
-                              const timestamp =
-                                selectedEvent.scheduledDate ??
-                                selectedEvent.date?.seconds;
-                              if (!timestamp) return 'unknown date';
-                              const formatted = formatDateInTimezone(
-                                timestamp,
-                                "Africa/Cairo"
-                              );
-                              return `${formatted.date} ${formatted.month} at ${formatted.time}`;
-                            })()}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Comments & Issues Section */}
-                  <div className="border-t border-stone-200 dark:border-darkBorder pt-6">
-                    <h4 className="font-semibold text-lg dark:text-white mb-4 flex items-center gap-2">
-                      <FiMessageCircle className="w-5 h-5" />
-                      Feedback & Issues
-                    </h4>
-
-                    {/* Comment Type Selector */}
-                    <div className="mb-4">
-                      <div className="flex bg-stone-100 dark:bg-darkButtons rounded-lg p-1 w-fit">
-                        <button
-                          onClick={() => setCommentType('comment')}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                            commentType === 'comment'
-                              ? 'bg-white dark:bg-stone-700 text-violet-600 dark:text-violet-400 shadow-sm'
-                              : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
-                          }`}>
-                          <FiMessageCircle className="w-4 h-4" />
-                          Comment
-                        </button>
-                        <button
-                          onClick={() => setCommentType('issue')}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                            commentType === 'issue'
-                              ? 'bg-white dark:bg-stone-700 text-red-600 dark:text-red-400 shadow-sm'
-                              : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
-                          }`}>
-                          <FiAlertTriangle className="w-4 h-4" />
-                          Issue
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Display existing comments/issues */}
-                      <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
-                        {comments.map((comment) => (
-                          <div key={comment.id} className={`flex items-start gap-3 p-3 rounded-lg ${
-                            comment.type === 'issue' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-stone-50 dark:bg-stone-800/50'
-                          }`}>
-                            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-                              comment.type === 'issue' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-violet-100 dark:bg-violet-900/30'
-                            }`}>
-                              <span className={`text-sm font-medium ${
-                                comment.type === 'issue' ? 'text-red-600 dark:text-red-400' : 'text-violet-600 dark:text-violet-400'
-                              }`}>
-                                {comment.author.slice(0, 1)}
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-sm text-stone-800 dark:text-white">{comment.author}</span>
-                                <span className="text-xs text-stone-500 dark:text-stone-400">
-                                  {formatDateInTimezone(comment.createdAt.seconds, "Africa/Cairo").date} {formatDateInTimezone(comment.createdAt.seconds, "Africa/Cairo").month} at {formatDateInTimezone(comment.createdAt.seconds, "Africa/Cairo").time}
-                                </span>
-                              </div>
-                              <p className="text-sm text-stone-700 dark:text-stone-300 whitespace-pre-wrap">{comment.content}</p>
-                            </div>
-                          </div>
-                        ))}
+                        {/* <span>•</span> */}
+                        
                       </div>
 
-                      {/* Comment Input */}
-                      <div className="flex items-start gap-3 pt-4 border-t border-stone-200 dark:border-darkBorder">
-                        <div className="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-700 flex-shrink-0 flex items-center justify-center">
-                          <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
-                            {channel?.socialMedia?.facebook?.name?.slice(0, 1) || 'U'}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className={`rounded-lg border-2 transition-colors ${
-                            commentType === 'comment'
-                              ? 'border-violet-200 dark:border-violet-800 focus-within:border-violet-500'
-                              : 'border-red-200 dark:border-red-800 focus-within:border-red-500'
-                          }`}>
-                            <textarea
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder={getPlaceholderText()}
-                              className="w-full p-4 bg-transparent dark:text-white focus:outline-none resize-none"
-                              rows={4}
-                            />
-                            <div className="px-4 pb-3 flex items-center justify-between bg-stone-50 dark:bg-stone-800/50 rounded-b-lg">
-                              <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
-                                {commentType === 'comment' ? (
-                                  <>
-                                    <FiMessageCircle className="w-3 h-3 text-violet-500" />
-                                    <span>Adding a comment</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <FiAlertTriangle className="w-3 h-3 text-red-500" />
-                                    <span>Reporting an issue</span>
-                                  </>
-                                )}
-                              </div>
-                              <button
-                                onClick={handleSubmitComment}
-                                disabled={!commentText.trim()}
-                                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                                  commentType === 'comment'
-                                    ? 'bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700'
-                                    : 'bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700'
-                                }`}>
-                                {commentType === 'comment' ? 'Comment' : 'Report Issue'}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Post Message */}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Post Content
+                </h3>
+                <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {selectedPost.message}
+                  </p>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-4 border-t border-gray-200 dark:border-darkBorder">
+                <button
+                  onClick={() => {
+                    setEditDialogPost(getEditDialogPost(selectedPost));
+                    setIsEditDialogOpen(true);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                  <FiEdit3 className="w-4 h-4" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                  <FiTrash2 className="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+                <button className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
+                  <FiFileText className="w-4 h-4" />
+                  <span>Draft</span>
+                </button>
               </div>
             </div>
 
-            {/* Footer Actions */}
-            {(channel?.authority === "Owner" ||
-              channel?.authority === "Contributor") &&
-              !selectedEvent.published &&
-              !(
-                selectedEvent.scheduledDate &&
-                selectedEvent.scheduledDate - Math.floor(Date.now() / 1000) < 180
-              ) && (
-                <div className="px-6 py-4 flex items-center justify-end gap-3 border-t border-stone-200 dark:border-darkBorder bg-stone-50 dark:bg-secondDarkBackground">
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="px-5 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2">
-                    <FiAlertCircle className="w-4 h-4" />
-                    Delete Post
-                  </button>
-
-                  <button
-                    className="px-5 py-2.5 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700 rounded-lg transition-colors"
-                    onClick={() => {
-                      setEditDialogPost(getEditDialogPost(selectedEvent));
-                      setIsEditDialogOpen(true);
-                      setOpen(false);
-                    }}>
-                    Edit Post
-                  </button>
+            {/* Comments/Issues Section */}
+            <div className="col-span-1 lg:col-span-4 flex flex-col bg-gray-50 dark:bg-secondDarkBackground border-l border-gray-200 dark:border-darkBorder">
+              {/* Comments Header */}
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Discussion
+                  </h3>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {comments.length} {comments.length === 1 ? 'item' : 'items'}
+                  </span>
                 </div>
-              )}
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-              <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-[60]">
-                <div className="bg-white dark:bg-secondDarkBackground rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl dark:shadow-[0_8px_64px_0_rgba(0,0,0,0.6)] border border-stone-200 dark:border-darkBorder">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                      <FiAlertCircle className="text-red-600 dark:text-red-400 w-6 h-6" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-2 dark:text-white">
-                        Delete Post
-                      </h3>
-                      <p className="text-stone-600 dark:text-gray-400 mb-6">
-                        Are you sure you want to delete this post? This action cannot be undone and will remove the post from all scheduled platforms.
-                      </p>
-                      <div className="flex gap-3 justify-end">
-                        <button
-                          onClick={() => setShowDeleteConfirm(false)}
-                          className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
-                          Cancel
-                        </button>
-                        <button
-                          onClick={confirmDelete}
-                          disabled={isDeleting}
-                          className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded-lg transition-colors flex items-center gap-2${
-                            isDeleting ? " opacity-60 cursor-not-allowed" : ""
-                          }`}>
-                          {isDeleting ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                              Deleting...
-                            </>
-                          ) : (
-                            'Delete Post'
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                
+                {/* Comment Type Toggle */}
+                <div className="flex rounded-lg bg-gray-200 dark:bg-darkBorder p-1">
+                  <button
+                    onClick={() => setCommentType("comment")}
+                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      commentType === "comment"
+                        ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}>
+                    <FiMessageCircle className="w-4 h-4" />
+                    <span>Comments</span>
+                  </button>
+                  <button
+                    onClick={() => setCommentType("issue")}
+                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      commentType === "issue"
+                        ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}>
+                    <FiAlertTriangle className="w-4 h-4" />
+                    <span>Issues</span>
+                  </button>
                 </div>
               </div>
-            )}
+
+              {/* Comments List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {comments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-darkBackground flex items-center justify-center">
+                      {commentType === "comment" ? (
+                        <FiMessageCircle className="w-6 h-6 text-gray-400" />
+                      ) : (
+                        <FiAlertTriangle className="w-6 h-6 text-gray-400" />
+                      )}
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      No {commentType === "comment" ? "comments" : "issues"} yet
+                    </p>
+                  </div>
+                ) : (
+                  comments
+                    .filter((comment) => comment.type === commentType)
+                    .map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">
+                            {comment.author}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatCommentDate(comment.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                          {comment.content}
+                        </p>
+                        {comment.type === "issue" && (
+                          <div className="mt-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                              <FiAlertCircle className="w-3 h-3 mr-1" />
+                              Issue
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                )}
+              </div>
+
+              {/* Comment Input */}
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex space-x-3 justify-end">
+                  
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={getPlaceholderText()}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
+                    />
+                  
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={!commentText.trim()}
+                    className="self-end p-2 bg-purple-900 hover:bg-purple-950 disabled:bg-transparent disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                    <FiSend className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-60 p-4">
+              <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <FiAlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Delete Post
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      This action cannot be undone
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 mb-6">
+                  Are you sure you want to delete this post? This will permanently remove it from all platforms.
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg transition-colors">
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </Command.Dialog>
       )}
     </>

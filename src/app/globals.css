@@ -124,9 +124,14 @@ select{
      border-radius: 10px;
 }
 .Notification {
-     @apply fixed bottom-10 right-10 z-[1000] text-white p-4 rounded-md shadow-lg transition-opacity duration-300;
+     @apply fixed bottom-10 right-10 z-[1000] text-white p-4 rounded-md transition-opacity bg-transparent duration-300 space-y-2 max-w-sm;
 }
 
 .error {
      @apply bg-red-50 border-red-200 text-red-800;
+}
+
+
+.grid-cols-14 {
+     grid-template-columns: repeat(14, minmax(0, 1fr));
 }

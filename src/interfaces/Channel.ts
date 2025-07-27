@@ -63,7 +63,7 @@ export interface Channel extends ChannelBrief {
 }
 export type Post = {
   id?: string;
-  content?: string;
+  // content?: string;
   message?: string;
   platforms?: string[];
   imageUrls?: any[];
@@ -71,11 +71,12 @@ export type Post = {
   scheduledDate?: number;
   date?: any;
   status?: string;
-  live?: boolean;
+  draft?: boolean;
   ruleName?: string;
   published?: boolean;
   comments?: any[];
   facebookVideoType?: string;
   title?: string;
   clientTimeZone?: string;
+
 };

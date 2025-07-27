@@ -172,7 +172,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                           ) : platform === "youtube" ? (
                             <FiYoutube className="w-4 h-4" />
                           ) : platform === "tiktok" ? (
-                            <FaTiktok className="w-4 h-4 text-black dark:text-white" />
+                            <FaTiktok className="w-4 h-4" />
                           ) : null}
                         </span>
                       ))}
