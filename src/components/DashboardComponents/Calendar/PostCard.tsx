@@ -17,7 +17,9 @@ export const PostCard = ({
     <button
       key={post.id}
       onClick={callbackFunc}
-      className="w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400 transition-colors"
+      className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${
+        post.draft === true ? "bg-white text-black": "g-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
+      }`}
       title={`${
         post.scheduledDate
           ? format(new Date(post.scheduledDate * 1000), "h:mm a")

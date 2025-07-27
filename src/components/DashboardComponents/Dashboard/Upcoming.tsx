@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import { FaPlay, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import { DetailsDialog } from "../Calendar/DetailsDialog";
+// import { DetailsDialog } from "../Calendar/DetailsDialog.tsxo";
 import { useState, useEffect } from "react";
 import { FiFacebook } from "react-icons/fi";
 import Image from "next/image";
@@ -18,6 +18,7 @@ import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/utils/timezone";
 import { MediaItem } from "@/interfaces/Media";
+import { NewDetailsDialog } from "../Calendar/NewDetailsDialog";
 
 // Get all available timezones
 const timeZones = Intl.supportedValuesOf("timeZone");
@@ -182,7 +183,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                     <div className="min-w-1 w-1 self-stretch bg-violet-500 rounded-full"></div>
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
-                        {post.content || post.message}
+                        {post.message}
                       </h3>
                       {post.imageUrls && post.imageUrls.length > 0 && (
                         <div className="flex gap-2 mt-2">
@@ -235,9 +236,9 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
           </div>
         ))}
       </div>
-      <DetailsDialog
-        selectedEvent={selectedEvent}
-        setSelectedEvent={setSelectedEvent}
+      <NewDetailsDialog
+        selectedPost={selectedEvent}
+        setSelectedPost={setSelectedEvent}
         open={!!selectedEvent}
         setOpen={setSelectedEvent}
         media={media}

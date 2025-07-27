@@ -316,12 +316,12 @@ const ImagePopup = ({
 
           {/* Thumbnails */}
           <AnimatePresence>
-            {showThumbnails && mediaItems.length > 1 && (
+            {mediaItems.length > 1 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2"
+                className={`absolute bottom-4`}
                 onClick={(e) => e.stopPropagation()}>
                 <div className="flex gap-2 p-2 bg-black/50 backdrop-blur-sm rounded-lg">
                   {mediaItems.map((item, index) => (
@@ -342,12 +342,20 @@ const ImagePopup = ({
                         setIsLoading(true);
                         setIsZoomed(false);
                       }}>
-                      {item.isVideo ? (
+                      {!item.isVideo ? (
+                        <Image
+                          src={item.url}
+                          alt={`Thumbnail ${index}`}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
                         <div className="relative w-full h-full">
                           <video
                             className="w-full h-full object-cover"
                             preload="metadata">
-                            <source src={item.url} type="video/mp4" />
+                            <source src={item.url} />
                             Your browser does not support the video tag.
                           </video>
                           <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
@@ -356,14 +364,6 @@ const ImagePopup = ({
                             </div>
                           </div>
                         </div>
-                      ) : (
-                        <Image
-                          src={item.url}
-                          alt={`Thumbnail ${index}`}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                        />
                       )}
                     </motion.div>
                   ))}

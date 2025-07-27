@@ -64,11 +64,11 @@ export const Analysis = () => {
         contentTypes.video++;
       } else if (hasImages) {
         contentTypes.image++;
-      } else if (post.content || post.message) {
+      } else if ( post.message) {
         contentTypes.text++;
       }
 
-      if (hasImages && (post.content || post.message)) {
+      if (hasImages && ( post.message)) {
         contentTypes.mixed++;
       }
     });
@@ -99,7 +99,7 @@ export const Analysis = () => {
     const engagementData = filteredPosts.map((post) => ({
       id: post.id,
       title: post.title || "Untitled Post",
-      content: post.content || post.message || "",
+      content:post.message || "",
       platforms: post.platforms || [],
       date: post.date,
       engagement: Math.floor(Math.random() * 1000) + 50, // Simulated engagement

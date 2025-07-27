@@ -27,7 +27,7 @@ export default function Home() {
           <SupportedPlatforms />
 
           {/* Pricing Section */}
-          <Pricing />
+          {/* <Pricing /> */}
 
           {/* Testimonials Section */}
           <Testimonial />

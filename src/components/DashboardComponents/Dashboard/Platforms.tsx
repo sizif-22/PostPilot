@@ -54,7 +54,7 @@ export const Platforms = () => {
             <Link
              href={`https://tiktok.com/@${channel.socialMedia.tiktok.username}`}
               target="_blank"
-             className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+             className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
               <FaTiktok className="text-black dark:text-white text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">

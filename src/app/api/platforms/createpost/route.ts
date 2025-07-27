@@ -90,7 +90,7 @@ export async function POST(request: Request) {
                   ),
                   pageId: channel.socialMedia?.facebook?.id,
                   imageUrls: post.imageUrls,
-                  message: post.message || post.content,
+                  message: post.message,
                   facebookVideoType: post.facebookVideoType as "default" | "reel" | undefined,
                 });
 
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
                     channel.socialMedia.instagram.pageAccessToken
                   ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
-                  message: post.message || post.content,
+                  message: post.message,
                   imageUrls: post.imageUrls,
                 });
 
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
                 const result = await PostOnTiktok({
                   accessToken: channel.socialMedia.tiktok.accessToken,
                   openId: channel.socialMedia.tiktok.openId,
-                  message: post.message || post.content,
+                  message: post.message,
                   imageUrls: post.imageUrls,
                 });
 
@@ -250,7 +250,7 @@ export async function POST(request: Request) {
                 const result = await PostOnX({
                   accessToken: decryptedAccessToken,
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
-                  message: post.message || post.content,
+                  message: post.message,
                   imageUrls: post.imageUrls,
                   ...(channel.socialMedia.x.refreshToken &&
                   channel.socialMedia.x.tokenExpiry

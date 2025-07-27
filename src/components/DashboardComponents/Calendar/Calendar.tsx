@@ -2,7 +2,7 @@
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import React, { useState, useMemo } from "react";
-import { ContinuousCalendar } from "./ContinuousCalendar";
+// import { ContinuousCalendar } from "./ContinuousCalendar.tsxo";
 import { NewDetailsDialog } from "./NewDetailsDialog";
 import { Post } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";

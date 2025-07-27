@@ -80,10 +80,10 @@ const ChannelsComponent = ({
 };
 
 const Page = () => {
-  const { user, loading } = useUser();
+  const { user } = useUser();
   const [createNewChannel, setCreateNewChannel] = useState(false);
 
-  if (loading || !user) {
+  if (!user) {
     return <Loading />;
   }
   return (

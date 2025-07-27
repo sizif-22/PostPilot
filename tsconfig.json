@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     "src/app/channels",
     "src/app/channels/[id]"
-, "src/app/instagram/oldpage"  ],
+, "src/app/instagram/oldpage", "src/components/DashboardComponents/Calendar/ContinuousCalendar.tsxo", "src/components/DashboardComponents/Calendar/DetailsDialog.tsxo"  ],
   "exclude": [
     "node_modules"
   ]

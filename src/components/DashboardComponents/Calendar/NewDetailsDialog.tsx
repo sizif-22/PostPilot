@@ -14,6 +14,17 @@ import {
   FiFileText,
   FiSend,
 } from "react-icons/fi";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  ZoomOut,
+  Download,
+  Share2,
+  Info,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { FaPlay, FaLinkedin } from "react-icons/fa";
 import { Post } from "@/interfaces/Channel";
@@ -26,7 +37,10 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { createIssue } from "@/firebase/issue.firestore";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
-
+import { Textarea } from "@/components/ui/textarea";
+import { useNotification } from "@/context/NotificationContext";
+import * as fs from "firebase/firestore";
+import { db } from "@/firebase/config";
 interface Comment {
   id: string;
   author: string;
@@ -63,11 +77,13 @@ export const NewDetailsDialog = ({
   const [editDialogPost, setEditDialogPost] = useState<EditDialogPost | null>(
     null
   );
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentType, setCommentType] = useState<CommentType>("comment");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const { user } = useUser();
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     if (selectedPost && selectedPost.comments) {
@@ -106,6 +122,7 @@ export const NewDetailsDialog = ({
       });
       await deletePost(selectedPost?.id, channel?.id);
       setShowDeleteConfirm(false);
+      setCurrentIndex(0);
       setOpen(false);
     }
     setIsDeleting(false);
@@ -183,6 +200,33 @@ export const NewDetailsDialog = ({
       minute: "2-digit",
     });
   };
+  const handleDraft = () => {
+    if (!selectedPost) return;
+    addNotification({
+      messageOnProgress: "adding to Draft",
+      failMessage: "failed to Draft",
+      successMessage: "Post add to draft successfully",
+      func: [
+        new Promise((resolve, reject) => {
+          try {
+            fs.updateDoc(fs.doc(db, "Channels", channel?.id as string), {
+              [`posts.${selectedPost.id}.draft`]: true,
+            });
+            resolve("Done");
+          } catch {
+            reject("didn't changes");
+          }
+        }),
+        fetch("/api/lambda", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ruleNames: [selectedPost?.ruleName] }),
+        }),
+      ],
+    });
+  };
 
   return (
     <>
@@ -197,6 +241,7 @@ export const NewDetailsDialog = ({
           open={open && !isEditDialogOpen}
           onOpenChange={(openVal) => {
             if (!openVal) {
+              setCurrentIndex(0);
               setOpen(false);
               setSelectedPost(null);
             }
@@ -205,6 +250,7 @@ export const NewDetailsDialog = ({
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
+              setCurrentIndex(0);
               setOpen(false);
             }
           }}>
@@ -216,30 +262,96 @@ export const NewDetailsDialog = ({
                 : "grid-cols-9"
             }`}
             onClick={(e) => e.stopPropagation()}>
-            
             {/* Close Button */}
             <button
-              onClick={() => setOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-              <FiX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              onClick={() => {
+                setCurrentIndex(0);
+                setOpen(false);
+              }}
+              className="absolute top-4 right-4 z-10 p-2  ">
+              <FiX className="w-5 h-5 text-black dark:text-white" />
             </button>
 
             {/* Media Section */}
             {selectedPost?.imageUrls && selectedPost.imageUrls.length > 0 && (
               <div className="col-span-1 lg:col-span-5 bg-gray-50 dark:bg-secondDarkBackground flex items-center justify-center min-h-[300px] lg:min-h-full">
                 <div className="relative w-full h-full">
-                  <Image
-                    src={selectedPost.imageUrls[0].url}
-                    width={1000}
-                    height={1000}
-                    alt="Post media"
-                    className="w-full h-full object-contain border-r dark:border-darkBorder"
-                  />
-                  {selectedPost.imageUrls.length > 1 && (
-                    <div className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-2 py-1 rounded-full">
-                      +{selectedPost.imageUrls.length - 1} more
-                    </div>
+                  {!selectedPost.imageUrls[currentIndex]?.isVideo ? (
+                    <Image
+                      src={selectedPost.imageUrls[currentIndex].url}
+                      width={1000}
+                      height={1000}
+                      alt="Post media"
+                      className="w-full h-full object-contain border-r dark:border-darkBorder"
+                    />
+                  ) : (
+                    <>
+                      <video
+                        className="w-full h-full object-cover"
+                        preload="metadata">
+                        <source
+                          src={selectedPost.imageUrls[currentIndex].url}
+                        />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                          <FaPlay size={12} className="text-white" />
+                        </div>
+                      </div>
+                    </>
                   )}
+                  {Array.isArray(selectedPost?.imageUrls) &&
+                    typeof selectedPost?.imageUrls.length == "number" &&
+                    selectedPost.imageUrls.length > 1 && (
+                      <>
+                        {/* Navigation Buttons */}
+                        <motion.button
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          onClick={() => {
+                            if (selectedPost?.imageUrls && selectedPost.imageUrls.length > 0) {
+                              setCurrentIndex(
+                                currentIndex === 0 
+                                  ? selectedPost.imageUrls.length - 1 
+                                  : currentIndex - 1
+                              );
+                            }
+                          }}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
+                          disabled={selectedPost.imageUrls.length <= 1}>
+                          <ChevronLeft
+                            size={24}
+                            className="text-white transition-transform group-hover:-translate-x-1"
+                          />
+                        </motion.button>
+
+                        <motion.button
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          onClick={() => {
+                            if (selectedPost?.imageUrls && selectedPost.imageUrls.length > 0) {
+                              setCurrentIndex(
+                                (currentIndex + 1) % selectedPost.imageUrls.length
+                              );
+                            }
+                          }}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
+                          disabled={selectedPost.imageUrls.length <= 1}>
+                          <ChevronRight
+                            size={24}
+                            className="text-white transition-transform group-hover:translate-x-1"
+                          />
+                        </motion.button>
+                        {selectedPost.imageUrls.length > 1 && (
+                          <div className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-2 py-1 rounded-full">
+                            +{selectedPost.imageUrls.length - 1} more
+                          </div>
+                        )}
+                      </>
+                    )}
                 </div>
               </div>
             )}
@@ -264,31 +376,26 @@ export const NewDetailsDialog = ({
                     </div>
                   </div>
                 </div>
-                
               </div>
               <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
-                        <div className="flex items-center gap-1">
-                          <FiClock className="text-stone-400 dark:text-stone-500" />
-                          {(() => {
-                            const timestamp =
-                              selectedPost.scheduledDate ??
-                              selectedPost.date?.seconds;
-                            if (!timestamp) return null;
-                            const formatted = formatDateInTimezone(
-                              timestamp,
-                              "Africa/Cairo"
-                            );
-                            return (
-                              <>
-                                {formatted.date} {formatted.month} at{" "}
-                                {formatted.time}
-                              </>
-                            );
-                          })()}
-                        </div>
-                        {/* <span>•</span> */}
-                        
-                      </div>
+                <div className="flex items-center gap-1">
+                  <FiClock className="text-stone-400 dark:text-stone-500" />
+                  {(() => {
+                    const timestamp =
+                      selectedPost.scheduledDate ?? selectedPost.date?.seconds;
+                    if (!timestamp) return null;
+                    const formatted = formatDateInTimezone(
+                      timestamp,
+                      "Africa/Cairo"
+                    );
+                    return (
+                      <>
+                        {formatted.date} {formatted.month} at {formatted.time}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
 
               {/* Post Message */}
               <div className="flex-1">
@@ -319,7 +426,9 @@ export const NewDetailsDialog = ({
                   <FiTrash2 className="w-4 h-4" />
                   <span>Delete</span>
                 </button>
-                <button className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
+                <button
+                  onClick={handleDraft}
+                  className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
                   <FiFileText className="w-4 h-4" />
                   <span>Draft</span>
                 </button>
@@ -335,10 +444,10 @@ export const NewDetailsDialog = ({
                     Discussion
                   </h3>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {comments.length} {comments.length === 1 ? 'item' : 'items'}
+                    {comments.length} {comments.length === 1 ? "item" : "items"}
                   </span>
                 </div>
-                
+
                 {/* Comment Type Toggle */}
                 <div className="flex rounded-lg bg-gray-200 dark:bg-darkBorder p-1">
                   <button
@@ -385,7 +494,7 @@ export const NewDetailsDialog = ({
                     .map((comment) => (
                       <div
                         key={comment.id}
-                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
                         <div className="flex items-start justify-between mb-2">
                           <span className="font-medium text-gray-900 dark:text-white text-sm">
                             {comment.author}
@@ -411,17 +520,16 @@ export const NewDetailsDialog = ({
               </div>
 
               {/* Comment Input */}
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="p-4 border-t border-gray-200 dark:border-darkBorder">
                 <div className="flex space-x-3 justify-end">
-                  
-                    <textarea
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder={getPlaceholderText()}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
-                    />
-                  
+                  <Textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder={getPlaceholderText()}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
+                  />
+
                   <button
                     onClick={handleSubmitComment}
                     disabled={!commentText.trim()}
@@ -451,7 +559,8 @@ export const NewDetailsDialog = ({
                   </div>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 mb-6">
-                  Are you sure you want to delete this post? This will permanently remove it from all platforms.
+                  Are you sure you want to delete this post? This will
+                  permanently remove it from all platforms.
                 </p>
                 <div className="flex space-x-3">
                   <button
