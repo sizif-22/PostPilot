@@ -4,6 +4,7 @@ export type MediaEvent =
 export interface MediaItem {
   url: string;
   name: string;
+  path:string;
   isVideo: boolean;
   type?: string;
   thumbnailUrl?: string;

@@ -14,40 +14,24 @@ import {
   FiFileText,
   FiSend,
 } from "react-icons/fi";
-import {
-  ChevronLeft,
-  ChevronRight,
-  X,
-  ZoomIn,
-  ZoomOut,
-  Download,
-  Share2,
-  Info,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { FaPlay, FaLinkedin } from "react-icons/fa";
-import { Post } from "@/interfaces/Channel";
+import { Issue, Post, Comment } from "@/interfaces/Channel";
 import { useChannel } from "@/context/ChannelContext";
 import { formatDateInTimezone } from "@/utils/timezone";
 import { deletePost, addCommentToPost } from "@/firebase/channel.firestore";
 import { EditPostDialog } from "../Dashboard/EditPostDialog";
 import { MediaItem } from "@/interfaces/Media";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { createIssue } from "@/firebase/issue.firestore";
+import { createComment, createIssue } from "@/firebase/issue.firestore";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotification } from "@/context/NotificationContext";
 import * as fs from "firebase/firestore";
 import { db } from "@/firebase/config";
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-  createdAt: any;
-  type: "comment" | "issue";
-}
 
 type EditDialogPost = {
   id: string;
@@ -81,17 +65,8 @@ export const NewDetailsDialog = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentType, setCommentType] = useState<CommentType>("comment");
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
   const { user } = useUser();
   const { addNotification } = useNotification();
-
-  useEffect(() => {
-    if (selectedPost && selectedPost.comments) {
-      setComments(selectedPost.comments as Comment[]);
-    } else {
-      setComments([]);
-    }
-  }, [selectedPost]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -143,44 +118,64 @@ export const NewDetailsDialog = ({
 
     if (commentType === "issue") {
       const newIssue = {
-        postId: selectedPost.id!,
-        postContent: selectedPost.message || "",
-        postScheduledDate: selectedPost.scheduledDate,
-        postPlatforms: selectedPost.platforms || [],
-        title: "New Issue Reported",
-        description: commentText,
-        status: "open" as "open",
-        priority: "medium" as "medium",
-        reportedBy: {
-          id: user.uid,
-          name: user.name || "Anonymous",
-          avatar:
-            user.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=5",
-        },
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        comments: [],
-      };
-      await createIssue(newIssue);
+        message: commentText,
+        email: user.email,
+        name: user.name,
+        status: "open",
+        priority: "medium",
+        avatar: user.avatar,
+        date: fs.Timestamp.now(),
+      } as Issue;
+      addNotification({
+        messageOnProgress: "Submitting new issue",
+        failMessage: "Failed to submit the issue",
+        successMessage: "Issue submitted successfully.",
+        func: [
+          new Promise((resolve, reject) => {
+            try {
+              if (channel?.id)
+                createIssue({
+                  issue: newIssue,
+                  post: selectedPost,
+                  channelId: channel?.id,
+                });
+              resolve(true);
+            } catch (error) {
+              reject(false);
+            }
+          }),
+        ],
+      });
+      handleDraft();
     } else {
-      await addCommentToPost(selectedPost.id!, channel!.id, {
-        author: user.name || "Anonymous",
-        content: commentText,
-        createdAt: new Date(),
-        type: "comment",
+      const newComment = {
+        message: commentText,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        date: fs.Timestamp.now(),
+      } as Comment;
+      addNotification({
+        messageOnProgress: "Submitting new comment",
+        failMessage: "Failed to submit the comment",
+        successMessage: "Comment submitted successfully.",
+        func: [
+          new Promise((resolve, reject) => {
+            try {
+              if (channel?.id)
+                createComment({
+                  comment: newComment,
+                  post: selectedPost,
+                  channelId: channel?.id,
+                });
+              resolve(true);
+            } catch (error) {
+              reject(false);
+            }
+          }),
+        ],
       });
     }
-
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      author: user.name || "Anonymous",
-      content: commentText,
-      createdAt: { seconds: Date.now() / 1000 },
-      type: commentType,
-    };
-    setComments([...comments, newComment]);
-
-    setCommentText("");
   };
 
   const getPlaceholderText = () => {
@@ -311,10 +306,13 @@ export const NewDetailsDialog = ({
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -20 }}
                           onClick={() => {
-                            if (selectedPost?.imageUrls && selectedPost.imageUrls.length > 0) {
+                            if (
+                              selectedPost?.imageUrls &&
+                              selectedPost.imageUrls.length > 0
+                            ) {
                               setCurrentIndex(
-                                currentIndex === 0 
-                                  ? selectedPost.imageUrls.length - 1 
+                                currentIndex === 0
+                                  ? selectedPost.imageUrls.length - 1
                                   : currentIndex - 1
                               );
                             }
@@ -332,9 +330,13 @@ export const NewDetailsDialog = ({
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
                           onClick={() => {
-                            if (selectedPost?.imageUrls && selectedPost.imageUrls.length > 0) {
+                            if (
+                              selectedPost?.imageUrls &&
+                              selectedPost.imageUrls.length > 0
+                            ) {
                               setCurrentIndex(
-                                (currentIndex + 1) % selectedPost.imageUrls.length
+                                (currentIndex + 1) %
+                                  selectedPost.imageUrls.length
                               );
                             }
                           }}
@@ -444,7 +446,8 @@ export const NewDetailsDialog = ({
                     Discussion
                   </h3>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {comments.length} {comments.length === 1 ? "item" : "items"}
+                    {selectedPost?.comments?.length}{" "}
+                    {selectedPost?.comments?.length === 1 ? "item" : "items"}
                   </span>
                 </div>
 
@@ -475,7 +478,37 @@ export const NewDetailsDialog = ({
 
               {/* Comments List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {comments.length === 0 ? (
+                {commentType == "issue" &&
+                selectedPost.issues &&
+                selectedPost?.issues?.length > 0 ? (
+                  selectedPost.issues.map((issue, index) => (
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="font-medium text-gray-900 dark:text-white text-sm">
+                          {issue.name || issue.email}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatCommentDate(issue.date)}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {issue.message}
+                      </p>
+                      <div className="mt-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                          <FiAlertCircle className="w-3 h-3 mr-1" />
+                          Issue
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : commentType == "comment" &&
+                  selectedPost.comments &&
+                  selectedPost?.comments?.length > 0 ? (
+                  <div></div>
+                ) : (
                   <div className="text-center py-8">
                     <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-darkBackground flex items-center justify-center">
                       {commentType === "comment" ? (
@@ -488,34 +521,6 @@ export const NewDetailsDialog = ({
                       No {commentType === "comment" ? "comments" : "issues"} yet
                     </p>
                   </div>
-                ) : (
-                  comments
-                    .filter((comment) => comment.type === commentType)
-                    .map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="font-medium text-gray-900 dark:text-white text-sm">
-                            {comment.author}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {formatCommentDate(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                          {comment.content}
-                        </p>
-                        {comment.type === "issue" && (
-                          <div className="mt-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                              <FiAlertCircle className="w-3 h-3 mr-1" />
-                              Issue
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))
                 )}
               </div>
 

@@ -7,11 +7,15 @@ import { EngagementMetrics } from "./EngagementMetrics";
 import { PostTimeline } from "./PostTimeline";
 import { TopPosts } from "./TopPosts";
 import { PlatformComparison } from "./PlatformComparison";
-
+import { Button } from "@/components/ui/button";
+import { downloadInPDFWithLib } from "./pdf";
+import { Post } from "@/interfaces/Channel";
+import { useNotification } from "@/context/NotificationContext";
 export const Analysis = () => {
   const { channel } = useChannel();
   const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
-
+  const [posts, setPosts] = useState<Post[]>([]);
+  const { addNotification } = useNotification();
   // Calculate analytics data from posts
   const analyticsData = useMemo(() => {
     if (!channel?.posts) return null;
@@ -33,6 +37,7 @@ export const Analysis = () => {
       );
     });
 
+    setPosts(filteredPosts);
     // Platform usage analysis
     const platformUsage = {
       facebook: 0,
@@ -64,11 +69,11 @@ export const Analysis = () => {
         contentTypes.video++;
       } else if (hasImages) {
         contentTypes.image++;
-      } else if ( post.message) {
+      } else if (post.message) {
         contentTypes.text++;
       }
 
-      if (hasImages && ( post.message)) {
+      if (hasImages && post.message) {
         contentTypes.mixed++;
       }
     });
@@ -99,7 +104,7 @@ export const Analysis = () => {
     const engagementData = filteredPosts.map((post) => ({
       id: post.id,
       title: post.title || "Untitled Post",
-      content:post.message || "",
+      content: post.message || "",
       platforms: post.platforms || [],
       date: post.date,
       engagement: Math.floor(Math.random() * 1000) + 50, // Simulated engagement
@@ -272,27 +277,48 @@ export const Analysis = () => {
             </div>
           </div>
         </div>
+        <div className="ext-sm flex justify-between items-center font-medium text-stone-600 dark:text-stone-400 col-span-4 bg-white dark:bg-transparent p-4 rounded-lg border dark:border-darkBorder shadow-sm dark:shadow-lg">
+          <p>Download last {selectedTimeframe} Posts</p>
+          <Button
+            onClick={() => {
+              addNotification({
+                messageOnProgress: "Wait for a second",
+                successMessage: "Download your pdf",
+                failMessage: "Failed constructing your pdf",
+                func: [
+                  new Promise(async (resolve, reject) => {
+                    await downloadInPDFWithLib(posts as Post[]);
+                    resolve(true);
+                  }),
+                ],
+              });
+            }}>
+            Download
+          </Button>
+        </div>
       </div>
 
       {/* Main Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 my-4">
         <PlatformPerformance data={analyticsData.platformUsage} />
         <ContentAnalysis data={analyticsData.contentTypes} />
-        <EngagementMetrics 
-          data={analyticsData.engagementData.map(post => ({
+        <EngagementMetrics
+          data={analyticsData.engagementData.map((post) => ({
             ...post,
-            date: post.date?.toDate()
-          }))} 
+            date: post.date?.toDate(),
+          }))}
         />
         <PostTimeline data={analyticsData.publishingSchedule} />
       </div>
 
       {/* Full Width Components */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 my-4">
-        <TopPosts posts={analyticsData.topPosts.map(post => ({
-          ...post,
-          date: post.date?.toDate()
-        }))} />
+        <TopPosts
+          posts={analyticsData.topPosts.map((post) => ({
+            ...post,
+            date: post.date?.toDate(),
+          }))}
+        />
         <PlatformComparison data={analyticsData} />
       </div>
     </div>

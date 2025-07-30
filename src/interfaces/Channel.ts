@@ -61,12 +61,31 @@ export interface Channel extends ChannelBrief {
   posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];
 }
+export type IssueStatus = "open" | "in_progress" | "resolved" | "closed";
+export type IssuePriority = "low" | "medium" | "high" | "critical";
+export interface Issue {
+  message: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  email: string;
+  name: string;
+  avatar?: string;
+  date: Timestamp;
+}
+export interface Comment {
+  message: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  date: Timestamp;
+}
 export type Post = {
   id?: string;
-  // content?: string;
+  issues?: Issue[];
+  comments?: Comment[];
   message?: string;
   platforms?: string[];
-  imageUrls?: any[];
+  imageUrls?: MediaItem[];
   videoUrls?: any[];
   scheduledDate?: number;
   date?: any;
@@ -74,9 +93,7 @@ export type Post = {
   draft?: boolean;
   ruleName?: string;
   published?: boolean;
-  comments?: any[];
   facebookVideoType?: string;
   title?: string;
   clientTimeZone?: string;
-
 };
