@@ -4,7 +4,8 @@ import { FiFacebook, FiInstagram } from "react-icons/fi";
 import { FaLinkedin, FaPlay } from "react-icons/fa";
 import Image from "next/image";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
-import { CiClock2 } from "react-icons/ci";
+import { CiClock2, CiWarning } from "react-icons/ci";
+
 import { BsFillChatRightTextFill } from "react-icons/bs";
 export const PostCard = ({
   callbackFunc,
@@ -18,8 +19,12 @@ export const PostCard = ({
       key={post.id}
       onClick={callbackFunc}
       className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${
-        post.draft === true
-          ? "bg-white text-black"
+        post.issues && post.issues.length > 0
+          ? "bg-red-950/80"
+          : post.draft === true
+          ? "bg-gray-500/80"
+          : post.published
+          ? "bg-green-950/80"
           : "g-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
       }`}
       title={`${format(new Date(post.date.toDate()), "h:mm a")}`}>
@@ -61,7 +66,7 @@ export const PostCard = ({
           </div>
         )}
       </div>
-      <div className="flex flex-col justify-between h-full">
+      <div className="flex flex-col justify-between h-full w-[60%]">
         <div className="flex gap-1 justify-start mt-1.5 text-sm">
           {post.platforms?.map((platform, index) =>
             platform === "facebook" ? (
@@ -77,9 +82,17 @@ export const PostCard = ({
             ) : null
           )}
         </div>
-        <div className="text-xs flex h-2 items-center mb-1 gap-0.5">
-          <CiClock2 />
-          {format(new Date(post.date.toDate()), "h:mm a")}
+        <div className="flex justify-between items-center w-full text-xs h-2 mb-1">
+          <div className="flex h-2 items-center mb-1 gap-0.5">
+            <CiClock2 />
+            {format(new Date(post.date.toDate()), "h:mm a")}
+          </div>
+          {post.issues?.length && post.issues?.length > 0 && (
+            <div className="flex h-2 items-center mb-1 gap-0.5">
+              <CiWarning />
+              {post.issues?.length}
+            </div>
+          )}
         </div>
       </div>
     </button>

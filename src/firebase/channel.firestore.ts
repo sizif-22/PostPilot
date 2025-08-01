@@ -138,13 +138,6 @@ const editPost = async (
 
   const updatedPostData = { ...existingPost, ...updatedPost };
 
-  // if (updatedPost.scheduledDate) {
-  //   updatedPostData.scheduledDate =
-  //     typeof updatedPost.scheduledDate === "number"
-  //       ? updatedPost.scheduledDate
-  //       : Math.floor(new Date(updatedPost.scheduledDate).getTime() / 1000);
-  // }
-
   await updateDoc(doc(db, "Channels", channelId), {
     [`posts.${postId}`]: updatedPostData,
   });

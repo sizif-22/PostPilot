@@ -368,11 +368,13 @@ export const CPDialog = ({
           messageOnProgress:"Scheduling your post.",
           successMessage:"Post scheduled successfully.",
           failMessage:"Failed to schedule your post.",
-          func:[fetch("/api/lambda", {
+          func:[
+            fetch("/api/lambda", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(lambdaData),
-          })],
+          }),
+        ],
         })
       }
       resetForm();

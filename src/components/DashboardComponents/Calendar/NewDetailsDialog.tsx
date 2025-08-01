@@ -88,14 +88,31 @@ export const NewDetailsDialog = ({
   const confirmDelete = async () => {
     setIsDeleting(true);
     if (channel && selectedPost && selectedPost.id) {
-      await fetch("/api/lambda", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ruleNames: [selectedPost?.ruleName] }),
+      const ruleName = selectedPost?.ruleName;
+      const postId = selectedPost.id;
+      const channelId = channel.id;
+      addNotification({
+        messageOnProgress: "Deleting the post.",
+        successMessage: "Post deleted successfully.",
+        failMessage: "Failed to delete the post.",
+        func: [
+          fetch("/api/lambda", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ruleNames: [ruleName] }),
+          }),
+          new Promise(async (resolve, reject) => {
+            try {
+              await deletePost(postId, channelId);
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+        ],
       });
-      await deletePost(selectedPost?.id, channel?.id);
       setShowDeleteConfirm(false);
       setCurrentIndex(0);
       setOpen(false);
@@ -196,31 +213,67 @@ export const NewDetailsDialog = ({
     });
   };
   const handleDraft = () => {
-    if (!selectedPost) return;
-    addNotification({
-      messageOnProgress: "adding to Draft",
-      failMessage: "failed to Draft",
-      successMessage: "Post add to draft successfully",
-      func: [
-        new Promise((resolve, reject) => {
-          try {
-            fs.updateDoc(fs.doc(db, "Channels", channel?.id as string), {
-              [`posts.${selectedPost.id}.draft`]: true,
-            });
-            resolve("Done");
-          } catch {
-            reject("didn't changes");
-          }
-        }),
-        fetch("/api/lambda", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ruleNames: [selectedPost?.ruleName] }),
-        }),
-      ],
-    });
+    if (!selectedPost ) return;
+    if (selectedPost.draft == true){
+      const date = selectedPost.date.seconds - 30;
+      const lambdaData = {
+        postId: selectedPost.id,
+        channelId: channel?.id,
+        scheduledDate: date,
+      };
+      addNotification({
+        messageOnProgress: "Scheduling the post",
+        failMessage: "failed to schedule",
+        successMessage: "Post scheduled successfully",
+        func: [
+          new Promise(async (resolve, reject) => {
+            try {
+              await fs.updateDoc(
+                fs.doc(db, "Channels", channel?.id as string),
+                {
+                  [`posts.${selectedPost.id}.draft`]: false,
+                }
+              );
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+          fetch("/api/lambda", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(lambdaData),
+          }),
+        ],
+      });
+    }else
+      addNotification({
+        messageOnProgress: "adding to Draft",
+        failMessage: "failed to Draft",
+        successMessage: "Post add to draft successfully",
+        func: [
+          new Promise(async (resolve, reject) => {
+            try {
+              await fs.updateDoc(
+                fs.doc(db, "Channels", channel?.id as string),
+                {
+                  [`posts.${selectedPost.id}.draft`]: true,
+                }
+              );
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+          fetch("/api/lambda", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ruleNames: [selectedPost?.ruleName] }),
+          }),
+        ],
+      });
   };
 
   return (
@@ -431,7 +484,9 @@ export const NewDetailsDialog = ({
                   onClick={handleDraft}
                   className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
                   <FiFileText className="w-4 h-4" />
-                  <span>Draft</span>
+                  <span>
+                    {selectedPost.draft == true ? "Schedule" : "Draft"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -576,7 +631,7 @@ export const NewDetailsDialog = ({
                     onClick={confirmDelete}
                     disabled={isDeleting}
                     className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg transition-colors">
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    Delete
                   </button>
                 </div>
               </div>

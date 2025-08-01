@@ -4,7 +4,6 @@ import React, {
   useState,
   useContext,
   ReactNode,
-  useEffect,
 } from "react";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
