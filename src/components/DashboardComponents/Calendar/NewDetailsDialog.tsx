@@ -383,8 +383,7 @@ export const NewDetailsDialog = ({
                 <div className="flex items-center gap-1">
                   <FiClock className="text-stone-400 dark:text-stone-500" />
                   {(() => {
-                    const timestamp =
-                      selectedPost.scheduledDate ?? selectedPost.date?.seconds;
+                    const timestamp = selectedPost.date.seconds;
                     if (!timestamp) return null;
                     const formatted = formatDateInTimezone(
                       timestamp,

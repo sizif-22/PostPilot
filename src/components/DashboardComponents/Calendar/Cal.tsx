@@ -252,10 +252,8 @@ export const Cal: React.FC<
                   <ReactSortable
                     list={postsForDay
                       .sort((a, b) => {
-                        const aDate: number =
-                          a.scheduledDate || a.date?.seconds || 10000000000000;
-                        const bDate: number =
-                          b.scheduledDate || b.date?.seconds || 10000000000001;
+                        const aDate: number = a.date.seconds;
+                        const bDate: number = b.date.seconds;
                         return aDate - bDate;
                       })
                       .slice(0, 2)

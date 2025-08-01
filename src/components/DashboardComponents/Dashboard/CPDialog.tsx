@@ -16,6 +16,7 @@ import { createPost } from "@/firebase/channel.firestore";
 import { Post } from "@/interfaces/Channel";
 import {
   convertLocalDateTimeToUnixTimestamp,
+  formatTimestampInTimezone,
   getCurrentTimeInTimezone,
   getMinScheduleDateTime,
   getSortedTimezones,
@@ -32,7 +33,7 @@ import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
 import { FaTiktok, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -40,7 +41,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
-
+import { Timestamp } from "firebase/firestore";
+import { useNotification } from "@/context/NotificationContext";
 export const CPDialog = ({
   open,
   setOpen,
@@ -56,7 +58,8 @@ export const CPDialog = ({
   const [selectedImages, setSelectedImages] = useState<MediaItem[]>([]);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState("");
+  const [date, setDate] = useState("");
+  // const [isScheduled,setIsScheduled] = useState(false);
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     return (
       localStorage.getItem("userTimeZone") ||
@@ -72,6 +75,7 @@ export const CPDialog = ({
   const [videoValidationErrors, setVideoValidationErrors] = useState<string[]>(
     []
   );
+  const { addNotification } = useNotification();
 
   // Get sorted timezones for better UX
   const sortedTimezones = getSortedTimezones();
@@ -172,7 +176,7 @@ export const CPDialog = ({
     setPostText("");
     setSelectedImages([]);
     setSelectedPlatforms([]);
-    setScheduledDate("");
+    setDate("");
     setFacebookVideoType("default");
     setVideoDuration(null);
     setError(null);
@@ -198,7 +202,7 @@ export const CPDialog = ({
       selectedImages.length > 0) &&
     selectedPlatforms.length > 0;
 
-  const canSchedule = isFormValid && scheduledDate;
+  const canSchedule = isFormValid && date != "";
 
   const PostingHandler = async (postImmediately: boolean = true) => {
     console.log("is reel ?", facebookVideoType);
@@ -295,9 +299,9 @@ export const CPDialog = ({
       }
 
       let scheduledTimestamp: number | undefined;
-      if (!postImmediately && scheduledDate) {
+      if (!postImmediately && date != "") {
         scheduledTimestamp = convertLocalDateTimeToUnixTimestamp(
-          scheduledDate,
+          date,
           selectedTimeZone
         );
 
@@ -314,6 +318,9 @@ export const CPDialog = ({
         .toString(36)
         .substring(2, 9)}`;
 
+      const timeStampDate: Date =
+        date != "" ? new Date(date) : new Date(Date.now());
+
       console.log("is reel ?", facebookVideoType);
       const newPost: Post = {
         id: postId,
@@ -322,10 +329,8 @@ export const CPDialog = ({
         imageUrls: selectedImages,
         facebookVideoType,
         published: !isScheduled,
-        ...(isScheduled && {
-          scheduledDate: scheduledTimestamp,
-          clientTimeZone: selectedTimeZone,
-        }),
+        date: Timestamp.fromDate(timeStampDate),
+        isScheduled: !postImmediately,
       };
       if (channel?.id) {
         await createPost(newPost, channel.id);
@@ -335,15 +340,22 @@ export const CPDialog = ({
 
       if (postImmediately) {
         // Immediately post
-        await fetch("/api/platforms/createpost", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            postId,
-            channelId: channel.id,
-          }),
+        addNotification({
+          messageOnProgress: "Publishing your post.",
+          successMessage: "Post published successfully.",
+          failMessage: "Failed to publish your post.",
+          func: [
+            fetch("/api/platforms/createpost", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                postId,
+                channelId: channel.id,
+              }),
+            }),
+          ],
         });
       } else {
         const date = scheduledTimestamp && scheduledTimestamp - 30;
@@ -352,13 +364,17 @@ export const CPDialog = ({
           channelId: channel.id,
           scheduledDate: date,
         };
-        await fetch("/api/lambda", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(lambdaData),
-        });
+        addNotification({
+          messageOnProgress:"Scheduling your post.",
+          successMessage:"Post scheduled successfully.",
+          failMessage:"Failed to schedule your post.",
+          func:[fetch("/api/lambda", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(lambdaData),
+          })],
+        })
       }
-
       resetForm();
       setOpen(false);
     } catch (error: any) {
@@ -678,8 +694,8 @@ export const CPDialog = ({
             </label>
             <input
               type="datetime-local"
-              value={scheduledDate}
-              onChange={(e) => setScheduledDate(e.target.value)}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               min={getMinScheduleDateTime(selectedTimeZone)}
               className="w-full px-3 py-2 border dark:bg-darkButtons dark:border-darkBorder border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
             />
@@ -704,7 +720,7 @@ export const CPDialog = ({
 
           <div className="flex gap-2">
             {/* Schedule Button - only show if date is selected */}
-            {scheduledDate && (
+            {date && (
               <button
                 onClick={() => PostingHandler(false)}
                 disabled={!canSchedule || isPosting}

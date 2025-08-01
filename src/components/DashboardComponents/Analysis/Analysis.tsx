@@ -117,7 +117,7 @@ export const Analysis = () => {
       totalPosts: filteredPosts.length,
       publishedPosts: filteredPosts.filter((p) => p.published).length,
       scheduledPosts: filteredPosts.filter(
-        (p) => !p.published && p.scheduledDate
+        (p) => !p.published && p.date.seconds
       ).length,
       platformUsage,
       contentTypes,

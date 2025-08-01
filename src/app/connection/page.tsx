@@ -6,7 +6,7 @@ import { db } from "@/firebase/config";
 import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
-import { facebookChannel, Page } from "@/interfaces/Channel";
+import { facebookChannel, instagramChannel, Page } from "@/interfaces/Channel";
 import { encrypt } from "@/utils/encryption";
 interface BusinessAccount {
   id: string;
@@ -110,10 +110,10 @@ const Connection = () => {
         }
 
         const projectRef = doc(db, "Channels", id as string);
-        await updateDoc(projectRef, {
-          FacebookConnected: true,
-          facebookAccessToken: data.access_token,
-        });
+        // await updateDoc(projectRef, {
+        //   FacebookConnected: true,
+        //   facebookAccessToken: data.access_token,
+        // });
 
         setBusinessAccounts(data.business_accounts || []);
         setStandalonePages(data.standalone_pages || []);
@@ -161,7 +161,9 @@ const Connection = () => {
         id: rest.id,
         accessToken: encryptedAccessToken,
       };
-      let updateData: any = { "socialMedia.facebook": facebookData };
+      let updateData: any = {
+        "socialMedia.facebook": facebookData as facebookChannel,
+      };
       // If instagram_id exists, fetch Instagram profile data
       if (rest.instagram_id) {
         // Fetch Instagram profile data from Graph API
@@ -180,7 +182,7 @@ const Connection = () => {
           instagramUsername: igProfile.username || "",
           instagramName: igProfile.name || "",
           profilePictureUrl: igProfile.profile_picture_url || "",
-        };
+        } as instagramChannel;
       }
       await updateDoc(projectRef, updateData);
       router.replace(`/channels/${id}`);

@@ -43,18 +43,18 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
   const sortedPosts = Object.values(channel?.posts || {})
     .filter((post) => {
       // Ensure scheduledDate exists and is in the future (compared to current Unix timestamp)
-      return post.scheduledDate && post.scheduledDate * 1000 > Date.now();
+      return post.isScheduled && post.date.toDate() > new Date(Date.now());
     })
     .sort((a, b) => {
-      const dateA = a.scheduledDate || 0;
-      const dateB = b.scheduledDate || 0;
+      const dateA = a.date.seconds;
+      const dateB = b.date.seconds;
       return dateA - dateB;
     });
 
   // Group posts by full date (YYYY-MM-DD)
   const groupedPosts = sortedPosts.reduce((acc, post) => {
-    if (!post.scheduledDate) return acc;
-    const dateObj = new Date(post.scheduledDate * 1000);
+    if (!post.isScheduled) return acc;
+    const dateObj = post.date.toDate();
     const year = dateObj.getFullYear();
     const month = dateObj.getMonth();
     const day = dateObj.getDate();
@@ -67,7 +67,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
       date,
       day: dayName,
       month: monthName,
-    } = formatDateInTimezone(post.scheduledDate, selectedTimeZone);
+    } = formatDateInTimezone(post.date.seconds, selectedTimeZone);
 
     if (!acc[groupKey]) {
       acc[groupKey] = {
@@ -76,7 +76,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
         day: dayName,
         month: monthName,
         posts: [],
-        timestamp: post.scheduledDate * 1000,
+        timestamp: post.date.seconds,
       };
     }
     acc[groupKey].posts.push(post);
@@ -149,12 +149,12 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                     <div className="flex items-center text-gray-500 dark:text-gray-400">
                       <FiClock className="w-4 h-4 mr-1" />
                       <span className="text-sm">
-                        {post.scheduledDate
-                          ? formatDateInTimezone(
-                              post.scheduledDate,
-                              selectedTimeZone
-                            ).time
-                          : ""}
+                        {
+                          formatDateInTimezone(
+                            post.date.seconds,
+                            selectedTimeZone
+                          ).time
+                        }
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">

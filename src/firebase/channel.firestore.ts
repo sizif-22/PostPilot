@@ -76,24 +76,24 @@ const getChannel = (
 };
 
 const createPost = async (post: Post, channelId: string) => {
-  const firestorePost: Post = {
-    id: post.id,
-    message: post.message,
-    published: post.published,
-    platforms: post.platforms,
-    imageUrls: post.imageUrls,
-    date: Timestamp.now(),
-  };
+  // const firestorePost = {
+  //   id: post.id,
+  //   message: post.message,
+  //   published: !post.isScheduled,
+  //   platforms: post.platforms,
+  //   imageUrls: post.imageUrls,
+  //   date: Timestamp.now(),
+  // };
 
-  if (post.scheduledDate) {
-    firestorePost.scheduledDate =
-      typeof post.scheduledDate === "number"
-        ? post.scheduledDate
-        : Math.floor(new Date(post.scheduledDate).getTime() / 1000);
-  }
+  // if (post.scheduledDate) {
+  //   firestorePost.scheduledDate =
+  //     typeof post.scheduledDate === "number"
+  //       ? post.scheduledDate
+  //       : Math.floor(new Date(post.scheduledDate).getTime() / 1000);
+  // }
 
   const cleanPost = Object.fromEntries(
-    Object.entries(firestorePost).filter(([_, value]) => value !== undefined)
+    Object.entries(post).filter(([_, value]) => value !== undefined)
   );
 
   const postId = post.id || Date.now().toString();
@@ -138,12 +138,12 @@ const editPost = async (
 
   const updatedPostData = { ...existingPost, ...updatedPost };
 
-  if (updatedPost.scheduledDate) {
-    updatedPostData.scheduledDate =
-      typeof updatedPost.scheduledDate === "number"
-        ? updatedPost.scheduledDate
-        : Math.floor(new Date(updatedPost.scheduledDate).getTime() / 1000);
-  }
+  // if (updatedPost.scheduledDate) {
+  //   updatedPostData.scheduledDate =
+  //     typeof updatedPost.scheduledDate === "number"
+  //       ? updatedPost.scheduledDate
+  //       : Math.floor(new Date(updatedPost.scheduledDate).getTime() / 1000);
+  // }
 
   await updateDoc(doc(db, "Channels", channelId), {
     [`posts.${postId}`]: updatedPostData,

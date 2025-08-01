@@ -12,18 +12,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteMediaFolder } from "@/firebase/storage";
-
+import { useNotification } from "@/context/NotificationContext";
 export const Configuration = () => {
   const router = useRouter();
   const { id } = useParams();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeletingChannel, setIsDeletingChannel] = useState(false);
   const { channel } = useChannel();
   const isFacebookConnected = channel?.socialMedia?.facebook;
   const isTikTokConnected = channel?.socialMedia?.tiktok;
   const isLinkedInConnected = channel?.socialMedia?.linkedin;
   const isXConnected = channel?.socialMedia?.x;
   const [nameInput, setNameInput] = useState<string | undefined>(channel?.name);
+  const { addNotification } = useNotification();
   const [descInput, setDescInput] = useState<string | undefined>(
     channel?.description
   );
@@ -73,7 +73,8 @@ export const Configuration = () => {
     Cookies.set("currentChannel", id as string);
     const TIKTOK_CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
     const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/tiktok";
-    const scope = "user.info.basic,video.publish,video.upload,user.info.profile";
+    const scope =
+      "user.info.basic,video.publish,video.upload,user.info.profile";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${encodeURIComponent(
       scope
     )}&response_type=code&redirect_uri=${REDIRECT_URI}&state=${csrfState}`;
@@ -120,28 +121,46 @@ export const Configuration = () => {
   };
 
   const confirmDelete = async () => {
-    setIsDeletingChannel(true);
     if (channel?.TeamMembers && channel.id) {
-      let ruleNames: string[] = [];
-      Object.values(channel.posts).forEach((post) => {
-        if (post.ruleName) {
-          ruleNames.push(post.ruleName);
-        }
-      });
-      const res = await fetch("/api/lambda", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ruleNames }),
-      });
+      addNotification({
+        messageOnProgress: "Deleting channel",
+        successMessage: "Channel deleted successfully",
+        failMessage: "Failed deleting channel",
+        func: [
+          new Promise(async (resolve, reject) => {
+            try {
+              let ruleNames: string[] = [];
+              Object.values(channel.posts).forEach((post) => {
+                if (post.ruleName) {
+                  ruleNames.push(post.ruleName);
+                }
+              });
+              const res = await fetch("/api/lambda", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ruleNames }),
+              });
 
-      await deleteMediaFolder(channel.id);
-      await deleteChannel(channel?.TeamMembers, channel?.id);
-      router.replace("/channels");
+              await deleteChannel(channel?.TeamMembers, channel?.id);
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+          new Promise((resolve, reject) => {
+            try {
+              deleteMediaFolder(channel.id);
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+        ],
+      });
     }
     setShowDeleteConfirm(false);
-    setIsDeletingChannel(false);
+    router.replace("/channels");
   };
-
   const socialMedia = [
     {
       name: "Facebook (&Instagram)",
@@ -191,8 +210,8 @@ export const Configuration = () => {
 
   return (
     <div className="bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
-      <div className="flex p-3 h-16 justify-between items-center px-4 border-b border-stone-200 dark:border-darkBorder">
-        <h2 className="font-bold text-xl dark:text-white">Configuration</h2>
+      <div className="border-b px-4 py-3 h-16 mb-4  border-stone-200 dark:border-darkBorder sticky top-0 z-50 bg-white dark:bg-secondDarkBackground flex items-center ">
+        <h2 className="font-bold text-xl dark:text-white ">Configuration</h2>
       </div>
       <div className="px-8 md:px-16">
         <div className="p-6 space-y-6">
@@ -350,13 +369,8 @@ export const Configuration = () => {
                     </button>
                     <button
                       onClick={confirmDelete}
-                      disabled={isDeletingChannel}
-                      className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded${
-                        isDeletingChannel
-                          ? " opacity-60 cursor-not-allowed"
-                          : ""
-                      }`}>
-                      {isDeletingChannel ? "Deleting..." : "Delete Channel"}
+                      className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded`}>
+                      Delete Channel
                     </button>
                   </div>
                 </div>

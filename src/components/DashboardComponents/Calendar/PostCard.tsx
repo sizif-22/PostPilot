@@ -18,15 +18,11 @@ export const PostCard = ({
       key={post.id}
       onClick={callbackFunc}
       className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${
-        post.draft === true ? "bg-white text-black": "g-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
+        post.draft === true
+          ? "bg-white text-black"
+          : "g-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
       }`}
-      title={`${
-        post.scheduledDate
-          ? format(new Date(post.scheduledDate * 1000), "h:mm a")
-          : post.date
-          ? format(new Date(post.date.toDate()), "h:mm a")
-          : ""
-      }`}>
+      title={`${format(new Date(post.date.toDate()), "h:mm a")}`}>
       <div className="w-10 h-10  rounded-sm relative">
         {post.imageUrls &&
         post.imageUrls[0] &&
@@ -83,11 +79,7 @@ export const PostCard = ({
         </div>
         <div className="text-xs flex h-2 items-center mb-1 gap-0.5">
           <CiClock2 />
-          {post.scheduledDate
-            ? format(new Date(post.scheduledDate * 1000), "h:mm a")
-            : post.date
-            ? format(new Date(post.date.toDate()), "h:mm a")
-            : ""}
+          {format(new Date(post.date.toDate()), "h:mm a")}
         </div>
       </div>
     </button>

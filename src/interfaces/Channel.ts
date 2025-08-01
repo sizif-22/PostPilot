@@ -87,8 +87,9 @@ export type Post = {
   platforms?: string[];
   imageUrls?: MediaItem[];
   videoUrls?: any[];
-  scheduledDate?: number;
-  date?: any;
+  // scheduledDate?: number;
+  date: Timestamp;
+  isScheduled:boolean;
   status?: string;
   draft?: boolean;
   ruleName?: string;

@@ -20,46 +20,46 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
 
     if (channel?.posts) {
       Object.values(channel.posts).forEach((post) => {
-        if (post.scheduledDate) {
-          // Convert Unix timestamp to Date object
-          const date = new Date(post.scheduledDate * 1000);
-          // Create a consistent key format for the date
-          const key = `${date.getFullYear()}-${
-            date.getMonth() + 1
-          }-${date.getDate()}`;
+        // if (post.scheduledDate) {
+        // Convert Unix timestamp to Date object
+        const date = post.date.toDate();
+        // Create a consistent key format for the date
+        const key = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}`;
 
-          if (!dateMap.has(key)) {
-            dateMap.set(key, []);
-          }
-          dateMap.get(key)!.push(post);
-        } else {
-          if (post.date) {
-            let date: Date | null = null;
-            if (post.date instanceof Timestamp) {
-              date = post.date.toDate();
-            } else if (
-              typeof post.date === "string" ||
-              typeof post.date === "number"
-            ) {
-              date = new Date(post.date);
-            } else if (
-              typeof post.date === "object" &&
-              post.date &&
-              "getTime" in post.date
-            ) {
-              date = post.date as Date;
-            }
-            if (date && !isNaN(date.getTime())) {
-              const key = `${date.getFullYear()}-${
-                date.getMonth() + 1
-              }-${date.getDate()}`;
-              if (!dateMap.has(key)) {
-                dateMap.set(key, []);
-              }
-              dateMap.get(key)!.push(post);
-            }
-          }
+        if (!dateMap.has(key)) {
+          dateMap.set(key, []);
         }
+        dateMap.get(key)!.push(post);
+        // } else {
+        //   if (post.date) {
+        //     let date: Date | null = null;
+        //     if (post.date instanceof Timestamp) {
+        //       date = post.date.toDate();
+        //     } else if (
+        //       typeof post.date === "string" ||
+        //       typeof post.date === "number"
+        //     ) {
+        //       date = new Date(post.date);
+        //     } else if (
+        //       typeof post.date === "object" &&
+        //       post.date &&
+        //       "getTime" in post.date
+        //     ) {
+        //       date = post.date as Date;
+        //     }
+        //     if (date && !isNaN(date.getTime())) {
+        //       const key = `${date.getFullYear()}-${
+        //         date.getMonth() + 1
+        //       }-${date.getDate()}`;
+        //       if (!dateMap.has(key)) {
+        //         dateMap.set(key, []);
+        //       }
+        //       dateMap.get(key)!.push(post);
+        //     }
+        //   }
+        // }
       });
     }
 
@@ -83,10 +83,10 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
     newMonth: number,
     newYear: number
   ) => {
-    console.log("DATE:", newYear, newMonth, newDay);
+    // console.log("DATE:", newYear, newMonth, newDay);
     if (!channel?.id) throw new Error("channel id in invalid");
 
-    if (!post.scheduledDate || post.scheduledDate * 1000 < Date.now()) {
+    if (post.date.toDate() < new Date(Date.now())) {
       addNotification({
         messageOnProgress: "Updating Date",
         successMessage: "",
@@ -99,7 +99,7 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
       });
       return;
     }
-    const originalDate = new Date(post.scheduledDate * 1000);
+    const originalDate = post.date.toDate();
     const newDate: number = Math.floor(
       new Date(
         newYear,
@@ -161,7 +161,9 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
         new Promise((resolve, reject) => {
           try {
             fs.updateDoc(fs.doc(db, "Channels", channel?.id), {
-              [`posts.${post.id}.scheduledDate`]: newDate,
+              [`posts.${post.id}.date`]: fs.Timestamp.fromDate(
+                new Date(newDate * 1000)
+              ),
             });
             resolve("Done");
           } catch {

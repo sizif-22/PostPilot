@@ -386,7 +386,11 @@ export class EnhancedPDFGenerator {
       color: ColorUtils.hexToRgbColor(this.theme.text),
     });
 
-    const summaryText = `This report contains ${posts.length} social media posts with detailed content, metadata, and ${this.options.includeImages ? "media attachments" : "media references"}. Generated on ${new Date().toLocaleDateString()}.`;
+    const summaryText = `This report contains ${
+      posts.length
+    } social media posts with detailed content, metadata, and ${
+      this.options.includeImages ? "media attachments" : "media references"
+    }. Generated on ${new Date().toLocaleDateString()}.`;
     const wrappedSummary = this.wrapText(
       summaryText,
       width - 60,
@@ -531,7 +535,7 @@ export class EnhancedPDFGenerator {
       const dateStr =
         post.date instanceof Date
           ? post.date.toLocaleDateString()
-          : new Date(post.date).toLocaleDateString();
+          : post.date.toDate().toLocaleDateString();
 
       page.drawText(dateStr, {
         x: 80,
@@ -786,7 +790,9 @@ export class EnhancedPDFGenerator {
         height: height,
       });
 
-      const infoText = `${mediaItem.name || "Image"} (${imgWidth}x${imgHeight})`;
+      const infoText = `${
+        mediaItem.name || "Image"
+      } (${imgWidth}x${imgHeight})`;
       page.drawText(infoText, {
         x: 40,
         y: startY - height - 20,
@@ -945,7 +951,7 @@ export class EnhancedPDFGenerator {
   ): string[] {
     const sanitizedText = this.sanitizeText(text);
     const lines: string[] = [];
-    const paragraphs = sanitizedText.split('\n');
+    const paragraphs = sanitizedText.split("\n");
 
     for (const paragraph of paragraphs) {
       const words = paragraph.split(" ");
@@ -992,7 +998,6 @@ export const downloadInPDFWithLib = async (
   customTheme?: Partial<PDFTheme>,
   options?: Partial<PDFOptions>
 ): Promise<void> => {
-
   if (!posts || posts.length === 0) {
     console.warn("No posts to export");
     return;
@@ -1034,7 +1039,6 @@ export const downloadInPDFWithLib = async (
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
   } catch (error) {
     console.error("Error generating enhanced PDF with pdf-lib:", error);
     throw error;
