@@ -30,6 +30,7 @@ export const createIssue = async ({
     } as Issue,
   });
 };
+
 export const createComment = async ({
   comment,
   post,
@@ -43,6 +44,31 @@ export const createComment = async ({
     [`posts.${post.id}.comments`]: arrayUnion({
       ...comment,
       postId: post.id,
+      // date: serverTimestamp(),
     } as Comment),
   });
+};
+
+export const createIssueComment = async ({
+  issue,
+  comment,
+  channelId,
+}: {
+  issue: Issue;
+  comment: Comment;
+  channelId: string;
+}) => {
+  try {
+    const docRef = await updateDoc(doc(db, "Channels", channelId), {
+      [`posts.${issue.postId}.issues.${issue.id}.comments`]: arrayUnion({
+        ...comment,
+        postId: issue.postId,
+        // date: serverTimestamp(),
+      } as Comment),
+    });
+    return docRef;
+  } catch (error) {
+    console.error("Error creating issue comment:", error);
+    throw error;
+  }
 };

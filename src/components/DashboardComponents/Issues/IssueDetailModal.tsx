@@ -11,23 +11,31 @@ import {
   FiCheck,
   FiExternalLink,
   FiEdit3,
+  FiSend,
 } from "react-icons/fi";
 import { Issue, Post, Comment } from "@/interfaces/Channel";
 import { IssueStatus, IssuePriority } from "@/interfaces/Issue";
 import { EditPostDialog } from "../Dashboard/EditPostDialog";
 import { MediaItem } from "@/interfaces/Media";
+import { createIssueComment } from "@/firebase/issue.firestore";
+import { useUser } from "@/context/UserContext";
+import { Textarea } from "@/components/ui/textarea";
+
 type EditDialogPost = {
   id: string;
   message: string;
   platforms: string[];
   media: any[];
 };
+
 interface IssueDetailModalProps {
   issue: Issue;
   post: Post;
   media: MediaItem[];
+  channelId: string; // Added channelId prop
   onClose: () => void;
   onResolve: (issue: Issue) => void;
+  onCommentAdded?: (issue: Issue, comment: Comment) => void; // Added callback for comment updates
   formatCommentDate: (timestamp: any) => string;
   getPlatformIcon: (platform: string) => JSX.Element;
   getStatusColor: (status: IssueStatus) => string;
@@ -37,8 +45,10 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   issue,
   post,
   media,
+  channelId,
   onClose,
   onResolve,
+  onCommentAdded,
   formatCommentDate,
   getPlatformIcon,
   getStatusColor,
@@ -47,6 +57,53 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   const [editDialogPost, setEditDialogPost] = useState<EditDialogPost | null>(
     null
   );
+  const [commentText, setCommentText] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const { user } = useUser();
+
+  const handleAddComment = async () => {
+    if (!commentText.trim() || isSubmittingComment) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const newComment: Comment = {
+        postId: post.id!,
+        message: commentText.trim(),
+        author: {
+          email: user?.email || "",
+          name: user?.name || "",
+          avatar: user?.avatar || "",
+        },
+        date: new Date() as any, // This will be converted to Timestamp by Firestore
+      };
+
+      await createIssueComment({
+        issue,
+        comment: newComment,
+        channelId,
+      });
+
+      // Update local state if callback provided
+      if (onCommentAdded) {
+        onCommentAdded(issue, newComment);
+      }
+
+      setCommentText("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      // You might want to show an error toast here
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAddComment();
+    }
+  };
+
   return (
     <>
       <EditPostDialog
@@ -74,13 +131,6 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                     )}`}>
                     {(issue.status || "").replace("_", " ")}
                   </span>
-                  {/* <span
-                  className={`text-sm font-medium capitalize ${getPriorityColor(
-                    issue.priority
-                  )}`}
-                >
-                  {issue.priority} priority
-                </span> */}
                 </div>
               </div>
             </div>
@@ -99,7 +149,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                       setEditDialogPost(post as EditDialogPost | null);
                       setIsEditDialogOpen(true);
                     }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors text-sm font-medium bg-blue-600 hover:bg-blue-700">
                     <FiEdit3 className="w-4 h-4" />
                     <span>Edit</span>
                   </button>
@@ -320,12 +370,12 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 </div>
 
                 {/* Comments Section */}
-                {post.comments && post.comments.length > 0 && (
-                  <div>
+                {issue.comments && issue.comments.length > 0 && (
+                  <div className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
                       <FiMessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       <h4 className="font-medium text-stone-900 dark:text-white">
-                        Comments ({post.comments.length})
+                        Comments ({issue.comments.length})
                       </h4>
                     </div>
 
@@ -344,19 +394,9 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                                 />
                               ) : (
                                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                                  {comment.author?.avatar ? (
-                                    <img
-                                      src={comment.author.avatar}
-                                      alt="avatar"
-                                      className="rounded-full object-cover w-full h-full"
-                                    />
-                                  ) : (
-                                    <>
-                                      {comment.author.name
-                                        .slice(0, 1)
-                                        .toUpperCase()}
-                                    </>
-                                  )}
+                                  {comment.author.name
+                                    .slice(0, 1)
+                                    .toUpperCase()}
                                 </span>
                               )}
                             </div>
@@ -386,8 +426,8 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 )}
 
                 {/* No Comments State */}
-                {(!post.comments || post.comments.length === 0) && (
-                  <div className="text-center py-8">
+                {(!issue.comments || issue.comments.length === 0) && (
+                  <div className="text-center py-6 mb-6">
                     <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center mx-auto mb-3">
                       <FiMessageSquare className="w-6 h-6 text-stone-400 dark:text-stone-500" />
                     </div>
@@ -395,17 +435,63 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                       No Comments Yet
                     </h4>
                     <p className="text-sm text-stone-500 dark:text-stone-400">
-                      No additional comments have been made on this post.
+                      Be the first to comment on this issue.
                     </p>
                   </div>
                 )}
 
-                {/* Issue Actions */}
+                {/* Add Comment Form - Only show if issue is not resolved */}
                 {issue.status !== "resolved" && (
                   <div className="mt-6 pt-6 border-t border-stone-200 dark:border-darkBorder">
                     <h4 className="font-medium text-stone-900 dark:text-white mb-3">
-                      Actions
+                      Add Comment
                     </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                          {user?.avatar ? (
+                            <img
+                              src={user?.avatar}
+                              alt={user?.name}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                              {user?.name.slice(0, 1).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <Textarea
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            // onKeyPress={handleKeyPress}
+                            placeholder="Add a comment to this issue..."
+                            className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            // rows={3}
+                            disabled={isSubmittingComment}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleAddComment}
+                          disabled={!commentText.trim() || isSubmittingComment}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-stone-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium">
+                          <FiSend className="w-4 h-4" />
+                          {isSubmittingComment ? "Adding..." : "Add Comment"}
+                        </button>
+                      </div>
+                      {/* <p className="text-xs text-stone-500 dark:text-stone-400">
+                        Press Enter to submit, Shift+Enter for new line
+                      </p> */}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resolve Issue Button - Only show if issue is not resolved */}
+                {/* {issue.status !== "resolved" && (
+                  <div className="mt-6 pt-6 border-t border-stone-200 dark:border-darkBorder">
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => onResolve(issue)}
@@ -418,7 +504,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* Resolved Badge */}
                 {issue.status === "resolved" && (

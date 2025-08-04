@@ -352,9 +352,7 @@ export const NewDetailsDialog = ({
                       <video
                         className="w-full h-full object-cover"
                         preload="metadata">
-                        <source
-                          src={selectedPost.media[currentIndex].url}
-                        />
+                        <source src={selectedPost.media[currentIndex].url} />
                         Your browser does not support the video tag.
                       </video>
                       <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
@@ -403,8 +401,7 @@ export const NewDetailsDialog = ({
                               selectedPost.media.length > 0
                             ) {
                               setCurrentIndex(
-                                (currentIndex + 1) %
-                                  selectedPost.media.length
+                                (currentIndex + 1) % selectedPost.media.length
                               );
                             }
                           }}
@@ -632,11 +629,17 @@ export const NewDetailsDialog = ({
                 <div className="p-4 border-t border-gray-200 dark:border-darkBorder">
                   <div className="flex space-x-3 justify-end">
                     <Textarea
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder={getPlaceholderText()}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmitComment();
+                      }
+                    }}
+                    placeholder={getPlaceholderText()}
+                    className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    // rows={3}
                     />
 
                     <button

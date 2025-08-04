@@ -141,8 +141,8 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
 
   const getStatusStats = () => {
     const stats = {
-      total: issues.length,
-      open: issues.filter((i) => i.status === "open").length,
+      total: issues.length + resolvedIssues.length,
+      open: issues.length,
       resolved: resolvedIssues.length,
     };
     return stats;
@@ -422,6 +422,7 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
           issue={selectedIssue}
           post={selectedPost}
           media={media}
+          channelId={channel?.id || ""}
           onClose={() => {
             setSelectedIssue(null);
             setSelectedPost(null);
