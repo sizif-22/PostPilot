@@ -4,9 +4,9 @@ export async function PostOnInstagram({
   accessToken,
   pageId,
   message,
-  imageUrls,
+  media,
 }: {
-  imageUrls: MediaItem[];
+  media: MediaItem[];
   accessToken: string;
   pageId: string; // Instagram Business Account ID
   message?: string;
@@ -22,15 +22,15 @@ export async function PostOnInstagram({
   //     throw new Error("Caption is required for Instagram posts");
   //   }
   // Validate media requirements
-  if (!imageUrls || imageUrls.length === 0) {
+  if (!media || media.length === 0) {
     throw new Error(
       "Instagram requires at least one image or video. Text-only posts are not supported."
     );
   }
   // Validate media types
-  const hasVideos = imageUrls.some((item) => item.isVideo);
-  const hasImages = imageUrls.some((item) => !item.isVideo);
-  const videoCount = imageUrls.filter((item) => item.isVideo).length;
+  const hasVideos = media.some((item) => item.isVideo);
+  const hasImages = media.some((item) => !item.isVideo);
+  const videoCount = media.filter((item) => item.isVideo).length;
   // Check for mixed media
   if (hasVideos && hasImages) {
     throw new Error("Cannot mix videos and images in the same Instagram post.");
@@ -44,7 +44,7 @@ export async function PostOnInstagram({
     accessToken,
     pageId,
     message,
-    imageUrls,
+    media,
     published: true,
   });
 }
@@ -94,18 +94,18 @@ async function createAndPublishInstagramPost({
   accessToken,
   pageId,
   message,
-  imageUrls,
+  media,
   published,
 }: {
   accessToken: string;
   pageId: string;
   message?: string;
-  imageUrls: MediaItem[];
+  media: MediaItem[];
   published: boolean;
 }) {
-  if (imageUrls.length === 1) {
+  if (media.length === 1) {
     // Single media post
-    const mediaItem = imageUrls[0];
+    const mediaItem = media[0];
     let mediaData: Record<string, string> = {
       access_token: accessToken,
       ...(message ? { caption: message } : {}),
@@ -207,7 +207,7 @@ async function createAndPublishInstagramPost({
     // Carousel post
     const mediaIds = [];
     // Upload each media item
-    for (const item of imageUrls) {
+    for (const item of media) {
       const mediaParams = {
         ...(item.isVideo
           ? { video_url: item.url, media_type: "VIDEO" }

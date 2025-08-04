@@ -4,19 +4,19 @@ export async function PostOnTiktok({
   accessToken,
   openId,
   message,
-  imageUrls,
+  media,
 }: {
   accessToken: string;
   openId: string;
   message?: string;
-  imageUrls: MediaItem[];
+  media: MediaItem[];
 }) {
   try {
-    if (!accessToken || !openId || !imageUrls)
-      throw new Error("these are required accessToken || openId || imageUrls");
+    if (!accessToken || !openId || !media)
+      throw new Error("these are required accessToken || openId || media");
 
-    if (imageUrls.length == 1 && imageUrls[0].isVideo) {
-      const mediaUrl = imageUrls[0].url;
+    if (media.length == 1 && media[0].isVideo) {
+      const mediaUrl = media[0].url;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000); // 30 seconds
 

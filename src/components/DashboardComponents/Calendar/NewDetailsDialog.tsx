@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Command } from "cmdk";
 import {
   FiX,
@@ -126,7 +126,7 @@ export const NewDetailsDialog = ({
       id: event.id || "",
       message: event.message || "",
       platforms: event.platforms || [],
-      media: event.imageUrls || [],
+      media: event.media || [],
     };
   };
 
@@ -134,13 +134,15 @@ export const NewDetailsDialog = ({
     if (!commentText.trim() || !selectedPost || !user) return;
 
     if (commentType === "issue") {
+      const issueId = `${new Date().getTime()}-${Math.random()
+        .toString(36)
+        .substring(2, 9)}`;
       const newIssue = {
+        id: issueId,
         message: commentText,
-        email: user.email,
-        name: user.name,
         status: "open",
-        priority: "medium",
-        avatar: user.avatar,
+        author: { email: user.email, name: user.name, avatar: user.avatar },
+        comments: [] as Comment[],
         date: fs.Timestamp.now(),
       } as Issue;
       addNotification({
@@ -163,13 +165,11 @@ export const NewDetailsDialog = ({
           }),
         ],
       });
-      handleDraft();
+      handleDraft("draft");
     } else {
       const newComment = {
         message: commentText,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
+        author: { email: user.email, name: user.name, avatar: user.avatar },
         date: fs.Timestamp.now(),
       } as Comment;
       addNotification({
@@ -193,6 +193,7 @@ export const NewDetailsDialog = ({
         ],
       });
     }
+    setCommentText("");
   };
 
   const getPlaceholderText = () => {
@@ -212,9 +213,23 @@ export const NewDetailsDialog = ({
       minute: "2-digit",
     });
   };
-  const handleDraft = () => {
-    if (!selectedPost ) return;
-    if (selectedPost.draft == true){
+  const handleDraft = (type: "draft" | "schedule") => {
+    if (!selectedPost) return;
+
+    if (type == "schedule") {
+      if (
+        selectedPost.issues &&
+        Object.values(selectedPost.issues).filter((i) => i.status === "open")
+          .length > 0
+      ) {
+        addNotification({
+          failMessage: "There is some issues, this post can't be scheduled",
+          messageOnProgress: "",
+          successMessage: "",
+          func: [new Promise((resolve, reject) => reject(false))],
+        });
+        return;
+      }
       const date = selectedPost.date.seconds - 30;
       const lambdaData = {
         postId: selectedPost.id,
@@ -246,7 +261,7 @@ export const NewDetailsDialog = ({
           }),
         ],
       });
-    }else
+    } else if (type == "draft")
       addNotification({
         messageOnProgress: "adding to Draft",
         failMessage: "failed to Draft",
@@ -305,7 +320,7 @@ export const NewDetailsDialog = ({
           <DialogTitle className="sr-only">Post Details</DialogTitle>
           <div
             className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] w-full max-w-6xl grid overflow-hidden ${
-              selectedPost?.imageUrls && selectedPost.imageUrls.length > 0
+              selectedPost?.media && selectedPost.media.length > 0
                 ? "grid-cols-14"
                 : "grid-cols-9"
             }`}
@@ -321,12 +336,12 @@ export const NewDetailsDialog = ({
             </button>
 
             {/* Media Section */}
-            {selectedPost?.imageUrls && selectedPost.imageUrls.length > 0 && (
+            {selectedPost?.media && selectedPost.media.length > 0 && (
               <div className="col-span-1 lg:col-span-5 bg-gray-50 dark:bg-secondDarkBackground flex items-center justify-center min-h-[300px] lg:min-h-full">
                 <div className="relative w-full h-full">
-                  {!selectedPost.imageUrls[currentIndex]?.isVideo ? (
+                  {!selectedPost.media[currentIndex]?.isVideo ? (
                     <Image
-                      src={selectedPost.imageUrls[currentIndex].url}
+                      src={selectedPost.media[currentIndex].url}
                       width={1000}
                       height={1000}
                       alt="Post media"
@@ -338,7 +353,7 @@ export const NewDetailsDialog = ({
                         className="w-full h-full object-cover"
                         preload="metadata">
                         <source
-                          src={selectedPost.imageUrls[currentIndex].url}
+                          src={selectedPost.media[currentIndex].url}
                         />
                         Your browser does not support the video tag.
                       </video>
@@ -349,9 +364,9 @@ export const NewDetailsDialog = ({
                       </div>
                     </>
                   )}
-                  {Array.isArray(selectedPost?.imageUrls) &&
-                    typeof selectedPost?.imageUrls.length == "number" &&
-                    selectedPost.imageUrls.length > 1 && (
+                  {Array.isArray(selectedPost?.media) &&
+                    typeof selectedPost?.media.length == "number" &&
+                    selectedPost.media.length > 1 && (
                       <>
                         {/* Navigation Buttons */}
                         <motion.button
@@ -360,18 +375,18 @@ export const NewDetailsDialog = ({
                           exit={{ opacity: 0, x: -20 }}
                           onClick={() => {
                             if (
-                              selectedPost?.imageUrls &&
-                              selectedPost.imageUrls.length > 0
+                              selectedPost?.media &&
+                              selectedPost.media.length > 0
                             ) {
                               setCurrentIndex(
                                 currentIndex === 0
-                                  ? selectedPost.imageUrls.length - 1
+                                  ? selectedPost.media.length - 1
                                   : currentIndex - 1
                               );
                             }
                           }}
                           className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
-                          disabled={selectedPost.imageUrls.length <= 1}>
+                          disabled={selectedPost.media.length <= 1}>
                           <ChevronLeft
                             size={24}
                             className="text-white transition-transform group-hover:-translate-x-1"
@@ -384,25 +399,25 @@ export const NewDetailsDialog = ({
                           exit={{ opacity: 0, x: 20 }}
                           onClick={() => {
                             if (
-                              selectedPost?.imageUrls &&
-                              selectedPost.imageUrls.length > 0
+                              selectedPost?.media &&
+                              selectedPost.media.length > 0
                             ) {
                               setCurrentIndex(
                                 (currentIndex + 1) %
-                                  selectedPost.imageUrls.length
+                                  selectedPost.media.length
                               );
                             }
                           }}
                           className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
-                          disabled={selectedPost.imageUrls.length <= 1}>
+                          disabled={selectedPost.media.length <= 1}>
                           <ChevronRight
                             size={24}
                             className="text-white transition-transform group-hover:translate-x-1"
                           />
                         </motion.button>
-                        {selectedPost.imageUrls.length > 1 && (
+                        {selectedPost.media.length > 1 && (
                           <div className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-2 py-1 rounded-full">
-                            +{selectedPost.imageUrls.length - 1} more
+                            +{selectedPost.media.length - 1} more
                           </div>
                         )}
                       </>
@@ -466,28 +481,42 @@ export const NewDetailsDialog = ({
               {/* Action Buttons */}
               <div className="flex space-x-3 pt-4 border-t border-gray-200 dark:border-darkBorder">
                 <button
-                  onClick={() => {
-                    setEditDialogPost(getEditDialogPost(selectedPost));
-                    setIsEditDialogOpen(true);
-                  }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                  <FiEdit3 className="w-4 h-4" />
-                  <span>Edit</span>
-                </button>
-                <button
                   onClick={() => setShowDeleteConfirm(true)}
                   className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
                   <FiTrash2 className="w-4 h-4" />
                   <span>Delete</span>
                 </button>
-                <button
-                  onClick={handleDraft}
-                  className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
-                  <FiFileText className="w-4 h-4" />
-                  <span>
-                    {selectedPost.draft == true ? "Schedule" : "Draft"}
-                  </span>
-                </button>
+                {!selectedPost.published && (
+                  <button
+                    onClick={() => {
+                      setEditDialogPost(getEditDialogPost(selectedPost));
+                      setIsEditDialogOpen(true);
+                    }}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <FiEdit3 className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
+                )}
+                {!(
+                  selectedPost.issues &&
+                  Object.values(selectedPost.issues).filter(
+                    (i) => i.status === "open"
+                  ).length > 0
+                ) &&
+                  !selectedPost?.published && (
+                    <button
+                      onClick={() => {
+                        handleDraft(
+                          selectedPost.draft == true ? "schedule" : "draft"
+                        );
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 bg-darkButtons text-white rounded-lg transition-colors">
+                      <FiFileText className="w-4 h-4" />
+                      <span>
+                        {selectedPost.draft == true ? "Schedule" : "Draft"}
+                      </span>
+                    </button>
+                  )}
               </div>
             </div>
 
@@ -499,10 +528,6 @@ export const NewDetailsDialog = ({
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Discussion
                   </h3>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedPost?.comments?.length}{" "}
-                    {selectedPost?.comments?.length === 1 ? "item" : "items"}
-                  </span>
                 </div>
 
                 {/* Comment Type Toggle */}
@@ -534,14 +559,14 @@ export const NewDetailsDialog = ({
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {commentType == "issue" &&
                 selectedPost.issues &&
-                selectedPost?.issues?.length > 0 ? (
-                  selectedPost.issues.map((issue, index) => (
+                Object.values(selectedPost.issues).length > 0 ? (
+                  Object.values(selectedPost.issues).map((issue, index) => (
                     <div
                       key={index}
                       className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
                       <div className="flex items-start justify-between mb-2">
                         <span className="font-medium text-gray-900 dark:text-white text-sm">
-                          {issue.name || issue.email}
+                          {issue.author.name || issue.author.email}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {formatCommentDate(issue.date)}
@@ -551,9 +576,17 @@ export const NewDetailsDialog = ({
                         {issue.message}
                       </p>
                       <div className="mt-2">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                          ${
+                            issue.status == "open"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                          }
+                          `}>
                           <FiAlertCircle className="w-3 h-3 mr-1" />
-                          Issue
+
+                          {issue.status == "open" ? "Issue" : "Resolved"}
                         </span>
                       </div>
                     </div>
@@ -561,7 +594,23 @@ export const NewDetailsDialog = ({
                 ) : commentType == "comment" &&
                   selectedPost.comments &&
                   selectedPost?.comments?.length > 0 ? (
-                  <div></div>
+                  selectedPost.comments.map((comment, index) => (
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="font-medium text-gray-900 dark:text-white text-sm">
+                          {comment.author.name || comment.author.email}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatCommentDate(comment.date)}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {comment.message}
+                      </p>
+                    </div>
+                  ))
                 ) : (
                   <div className="text-center py-8">
                     <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-darkBackground flex items-center justify-center">
@@ -579,24 +628,26 @@ export const NewDetailsDialog = ({
               </div>
 
               {/* Comment Input */}
-              <div className="p-4 border-t border-gray-200 dark:border-darkBorder">
-                <div className="flex space-x-3 justify-end">
-                  <Textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder={getPlaceholderText()}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
-                  />
+              {selectedPost.published != true && (
+                <div className="p-4 border-t border-gray-200 dark:border-darkBorder">
+                  <div className="flex space-x-3 justify-end">
+                    <Textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={getPlaceholderText()}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-darkButtons dark:text-white resize-none text-sm"
+                    />
 
-                  <button
-                    onClick={handleSubmitComment}
-                    disabled={!commentText.trim()}
-                    className="self-end p-2 bg-purple-900 hover:bg-purple-950 disabled:bg-transparent disabled:cursor-not-allowed text-white rounded-lg transition-colors">
-                    <FiSend className="w-4 h-4" />
-                  </button>
+                    <button
+                      onClick={handleSubmitComment}
+                      disabled={!commentText.trim()}
+                      className="self-end p-2 bg-purple-900 hover:bg-purple-950 disabled:bg-transparent disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                      <FiSend className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

@@ -7,9 +7,9 @@ export async function POST(request: Request) {
       accessToken,
       pageId,
       message,
-      imageUrls,
+      media,
     }: {
-      imageUrls: MediaItem[];
+      media: MediaItem[];
       accessToken: string;
       pageId: string; // Instagram Business Account ID
       message: string;
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     // Validate media requirements
-    if (!imageUrls || imageUrls.length === 0) {
+    if (!media || media.length === 0) {
       return NextResponse.json(
         {
           error:
@@ -49,9 +49,9 @@ export async function POST(request: Request) {
     }
 
     // Validate media types
-    const hasVideos = imageUrls.some((item) => item.isVideo);
-    const hasImages = imageUrls.some((item) => !item.isVideo);
-    const videoCount = imageUrls.filter((item) => item.isVideo).length;
+    const hasVideos = media.some((item) => item.isVideo);
+    const hasImages = media.some((item) => !item.isVideo);
+    const videoCount = media.filter((item) => item.isVideo).length;
 
     // Check for mixed media
     if (hasVideos && hasImages) {
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       accessToken,
       pageId,
       message,
-      imageUrls,
+      media,
       published: true,
     });
   } catch (error: any) {
@@ -152,18 +152,18 @@ async function createAndPublishInstagramPost({
   accessToken,
   pageId,
   message,
-  imageUrls,
+  media,
   published,
 }: {
   accessToken: string;
   pageId: string;
   message: string;
-  imageUrls: MediaItem[];
+  media: MediaItem[];
   published: boolean;
 }) {
-  if (imageUrls.length === 1) {
+  if (media.length === 1) {
     // Single media post
-    const mediaItem = imageUrls[0];
+    const mediaItem = media[0];
     let mediaData: Record<string, string> = {
       caption: message,
       access_token: accessToken,
@@ -294,7 +294,7 @@ async function createAndPublishInstagramPost({
     const mediaIds = [];
 
     // Upload each media item
-    for (const item of imageUrls) {
+    for (const item of media) {
       const mediaParams = {
         ...(item.isVideo
           ? { video_url: item.url, media_type: "VIDEO" }
@@ -424,13 +424,13 @@ async function createScheduledInstagramPost({
   accessToken,
   pageId,
   message,
-  imageUrls,
+  media,
   scheduledDate,
 }: {
   accessToken: string;
   pageId: string;
   message: string;
-  imageUrls: MediaItem[];
+  media: MediaItem[];
   scheduledDate: number;
 }) {
   // Create the media container(s) but don't publish

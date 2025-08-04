@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     console.log("Post found:", {
       postId,
       platforms: post.platforms,
-      imageUrls: post.imageUrls?.length,
+      media: post.media?.length,
       message: post.message?.substring(0, 50) + "...",
     });
 
@@ -59,15 +59,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate imageUrls if present
+    // Validate media if present
     if (
-      post.imageUrls &&
-      (!Array.isArray(post.imageUrls) ||
-        post.imageUrls.some(
+      post.media &&
+      (!Array.isArray(post.media) ||
+        post.media.some(
           (url) => !url || typeof url !== "object" || !url.url
         ))
     ) {
-      console.error("Invalid imageUrls:", post.imageUrls);
+      console.error("Invalid media:", post.media);
       return NextResponse.json(
         { message: "Invalid image URLs in post" },
         { status: 400 }
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
                     channel.socialMedia?.facebook?.accessToken
                   ),
                   pageId: channel.socialMedia?.facebook?.id,
-                  imageUrls: post.imageUrls,
+                  media: post.media,
                   message: post.message,
                   facebookVideoType: post.facebookVideoType as "default" | "reel" | undefined,
                 });
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
               try {
                 const instagramAccessToken =
                   channel.socialMedia?.instagram?.pageAccessToken;
-                if (!instagramAccessToken || !post.imageUrls) {
+                if (!instagramAccessToken || !post.media) {
                   throw new Error(
                     "Instagram access token or image URLs missing"
                   );
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
                   ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message,
-                  imageUrls: post.imageUrls,
+                  media: post.media,
                 });
 
                 return {
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
               try {
                 if (
                   !channel.socialMedia?.tiktok?.accessToken ||
-                  !post.imageUrls ||
+                  !post.media ||
                   !channel.socialMedia.tiktok.openId
                 ) {
                   throw new Error(
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
                   accessToken: channel.socialMedia.tiktok.accessToken,
                   openId: channel.socialMedia.tiktok.openId,
                   message: post.message,
-                  imageUrls: post.imageUrls,
+                  media: post.media,
                 });
 
                 return {
@@ -251,7 +251,7 @@ export async function POST(request: Request) {
                   accessToken: decryptedAccessToken,
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
                   message: post.message,
-                  imageUrls: post.imageUrls,
+                  media: post.media,
                   ...(channel.socialMedia.x.refreshToken &&
                   channel.socialMedia.x.tokenExpiry
                     ? {

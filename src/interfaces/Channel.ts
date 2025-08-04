@@ -63,33 +63,32 @@ export interface Channel extends ChannelBrief {
 }
 export type IssueStatus = "open" | "in_progress" | "resolved" | "closed";
 export type IssuePriority = "low" | "medium" | "high" | "critical";
-export interface Issue {
-  message: string;
-  status: IssueStatus;
-  priority: IssuePriority;
-  email: string;
-  name: string;
-  avatar?: string;
-  date: Timestamp;
-}
 export interface Comment {
+  postId: string;
   message: string;
-  email: string;
-  name: string;
-  avatar?: string;
+  author: { email: string; name: string; avatar?: string };
   date: Timestamp;
 }
+export interface Issue {
+  id: string;
+  postId: string;
+  message: string;
+  status: "open" | "resolved";
+  author: { email: string; name: string; avatar?: string };
+  comments: Comment[];
+  date: Timestamp;
+}
+
 export type Post = {
   id?: string;
-  issues?: Issue[];
+  issues?: { [issueId: string]: Issue };
   comments?: Comment[];
   message?: string;
   platforms?: string[];
-  imageUrls?: MediaItem[];
+  media?: MediaItem[];
   videoUrls?: any[];
-  // scheduledDate?: number;
   date: Timestamp;
-  isScheduled:boolean;
+  isScheduled: boolean;
   status?: string;
   draft?: boolean;
   ruleName?: string;

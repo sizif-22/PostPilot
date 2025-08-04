@@ -364,7 +364,7 @@ export class EnhancedPDFGenerator {
     });
 
     const mediaCount = posts.reduce(
-      (acc, post) => acc + (post.imageUrls?.length || 0),
+      (acc, post) => acc + (post.media?.length || 0),
       0
     );
     this.drawStatCard(page, {
@@ -474,12 +474,12 @@ export class EnhancedPDFGenerator {
 
     if (
       this.options.includeImages &&
-      post.imageUrls &&
-      post.imageUrls.length > 0
+      post.media &&
+      post.media.length > 0
     ) {
       currentY = await this.drawMediaSection(
         page,
-        post.imageUrls,
+        post.media,
         currentY - 20
       );
     }

@@ -4,10 +4,10 @@ export async function PostOnFacebook({
   accessToken,
   pageId,
   message,
-  imageUrls,
+  media,
   facebookVideoType,
 }: {
-  imageUrls?: MediaItem[];
+  media?: MediaItem[];
   accessToken: any;
   pageId: any;
   message: any;
@@ -29,10 +29,10 @@ export async function PostOnFacebook({
     //     }
 
     // Validate media types
-    if (imageUrls && imageUrls.length > 0) {
-      const hasVideos = imageUrls.some((item) => item.isVideo);
-      const hasImages = imageUrls.some((item) => !item.isVideo);
-      const videoCount = imageUrls.filter((item) => item.isVideo).length;
+    if (media && media.length > 0) {
+      const hasVideos = media.some((item) => item.isVideo);
+      const hasImages = media.some((item) => !item.isVideo);
+      const videoCount = media.filter((item) => item.isVideo).length;
 
       // Check for mixed media
       if (hasVideos && hasImages) {
@@ -91,12 +91,12 @@ export async function PostOnFacebook({
     };
 
     // Initialize attached_media array if we have multiple images
-    if (imageUrls && imageUrls.length > 1) {
+    if (media && media.length > 1) {
       postData.attached_media = [];
     }
 
-    if (imageUrls && imageUrls.length === 1) {
-      if (imageUrls[0].isVideo) {
+    if (media && media.length === 1) {
+      if (media[0].isVideo) {
         // --- REEL LOGIC ---
         if (facebookVideoType === "reel") {
           console.log("Publishing as Reel...");
@@ -104,7 +104,7 @@ export async function PostOnFacebook({
           // Validate Reel requirements
           try {
             // Get video metadata to check duration
-            const videoResponse = await fetch(imageUrls[0].url, {
+            const videoResponse = await fetch(media[0].url, {
               method: "HEAD",
             });
             if (!videoResponse.ok) {
@@ -113,7 +113,7 @@ export async function PostOnFacebook({
 
             // Note: For more accurate duration checking, you might want to use a video processing service
             // or implement client-side duration checking before sending to the API
-            console.log("Video URL for Reel:", imageUrls[0].url);
+            console.log("Video URL for Reel:", media[0].url);
           } catch (error) {
             console.warn("Could not validate video metadata:", error);
           }
@@ -147,7 +147,7 @@ export async function PostOnFacebook({
             method: "POST",
             headers: {
               Authorization: `OAuth ${pageAccessToken}`,
-              file_url: imageUrls[0].url,
+              file_url: media[0].url,
             },
           });
           const uploadData = await uploadRes.json();
@@ -187,7 +187,7 @@ export async function PostOnFacebook({
         // --- DEFAULT VIDEO LOGIC (existing) ---
         console.log("Publishing as Default Video...");
         const videoData: any = {
-          file_url: imageUrls[0].url,
+          file_url: media[0].url,
           description: message,
           access_token: pageAccessToken, // Use page token
         };
@@ -218,7 +218,7 @@ export async function PostOnFacebook({
       } else {
         // Single image post
         console.log("Publishing as Single Image...");
-        postData.url = imageUrls[0].url;
+        postData.url = media[0].url;
         postData.caption = message;
 
         const photoData: any = {
@@ -254,10 +254,10 @@ export async function PostOnFacebook({
         console.log("Single image published successfully:", data);
         return data;
       }
-    } else if (imageUrls && imageUrls.length > 1) {
+    } else if (media && media.length > 1) {
       // Multiple images post
       console.log("Publishing as Multiple Images...");
-      for (const item of imageUrls) {
+      for (const item of media) {
         if (item.isVideo) {
           const videoParams = {
             file_url: item.url,

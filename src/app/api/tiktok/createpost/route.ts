@@ -7,12 +7,12 @@ export async function POST(request: Request) {
       accessToken,
       openId,
       message,
-      imageUrls,
+      media,
     }: {
       accessToken: string;
       openId: string;
       message: string;
-      imageUrls: MediaItem[];
+      media: MediaItem[];
     } = await request.json();
 
     // Validate required parameters
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!message && (!imageUrls || imageUrls.length === 0)) {
+    if (!message && (!media || media.length === 0)) {
       return NextResponse.json(
         { error: "Message or media is required for TikTok post" },
         { status: 400 }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       tiktok: {
         openId,
         message,
-        imageUrls,
+        media,
       },
     });
   } catch (error: any) {

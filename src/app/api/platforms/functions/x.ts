@@ -55,11 +55,11 @@ export async function PostOnX({
   accessToken,
   pageId, // Not used for X, but kept for interface compatibility
   message,
-  imageUrls,
+  media,
   refreshToken,
   tokenExpiry,
 }: {
-  imageUrls?: MediaItem[];
+  media?: MediaItem[];
   accessToken: string;
   pageId: string;
   message?: string;
@@ -104,9 +104,9 @@ export async function PostOnX({
     let media_ids: string[] = [];
 
     // 1. Upload media if present - if this fails, the entire post should fail
-    if (imageUrls && imageUrls.length > 0) {
+    if (media && media.length > 0) {
       // X allows up to 4 images or 1 video per tweet
-      const mediaToUpload = imageUrls.slice(0, 4);
+      const mediaToUpload = media.slice(0, 4);
       console.log(
         `Attempting to upload ${mediaToUpload.length} media items to X`
       );

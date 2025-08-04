@@ -62,8 +62,8 @@ export const Analysis = () => {
     };
 
     filteredPosts.forEach((post) => {
-      const hasImages = post.imageUrls && post.imageUrls.length > 0;
-      const hasVideo = post.imageUrls?.some((img) => img.isVideo);
+      const hasImages = post.media && post.media.length > 0;
+      const hasVideo = post.media?.some((img) => img.isVideo);
 
       if (hasVideo) {
         contentTypes.video++;

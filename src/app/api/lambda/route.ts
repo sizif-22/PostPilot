@@ -2,7 +2,9 @@
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
 import { NextResponse } from "next/server";
-
+import { getAuth } from "firebase-admin/auth";
+import { cookies } from "next/headers";
+import { serverApp } from "@/firebase-admin/config";
 interface SchedulePostRequest {
   scheduledDate: number; // Unix timestamp
   channelId: string;
@@ -18,8 +20,8 @@ interface LambdaPayload {
 
 export async function POST(request: Request) {
   try {
+    
     const post: SchedulePostRequest = await request.json();
-
     // Validate required fields
     if (!post.scheduledDate || !post.channelId || !post.postId) {
       return NextResponse.json(

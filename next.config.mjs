@@ -5,6 +5,7 @@ const nextConfig = {
       "firebasestorage.googleapis.com",
       "d11p0alxbet5ud.cloudfront.net",
       "example.com",
+      "api.dicebear.com",
     ],
   },
 };

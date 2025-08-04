@@ -161,7 +161,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
                 isLoading={isLoading}
               />
             ) : route === "Issues" ? (
-              <Issues />
+              <Issues media={media} />
             ) : (
               <Configuration />
             )}

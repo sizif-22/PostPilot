@@ -185,9 +185,9 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                       <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
                         {post.message}
                       </h3>
-                      {post.imageUrls && post.imageUrls.length > 0 && (
+                      {post.media && post.media.length > 0 && (
                         <div className="flex gap-2 mt-2">
-                          {post.imageUrls?.map((image, index) => (
+                          {post.media?.map((image, index) => (
                             <div key={index} className="relative">
                               {image.isVideo ? (
                                 <>
@@ -216,11 +216,11 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                                 />
                               )}
                               {index === 3 &&
-                                post.imageUrls &&
-                                post.imageUrls.length > 4 && (
+                                post.media &&
+                                post.media.length > 4 && (
                                   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-md flex items-center justify-center">
                                     <span className="text-white text-xs font-medium">
-                                      +{post.imageUrls.length - 4}
+                                      +{post.media.length - 4}
                                     </span>
                                   </div>
                                 )}

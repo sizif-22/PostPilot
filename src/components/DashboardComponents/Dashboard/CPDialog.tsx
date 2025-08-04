@@ -321,12 +321,11 @@ export const CPDialog = ({
       const timeStampDate: Date =
         date != "" ? new Date(date) : new Date(Date.now());
 
-      console.log("is reel ?", facebookVideoType);
       const newPost: Post = {
         id: postId,
         message: postText,
         platforms: selectedPlatforms,
-        imageUrls: selectedImages,
+        media: selectedImages,
         facebookVideoType,
         published: !isScheduled,
         date: Timestamp.fromDate(timeStampDate),

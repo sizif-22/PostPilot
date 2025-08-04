@@ -249,7 +249,7 @@ export function EditPostDialog({
         id: post.id,
         message: postText,
         platforms: selectedPlatforms,
-        imageUrls: selectedImages,
+        media: selectedImages,
         facebookVideoType,
       };
       await editPost(post.id, channel.id, updatedPost);

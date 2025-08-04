@@ -81,7 +81,7 @@ const createPost = async (post: Post, channelId: string) => {
   //   message: post.message,
   //   published: !post.isScheduled,
   //   platforms: post.platforms,
-  //   imageUrls: post.imageUrls,
+  //   media: post.media,
   //   date: Timestamp.now(),
   // };
 

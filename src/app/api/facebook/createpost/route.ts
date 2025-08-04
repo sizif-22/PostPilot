@@ -7,10 +7,10 @@ export async function POST(request: Request) {
       accessToken,
       pageId,
       message,
-      imageUrls,
+      media,
       facebookVideoType,
     }: {
-      imageUrls: MediaItem[];
+      media: MediaItem[];
       accessToken: any;
       pageId: any;
       message: any;
@@ -40,10 +40,10 @@ export async function POST(request: Request) {
     }
 
     // Validate media types
-    if (imageUrls && imageUrls.length > 0) {
-      const hasVideos = imageUrls.some((item) => item.isVideo);
-      const hasImages = imageUrls.some((item) => !item.isVideo);
-      const videoCount = imageUrls.filter((item) => item.isVideo).length;
+    if (media && media.length > 0) {
+      const hasVideos = media.some((item) => item.isVideo);
+      const hasImages = media.some((item) => !item.isVideo);
+      const videoCount = media.filter((item) => item.isVideo).length;
 
       // Check for mixed media
       if (hasVideos && hasImages) {
@@ -110,12 +110,12 @@ export async function POST(request: Request) {
     };
 
     // Initialize attached_media array if we have multiple images
-    if (imageUrls && imageUrls.length > 1) {
+    if (media && media.length > 1) {
       postData.attached_media = [];
     }
 
-    if (imageUrls && imageUrls.length === 1) {
-      if (imageUrls[0].isVideo) {
+    if (media && media.length === 1) {
+      if (media[0].isVideo) {
         // --- REEL LOGIC ---
         if (facebookVideoType === "reel") {
           // Step 1: Initialize upload session
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
             method: "POST",
             headers: {
               Authorization: `OAuth ${pageAccessToken}`,
-              file_url: imageUrls[0].url,
+              file_url: media[0].url,
             },
           });
           const uploadData = await uploadRes.json();
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
         // --- END REEL LOGIC ---
         // --- DEFAULT VIDEO LOGIC (existing) ---
         const videoData: any = {
-          file_url: imageUrls[0].url,
+          file_url: media[0].url,
           description: message,
           access_token: pageAccessToken, // Use page token
         };
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
         return NextResponse.json(data);
       } else {
         // Single image post
-        postData.url = imageUrls[0].url;
+        postData.url = media[0].url;
         postData.caption = message;
 
         const photoData: any = {
@@ -243,9 +243,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json(data);
       }
-    } else if (imageUrls && imageUrls.length > 1) {
+    } else if (media && media.length > 1) {
       // Multiple images post
-      for (const item of imageUrls) {
+      for (const item of media) {
         if (item.isVideo) {
           const videoParams = {
             file_url: item.url,
