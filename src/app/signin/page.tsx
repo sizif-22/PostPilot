@@ -193,8 +193,8 @@ const Oauth = () => {
       <div className="flex gap-2 mt-4">
         <Button
           className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons"
-          onClick={() => {
-            signInWithGoogle();
+          onClick={async() => {
+            await signInWithGoogle();
             window.location.href = "/";
           }}>
           <span className="mr-2">
