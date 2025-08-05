@@ -4,8 +4,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { UserProvider } from "@/context/UserContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { headers } from "next/headers";
-
 import "./globals.css";
+// import SubLayout from "./subLayout";
 import { cookies } from "next/headers";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -43,7 +43,10 @@ export default async function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-            <UserProvider email={email}>{children}</UserProvider>
+            <UserProvider email={email}>
+              {/* <SubLayout>{children}</SubLayout> */}
+              {children}
+            </UserProvider>
           </ThemeProvider>
         </NotificationProvider>
       </body>

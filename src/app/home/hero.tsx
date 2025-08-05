@@ -2,10 +2,8 @@
 import { motion } from "framer-motion";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
-import { FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { signInWithGoogle } from "@/firebase/auth";
+import { redirect, useRouter } from "next/navigation";
 export const Hero = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -31,17 +29,21 @@ export const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
               {user?.email ? (
-                <Button onClick={() => router.push("/channels")}>
+                <Button
+                  className={`${
+                    user?.isVerified != true && "cursor-not-allowed"
+                  }`}
+                  disabled={user?.isVerified != true}
+                  onClick={() => router.push("/channels")}>
                   Channels
                 </Button>
               ) : (
                 <Button
                   onClick={async () => {
-                    await signInWithGoogle();
-                    window.location.href = "/";
+                    redirect("/signin");
                   }}>
-                  <FaGoogle />
-                  Sign In with Google
+                  {/* <FaGoogle /> */}
+                  Sign In
                 </Button>
               )}
             </div>

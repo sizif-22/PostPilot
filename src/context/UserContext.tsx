@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 // import { checkLoggedIn } from "@/firebase/auth";
 import { getUser } from "@/firebase/user.firestore";
 import { User } from "@/interfaces/User";
+import { checkVerified } from "@/firebase/auth";
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -25,8 +26,9 @@ export const UserProvider = ({
     const checkAuth = async () => {
       if (email) {
         // Start real-time listener for user data
+        const isVerified = await checkVerified();
         unsubscribe = getUser(email, (userData) => {
-          setUser(userData);
+          setUser({ ...userData, isVerified } as User);
         });
       } else {
         setUser(null);
@@ -50,7 +52,7 @@ export const UserProvider = ({
   );
 };
 
-export const useUser = ():UserContextType => {
+export const useUser = (): UserContextType => {
   const context = useContext(UserContext);
   if (!context) {
     throw new Error("useUser must be used within a UserProvider");

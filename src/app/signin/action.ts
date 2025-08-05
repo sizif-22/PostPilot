@@ -13,6 +13,7 @@ export interface FormDate {
 
 export async function signInServer(idToken: string, formDate: FormDate) {
   try {
+
     await login(idToken);
 
     const userQuery = query(
@@ -21,7 +22,7 @@ export async function signInServer(idToken: string, formDate: FormDate) {
     );
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) {
-      const userData: User = {
+      const userData: Partial<User> = {
         uid: "",
         name: formDate.name || "",
         email: formDate.email || "",

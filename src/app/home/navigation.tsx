@@ -17,7 +17,7 @@ import {
   acceptJoiningToAChannel,
   rejectJoiningToAChannel,
 } from "@/firebase/user.firestore";
-import { logOut } from "./action";
+import { logOut } from "../signin/action";
 import { Notification as UserNotification } from "@/interfaces/User"; // Alias to avoid conflict
 import { NotificationConfig } from "@/context/NotificationContext";
 
@@ -42,6 +42,7 @@ export const Navigation = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [lastNotifCount, setLastNotifCount] = useState<number>(
     user?.notifications?.length || 0
   );
@@ -49,6 +50,8 @@ export const Navigation = () => {
 
   // Detect new notification arrival
   useEffect(() => {
+    if (user && user?.notifications != undefined)
+      setNotifications(user?.notifications);
     const currentCount = user?.notifications?.length || 0;
     if (
       currentCount > lastNotifCount &&
@@ -60,7 +63,7 @@ export const Navigation = () => {
       setTimeout(() => setShowNewAlert(false), 3000);
     }
     setLastNotifCount(currentCount);
-  }, [user?.notifications, lastNotifCount]); // Added lastNotifCount to dependencies
+  }, [user?.notifications, lastNotifCount]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -75,6 +78,21 @@ export const Navigation = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  useEffect(() => {
+    if (user?.isVerified == false) {
+      setNotifications([
+        ...notifications,
+        {
+          channelName: "PostPilot Support",
+          channelDescription:
+            "You can find the verification link in your mail box.",
+          owner: "Owner",
+          channelId: "",
+          Type: "Message",
+        },
+      ]);
+    }
+  }, [user]);
 
   return (
     <nav className="fixed top-0 w-full transition-all duration-300 dark:bg-black/90 bg-white/90 backdrop-blur-sm z-50 dark:border-violet-900 border-violet-200">
@@ -84,27 +102,6 @@ export const Navigation = () => {
             PostPilot
           </h1>
           <div className="flex items-center gap-2 sm:gap-6">
-            {/* <Button
-              onClick={() => {
-                addNotification({
-                  messageOnProgress: "on Progress",
-                  func: [new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                      console.log("promise");
-                      resolve("✅");
-                    }, 3000);
-                  }),new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                      console.log("promise");
-                      resolve("✅");
-                    }, 3000);
-                  })],
-                  successMessage: "Done!!",
-                  failMessage: "Failed",
-                } as NotificationConfig);
-              }}>
-              notification
-            </Button> */}
             {Buttons.map((button, index) => (
               <Link
                 key={index}
@@ -125,8 +122,8 @@ export const Navigation = () => {
                   <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
                   <div
                     className={`w-2 h-2 absolute top-1.5 rounded-full right-2 bg-red-600 ${
-                      (user.notifications == undefined ||
-                        user.notifications.length == 0) &&
+                      (notifications == undefined ||
+                        notifications.length == 0) &&
                       "hidden"
                     }`}></div>
                 </button>
@@ -135,60 +132,67 @@ export const Navigation = () => {
                   className={`absolute top-16 right-40 z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
                     !notificationBar && "hidden"
                   }`}>
-                  {user.notifications == undefined ||
-                  user.notifications.length == 0 ? (
+                  {notifications == undefined || notifications.length == 0 ? (
                     <div className="flex justify-center items-center py-8 text-gray-400 text-sm">
                       No notifications at the moment
                     </div>
                   ) : (
                     <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-700/50">
-                      {user.notifications.map((notification: UserNotification, index: number) => (
-                        <div
-                          key={index}
-                          className="p-4 hover:bg-white/5 transition-all duration-200">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex flex-col  items-start gap-2 text-sm">
-                              <span className="font-semibold">
-                                {notification.owner}
-                              </span>
-                              <span className="text-gray-400">
-                                invited you to join{" "}
-                                <span className="font-medium text-gray-200 text-sm">
-                                  {notification.channelName}
+                      {notifications.map(
+                        (notification: UserNotification, index: number) => (
+                          <div
+                            key={index}
+                            className="p-4 hover:bg-white/5 transition-all duration-200">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex flex-col  items-start gap-2 text-sm">
+                                {notification.Type == "Ask" && (
+                                  <span className="font-semibold">
+                                    {notification.owner}
+                                  </span>
+                                )}
+                                <span className="text-gray-400">
+                                  {notification.Type == "Ask" &&
+                                    "invited you to join"}{" "}
+                                  <span className="font-medium text-gray-200 text-sm">
+                                    {notification.channelName}
+                                  </span>
                                 </span>
-                              </span>
-                            </div>
-                            <div className="pl-1">
-                              <p className="text-xs text-gray-400">
-                                {notification.channelDescription}
-                              </p>
-                            </div>
-                            {notification.Type === "Ask" && (
-                              <div className="flex justify-end gap-2 mt-4">
-                                <Button
-                                  onClick={() =>
-                                    rejectJoiningToAChannel(
-                                      notification,
-                                      user.email
-                                    )
-                                  }
-                                  variant={"link"}
-                                  className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition">
-                                  Reject
-                                </Button>
-                                <Button
-                                  onClick={() =>
-                                    acceptJoiningToAChannel(notification, user)
-                                  }
-                                  variant={"secondary"}
-                                  className=" text-black dark:text-white px-4 py-1.5 rounded-lg text-xs font-medium transition">
-                                  Accept
-                                </Button>
                               </div>
-                            )}
+                              <div className="pl-1">
+                                <p className="text-xs text-gray-400">
+                                  {notification.channelDescription}
+                                </p>
+                              </div>
+                              {notification.Type === "Ask" && (
+                                <div className="flex justify-end gap-2 mt-4">
+                                  <Button
+                                    onClick={() =>
+                                      rejectJoiningToAChannel(
+                                        notification,
+                                        user.email
+                                      )
+                                    }
+                                    variant={"link"}
+                                    className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition">
+                                    Reject
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      acceptJoiningToAChannel(
+                                        notification,
+                                        user
+                                      )
+                                    }
+                                    variant={"secondary"}
+                                    className=" text-black dark:text-white px-4 py-1.5 rounded-lg text-xs font-medium transition">
+                                    Accept
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -222,14 +226,16 @@ export const Navigation = () => {
                             ? `You have: ${user.channels.length} channel`
                             : "You have no channels yet."}
                         </p>
-                        <Button
-                          onClick={() => {
-                            router.push("/channels");
-                          }}
-                          variant={"default"}
-                          className="mt-3">
-                          Channels
-                        </Button>
+                        {user?.isVerified == true && (
+                          <Button
+                            onClick={() => {
+                              router.push("/channels");
+                            }}
+                            variant={"default"}
+                            className="mt-3">
+                            Channels
+                          </Button>
+                        )}
                         <Button
                           onClick={async () => {
                             await logOut();

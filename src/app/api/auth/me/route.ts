@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { serverApp } from "@/firebase-admin/config";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { checkVerified } from "@/firebase/auth";
 
 export async function GET() {
   const session = (await cookies()).get("session")?.value;

@@ -4,9 +4,9 @@ import { User, TMBrief } from "@/interfaces/User";
 import { Notification } from "@/interfaces/User";
 import { Channel } from "@/interfaces/Channel";
 
-export const addUser = async (user: User) => {
+export const addUser = async (user: Partial<User>) => {
   const userRef = fs.doc(fs.collection(db, "Users"), user.email);
-  await fs.setDoc(userRef, { ...user, channels: [] });
+  await fs.setDoc(userRef, user);
 };
 
 export const getUser = (

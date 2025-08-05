@@ -10,6 +10,7 @@ export interface User {
   email: string;
   avatar: string;
   channels: UserChannel[];
+  isVerified: Boolean;
   notifications?: Notification[];
 }
 export interface TMBrief {
