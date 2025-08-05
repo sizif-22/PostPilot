@@ -195,7 +195,7 @@ const Oauth = () => {
           className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons"
           onClick={() => {
             signInWithGoogle();
-            // window.location.href = "/";
+            window.location.href = "/";
           }}>
           <span className="mr-2">
             <FaGoogle />
