@@ -327,8 +327,10 @@ export const CPDialog = ({
         platforms: selectedPlatforms,
         media: selectedImages,
         facebookVideoType,
-        published: !isScheduled,
-        date: Timestamp.fromDate(timeStampDate),
+        published: postImmediately,
+        date: postImmediately
+          ? Timestamp.fromDate(timeStampDate)
+          : Timestamp.now(),
         isScheduled: !postImmediately,
       };
       if (channel?.id) {
@@ -364,17 +366,17 @@ export const CPDialog = ({
           scheduledDate: date,
         };
         addNotification({
-          messageOnProgress:"Scheduling your post.",
-          successMessage:"Post scheduled successfully.",
-          failMessage:"Failed to schedule your post.",
-          func:[
+          messageOnProgress: "Scheduling your post.",
+          successMessage: "Post scheduled successfully.",
+          failMessage: "Failed to schedule your post.",
+          func: [
             fetch("/api/lambda", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(lambdaData),
-          }),
-        ],
-        })
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(lambdaData),
+            }),
+          ],
+        });
       }
       resetForm();
       setOpen(false);
