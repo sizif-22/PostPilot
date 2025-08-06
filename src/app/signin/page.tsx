@@ -26,8 +26,10 @@ const Signin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [onProgress, setOnProgress] = useState<boolean>(false);
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setOnProgress(true);
     if (!isStrongPassword(password)) {
       alert(
         "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
@@ -48,6 +50,8 @@ const Signin = () => {
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setOnProgress(true);
+
     try {
       await signInWithEmail(email, password);
       window.location.href = "/";
@@ -110,10 +114,15 @@ const Signin = () => {
               </div>
               <Button
                 type="submit"
+                disabled={onProgress}
                 className="w-full transition-all duration-200 hover:opacity-95 dark:bg-darkButtons text-white">
-                Log In
+                {onProgress ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent "></div>
+                ) : (
+                  "Log In"
+                )}
               </Button>
-              <Oauth />
+              <Oauth onProgress={onProgress} setOnProgress={setOnProgress} />
             </form>
           </TabsContent>
 
@@ -173,10 +182,15 @@ const Signin = () => {
 
               <Button
                 type="submit"
+                disabled={onProgress}
                 className="w-full transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons">
-                Sign Up
+                {onProgress ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent"></div>
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
-              <Oauth />
+              <Oauth onProgress={onProgress} setOnProgress={setOnProgress} />
             </form>
           </TabsContent>
         </Tabs>
@@ -185,22 +199,36 @@ const Signin = () => {
   );
 };
 
-const Oauth = () => {
+const Oauth = ({
+  onProgress,
+  setOnProgress,
+}: {
+  onProgress: boolean;
+  setOnProgress: (state: boolean) => void;
+}) => {
   return (
     <>
       <hr className="my-4" />
       <h2 className="text-sm font-medium">Or continue with</h2>
       <div className="flex gap-2 mt-4">
         <Button
+          disabled={onProgress}
           className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons"
-          onClick={async() => {
+          onClick={async () => {
+            setOnProgress(true);
             await signInWithGoogle();
             window.location.href = "/";
           }}>
-          <span className="mr-2">
-            <FaGoogle />
-          </span>
-          Google
+          {onProgress ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent"></div>
+          ) : (
+            <>
+              <span className="mr-2">
+                <FaGoogle />
+              </span>
+              Google
+            </>
+          )}
         </Button>
       </div>
     </>

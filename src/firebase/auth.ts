@@ -116,7 +116,6 @@ const checkVerified = async (): Promise<Boolean> => {
   return new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log(user);
         if (user.emailVerified) {
           resolve(true);
         } else {

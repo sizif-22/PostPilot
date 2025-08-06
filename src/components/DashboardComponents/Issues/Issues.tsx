@@ -167,6 +167,9 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
         }),
       ],
     });
+
+    setSelectedIssue(null);
+    setSelectedPost(null);
   };
 
   const stats = getStatusStats();
@@ -238,7 +241,7 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
           </div>
 
           {/* Search and Filters */}
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 w-4 h-4" />
               <input
@@ -275,12 +278,12 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
               <option value="high">High</option>
               <option value="critical">Critical</option>
             </select>
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Issues List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-scroll space-y-2 flex flex-col gap-2 h-[75vh] pb-10">
         {filteredIssues.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center mb-4">
@@ -389,11 +392,11 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
                       {post &&
                         typeof post === "object" &&
                         "comments" in post &&
-                        Array.isArray(post.comments) &&
-                        post.comments.length > 0 && (
+                        Array.isArray(issue.comments) &&
+                        issue.comments.length > 0 && (
                           <div className="flex items-center gap-1">
                             <FiMessageSquare className="w-4 h-4" />
-                            <span>{post.comments.length} comments</span>
+                            <span>{issue.comments.length} comments</span>
                           </div>
                         )}
                     </div>

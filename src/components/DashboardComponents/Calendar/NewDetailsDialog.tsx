@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Command } from "cmdk";
 import {
   FiX,
@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNotification } from "@/context/NotificationContext";
 import * as fs from "firebase/firestore";
 import { db } from "@/firebase/config";
+import { Button } from "@/components/ui/button";
 
 type EditDialogPost = {
   id: string;
@@ -65,8 +66,30 @@ export const NewDetailsDialog = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentType, setCommentType] = useState<CommentType>("comment");
   const [commentText, setCommentText] = useState("");
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [toggle, setToggle] = useState<boolean>(false);
+  const [toggle2, setToggle2] = useState<boolean>(false);
   const { user } = useUser();
   const { addNotification } = useNotification();
+
+  useEffect(() => {
+    if (selectedPost && selectedPost.id) {
+      const fetchedIssues = Object.values(
+        channel?.posts[selectedPost.id]?.issues ?? {}
+      );
+      setIssues(fetchedIssues);
+    }
+  }, [selectedPost, toggle]);
+
+  useEffect(() => {
+    if (selectedPost && selectedPost.id) {
+      const fetchedComments = Object.values(
+        channel?.posts[selectedPost.id]?.comments ?? {}
+      );
+      setComments(fetchedComments);
+    }
+  }, [selectedPost, toggle2]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -150,14 +173,15 @@ export const NewDetailsDialog = ({
         failMessage: "Failed to submit the issue",
         successMessage: "Issue submitted successfully.",
         func: [
-          new Promise((resolve, reject) => {
+          new Promise(async (resolve, reject) => {
             try {
               if (channel?.id)
-                createIssue({
+                await createIssue({
                   issue: newIssue,
                   post: selectedPost,
                   channelId: channel?.id,
                 });
+              setToggle(!toggle);
               resolve(true);
             } catch (error) {
               reject(false);
@@ -177,14 +201,15 @@ export const NewDetailsDialog = ({
         failMessage: "Failed to submit the comment",
         successMessage: "Comment submitted successfully.",
         func: [
-          new Promise((resolve, reject) => {
+          new Promise(async (resolve, reject) => {
             try {
               if (channel?.id)
-                createComment({
+                await createComment({
                   comment: newComment,
                   post: selectedPost,
                   channelId: channel?.id,
                 });
+              setToggle2(!toggle2);
               resolve(true);
             } catch (error) {
               reject(false);
@@ -194,12 +219,6 @@ export const NewDetailsDialog = ({
       });
     }
     setCommentText("");
-  };
-
-  const getPlaceholderText = () => {
-    return commentType === "comment"
-      ? "Share your thoughts about this post..."
-      : "Describe the issue you've identified...";
   };
 
   const formatCommentDate = (timestamp: any) => {
@@ -300,26 +319,16 @@ export const NewDetailsDialog = ({
         media={media}
       />
       {selectedPost && (
-        <Command.Dialog
-          open={open && !isEditDialogOpen}
-          onOpenChange={(openVal) => {
-            if (!openVal) {
-              setCurrentIndex(0);
-              setOpen(false);
-              setSelectedPost(null);
-            }
-          }}
-          label="Post Details"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        <div
+          className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setCurrentIndex(0);
               setOpen(false);
             }
           }}>
-          <DialogTitle className="sr-only">Post Details</DialogTitle>
           <div
-            className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] w-full max-w-6xl grid overflow-hidden ${
+            className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] max-h-[80vh] w-full max-w-6xl grid overflow-hidden ${
               selectedPost?.media && selectedPost.media.length > 0
                 ? "grid-cols-14"
                 : "grid-cols-9"
@@ -518,7 +527,7 @@ export const NewDetailsDialog = ({
             </div>
 
             {/* Comments/Issues Section */}
-            <div className="col-span-1 lg:col-span-4 flex flex-col bg-gray-50 dark:bg-secondDarkBackground border-l border-gray-200 dark:border-darkBorder">
+            <div className="col-span-1 lg:col-span-4 flex flex-col max-h-[80vh] bg-gray-50 dark:bg-secondDarkBackground border-l border-gray-200 dark:border-darkBorder">
               {/* Comments Header */}
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-4">
@@ -554,60 +563,60 @@ export const NewDetailsDialog = ({
 
               {/* Comments List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {commentType == "issue" &&
-                selectedPost.issues &&
-                Object.values(selectedPost.issues).length > 0 ? (
-                  Object.values(selectedPost.issues).map((issue, index) => (
-                    <div
-                      key={index}
-                      className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="font-medium text-gray-900 dark:text-white text-sm">
-                          {issue.author.name || issue.author.email}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatCommentDate(issue.date)}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                        {issue.message}
-                      </p>
-                      <div className="mt-2">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                {commentType == "issue" && issues.length > 0 ? (
+                  issues
+                    .sort((a, b) => b.date.seconds - a.date.seconds)
+                    .map((issue, index) => (
+                      <div
+                        key={index}
+                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">
+                            {issue.author.name || issue.author.email}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatCommentDate(issue.date)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                          {issue.message}
+                        </p>
+                        <div className="mt-2">
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
                           ${
                             issue.status == "open"
                               ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                               : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                           }
                           `}>
-                          <FiAlertCircle className="w-3 h-3 mr-1" />
+                            <FiAlertCircle className="w-3 h-3 mr-1" />
 
-                          {issue.status == "open" ? "Issue" : "Resolved"}
-                        </span>
+                            {issue.status == "open" ? "Issue" : "Resolved"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                ) : commentType == "comment" &&
-                  selectedPost.comments &&
-                  selectedPost?.comments?.length > 0 ? (
-                  selectedPost.comments.map((comment, index) => (
-                    <div
-                      key={index}
-                      className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="font-medium text-gray-900 dark:text-white text-sm">
-                          {comment.author.name || comment.author.email}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatCommentDate(comment.date)}
-                        </span>
+                    ))
+                ) : commentType == "comment" && comments.length > 0 ? (
+                  comments
+                    .sort((a, b) => b.date.seconds - a.date.seconds)
+                    .map((comment, index) => (
+                      <div
+                        key={index}
+                        className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-darkBorder">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">
+                            {comment.author.name || comment.author.email}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatCommentDate(comment.date)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                          {comment.message}
+                        </p>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                        {comment.message}
-                      </p>
-                    </div>
-                  ))
+                    ))
                 ) : (
                   <div className="text-center py-8">
                     <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-darkBackground flex items-center justify-center">
@@ -627,27 +636,23 @@ export const NewDetailsDialog = ({
               {/* Comment Input */}
               {selectedPost.published != true && (
                 <div className="p-4 border-t border-gray-200 dark:border-darkBorder">
-                  <div className="flex space-x-3 justify-end">
+                  <div className="flex gap-3">
                     <Textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSubmitComment();
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={
+                        commentType === "comment"
+                          ? "What do you think..."
+                          : "Describe Your issue..."
                       }
-                    }}
-                    placeholder={getPlaceholderText()}
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    // rows={3}
+                      className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 resize-none"
                     />
-
-                    <button
+                    <Button
                       onClick={handleSubmitComment}
                       disabled={!commentText.trim()}
-                      className="self-end p-2 bg-purple-900 hover:bg-purple-950 disabled:bg-transparent disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                      className="self-end mb-1 p-2 bg-purple-900 hover:bg-purple-950  text-white rounded-lg transition-colors">
                       <FiSend className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -656,42 +661,38 @@ export const NewDetailsDialog = ({
 
           {/* Delete Confirmation Modal */}
           {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-60 p-4">
-              <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <FiAlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  </div>
+            <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
+              <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+                <div className="flex items-start gap-4">
+                  <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-semibold mb-2 dark:text-white">
                       Delete Post
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      This action cannot be undone
+                    <p className="text-stone-600 dark:text-gray-400 mb-4">
+                      Are you sure you want to delete this post? This action
+                      cannot be undone.
                     </p>
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-darkBorder rounded">
+                        Cancel
+                      </button>
+                      <button
+                        disabled={isDeleting}
+                        onClick={confirmDelete}
+                        className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded`}>
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6">
-                  Are you sure you want to delete this post? This will
-                  permanently remove it from all platforms.
-                </p>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    disabled={isDeleting}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg transition-colors">
-                    Delete
-                  </button>
                 </div>
               </div>
             </div>
           )}
-        </Command.Dialog>
+          {/* </Command.Dialog> */}
+        </div>
       )}
     </>
   );

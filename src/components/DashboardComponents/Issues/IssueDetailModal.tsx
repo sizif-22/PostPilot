@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiAlertTriangle,
   FiClock,
@@ -20,7 +20,9 @@ import { MediaItem } from "@/interfaces/Media";
 import { createIssueComment } from "@/firebase/issue.firestore";
 import { useUser } from "@/context/UserContext";
 import { Textarea } from "@/components/ui/textarea";
-
+import { Button } from "@/components/ui/button";
+import { useChannel } from "@/context/ChannelContext";
+import { useNotification } from "@/context/NotificationContext";
 type EditDialogPost = {
   id: string;
   message: string;
@@ -58,8 +60,17 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
     null
   );
   const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [toggle, setToggle] = useState<boolean>(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const { user } = useUser();
+  const { channel } = useChannel();
+  const { addNotification } = useNotification();
+  useEffect(() => {
+    const fetchedComments =
+      channel?.posts?.[issue.postId]?.issues?.[issue.id]?.comments ?? [];
+    setComments(fetchedComments);
+  }, [issue, toggle]);
 
   const handleAddComment = async () => {
     if (!commentText.trim() || isSubmittingComment) return;
@@ -74,13 +85,28 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           name: user?.name || "",
           avatar: user?.avatar || "",
         },
-        date: new Date() as any, // This will be converted to Timestamp by Firestore
+        date: new Date() as any,
       };
 
-      await createIssueComment({
-        issue,
-        comment: newComment,
-        channelId,
+      addNotification({
+        messageOnProgress: "Adding your comment.",
+        successMessage: "Your comment added successfully.",
+        failMessage: "Failed adding your comment.",
+        func: [
+          new Promise(async (resolve, reject) => {
+            try {
+              await createIssueComment({
+                issue,
+                comment: newComment,
+                channelId,
+              });
+              setToggle(!toggle);
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+        ],
       });
 
       // Update local state if callback provided
@@ -112,7 +138,13 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
         post={editDialogPost}
         media={media}
       />
-      <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+      <div
+        className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}>
         <div className="bg-white dark:bg-secondDarkBackground rounded-xl w-full max-w-7xl max-h-[90vh] overflow-hidden shadow-2xl dark:shadow-[0_8px_64px_0_rgba(0,0,0,0.6)] border border-stone-200 dark:border-darkBorder">
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b border-stone-200 dark:border-darkBorder bg-stone-50 dark:bg-darkBackground">
@@ -164,7 +196,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           </div>
 
           {/* Modal Content - Two Columns */}
-          <div className="flex flex-1 overflow-hidden max-h-[calc(90vh-120px)]">
+          <div className="flex flex-1 overflow-hidden h-[calc(90vh-120px)]">
             {/* Left Column - Post Details */}
             <div className="w-1/2 border-r border-stone-200 dark:border-darkBorder overflow-y-auto">
               <div className="p-6">
@@ -292,7 +324,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 )}
 
                 {/* Post Stats */}
-                <div className="bg-stone-50 dark:bg-darkButtons rounded-lg p-4">
+                {/* <div className="bg-stone-50 dark:bg-darkButtons rounded-lg p-4">
                   <h4 className="font-medium text-stone-900 dark:text-white mb-3">
                     Post Statistics
                   </h4>
@@ -314,208 +346,155 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                       </span>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
             {/* Right Column - Issue Details and Comments */}
-            <div className="w-1/2 overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <FiAlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  <h3 className="font-semibold text-lg text-stone-900 dark:text-white">
-                    Issue & Discussion
-                  </h3>
-                </div>
-
-                {/* Issue Description */}
-                <div className="mb-6">
-                  <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                        <span className="text-sm font-medium text-red-700 dark:text-red-300">
-                          {issue.author?.avatar ? (
-                            <>
-                              <img
-                                src={issue.author.avatar}
-                                alt="avatar"
-                                className="object-cover w-full h-full rounded-full"
-                              />
-                            </>
-                          ) : (
-                            <>{issue.author.name.slice(0, 1).toUpperCase()}</>
-                          )}
+            <div className="w-1/2 space-y-3 flex flex-col justify-between h-full px-4 py-2">
+              {/* Issue Description */}
+              <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <span className="text-sm font-medium text-red-700 dark:text-red-300">
+                      {issue.author?.avatar ? (
+                        <>
+                          <img
+                            src={issue.author.avatar}
+                            alt="avatar"
+                            className="object-cover w-full h-full rounded-full"
+                          />
+                        </>
+                      ) : (
+                        <>{issue.author.name.slice(0, 1).toUpperCase()}</>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <div className="flex flex-col mb-2">
+                        <span className="font-medium text-red-900 dark:text-red-100">
+                          {issue.author.name}
                         </span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium text-red-900 dark:text-red-100">
-                            {issue.author.name}
-                          </span>
-                          <span className="text-sm text-red-600 dark:text-red-400">
-                            {formatCommentDate(issue.date)}
-                          </span>
-                        </div>
-                        <p className="text-red-800 dark:text-red-200">
-                          {issue.message}
+                        <p className="text-sm text-red-600 dark:text-red-400 ">
+                          {issue.author.email}
                         </p>
-                        {issue.author.email && (
-                          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                            {issue.author.email}
-                          </p>
-                        )}
                       </div>
+                      <span className="text-sm text-red-600 dark:text-red-400">
+                        {formatCommentDate(issue.date)}
+                      </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Comments Section */}
-                {issue.comments && issue.comments.length > 0 && (
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FiMessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <h4 className="font-medium text-stone-900 dark:text-white">
-                        Comments ({issue.comments.length})
-                      </h4>
-                    </div>
-
-                    <div className="space-y-4">
-                      {issue.comments.map((comment: Comment, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white dark:bg-darkBackground border border-stone-200 dark:border-darkBorder rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                              {comment.author.avatar ? (
-                                <img
-                                  src={comment.author.avatar}
-                                  alt={comment.author.name}
-                                  className="w-full h-full rounded-full object-cover"
-                                />
-                              ) : (
-                                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                                  {comment.author.name
-                                    .slice(0, 1)
-                                    .toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="font-medium text-stone-900 dark:text-white">
-                                  {comment.author.name}
-                                </span>
-                                <span className="text-sm text-stone-500 dark:text-stone-400">
-                                  {formatCommentDate(comment.date)}
-                                </span>
-                              </div>
-                              <p className="text-stone-700 dark:text-stone-300">
-                                {comment.message}
-                              </p>
-                              {comment.author.email && (
-                                <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
-                                  {comment.author.email}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* No Comments State */}
-                {(!issue.comments || issue.comments.length === 0) && (
-                  <div className="text-center py-6 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center mx-auto mb-3">
-                      <FiMessageSquare className="w-6 h-6 text-stone-400 dark:text-stone-500" />
-                    </div>
-                    <h4 className="font-medium text-stone-900 dark:text-white mb-1">
-                      No Comments Yet
-                    </h4>
-                    <p className="text-sm text-stone-500 dark:text-stone-400">
-                      Be the first to comment on this issue.
+                    <p className="text-red-800 dark:text-red-200">
+                      {issue.message}
                     </p>
                   </div>
-                )}
-
-                {/* Add Comment Form - Only show if issue is not resolved */}
-                {issue.status !== "resolved" && (
-                  <div className="mt-6 pt-6 border-t border-stone-200 dark:border-darkBorder">
-                    <h4 className="font-medium text-stone-900 dark:text-white mb-3">
-                      Add Comment
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                          {user?.avatar ? (
-                            <img
-                              src={user?.avatar}
-                              alt={user?.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                              {user?.name.slice(0, 1).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <Textarea
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            // onKeyPress={handleKeyPress}
-                            placeholder="Add a comment to this issue..."
-                            className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                            // rows={3}
-                            disabled={isSubmittingComment}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          onClick={handleAddComment}
-                          disabled={!commentText.trim() || isSubmittingComment}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-stone-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium">
-                          <FiSend className="w-4 h-4" />
-                          {isSubmittingComment ? "Adding..." : "Add Comment"}
-                        </button>
-                      </div>
-                      {/* <p className="text-xs text-stone-500 dark:text-stone-400">
-                        Press Enter to submit, Shift+Enter for new line
-                      </p> */}
-                    </div>
-                  </div>
-                )}
-
-                {/* Resolve Issue Button - Only show if issue is not resolved */}
-                {/* {issue.status !== "resolved" && (
-                  <div className="mt-6 pt-6 border-t border-stone-200 dark:border-darkBorder">
-                    <div className="flex flex-col gap-2">
-                      <button
-                        onClick={() => onResolve(issue)}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium">
-                        <FiCheck className="w-4 h-4" />
-                        Mark as Resolved
-                      </button>
-                      <p className="text-xs text-stone-500 dark:text-stone-400 text-center">
-                        This will move the issue to the resolved issues list.
-                      </p>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Resolved Badge */}
-                {issue.status === "resolved" && (
-                  <div className="mt-6 pt-6 border-t border-stone-200 dark:border-darkBorder">
-                    <div className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg">
-                      <FiCheck className="w-5 h-5" />
-                      <span className="font-medium">Issue Resolved</span>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
+
+              {/* Comments Section */}
+              {comments.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiMessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h4 className="font-medium text-stone-900 dark:text-white">
+                      Comments ({comments.length})
+                    </h4>
+                  </div>
+                  <div className="flex-1 overflow-y-auto space-y-4">
+                    <div className="flex flex-col gap-2">
+                      {comments
+                        .sort((a, b) => b.date.seconds - a.date.seconds)
+                        .map((comment: Comment, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white dark:bg-darkBackground border border-stone-200 dark:border-darkBorder rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                {comment.author?.avatar ? (
+                                  <>
+                                    <img
+                                      src={comment.author.avatar}
+                                      alt="avatar"
+                                      className="object-cover w-full h-full rounded-full"
+                                    />
+                                  </>
+                                ) : (
+                                  <>
+                                    {comment.author.name
+                                      .slice(0, 1)
+                                      .toUpperCase()}
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between">
+                                  <div className="flex flex-col mb-2">
+                                    <span className="font-medium text-stone-900 dark:text-white">
+                                      {comment.author.name}
+                                    </span>
+                                    <p className="text-sm text-stone-500 dark:text-stone-400">
+                                      {comment.author.email}
+                                    </p>
+                                  </div>
+                                  <span className="text-sm text-stone-500 dark:text-stone-400">
+                                    {formatCommentDate(comment.date)}
+                                  </span>
+                                </div>
+                                <p className="text-stone-700 dark:text-stone-300">
+                                  {comment.message}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* No Comments State */}
+              {(!issue.comments || comments.length === 0) && (
+                <div className="text-center py-6 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center mx-auto mb-3">
+                    <FiMessageSquare className="w-6 h-6 text-stone-400 dark:text-stone-500" />
+                  </div>
+                  <h4 className="font-medium text-stone-900 dark:text-white mb-1">
+                    No Comments Yet
+                  </h4>
+                  <p className="text-sm text-stone-500 dark:text-stone-400">
+                    Be the first to comment on this issue.
+                  </p>
+                </div>
+              )}
+
+              {/* Add Comment Form - Only show if issue is not resolved */}
+              {issue.status !== "resolved" && (
+                <div className="flex gap-3 pt-3 border-t border-gray-200 dark:border-darkBorder">
+                  <Textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Add a comment to this issue..."
+                    className="w-full px-3 py-2 border border-stone-200 dark:border-darkBorder rounded-lg bg-white dark:bg-darkBackground text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-stone-400 focus:border-transparent resize-none"
+                    disabled={isSubmittingComment}
+                  />
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={!commentText.trim() || isSubmittingComment}
+                    className="self-end mb-1 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-stone-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium">
+                    <FiSend className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Resolved Badge */}
+              {issue.status === "resolved" && (
+                <div className="pt-3 border-t border-stone-200 dark:border-darkBorder">
+                  <div className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg">
+                    <FiCheck className="w-5 h-5" />
+                    <span className="font-medium">Issue Resolved</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

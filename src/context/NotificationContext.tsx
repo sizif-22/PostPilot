@@ -123,7 +123,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 <div className="flex items-center space-x-2">
                   {/* Status Icon */}
                   {notification.status === "progress" && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                    <div className="animate-spin rounded-full  h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
                   )}
                   {notification.status === "success" && (
                     <FaRegCheckCircle className="w-4 text-green-600 h-full" />
