@@ -329,8 +329,8 @@ export const CPDialog = ({
         facebookVideoType,
         published: postImmediately,
         date: postImmediately
-          ? Timestamp.fromDate(timeStampDate)
-          : Timestamp.now(),
+          ? Timestamp.now()
+          : Timestamp.fromDate(timeStampDate),
         isScheduled: !postImmediately,
       };
       if (channel?.id) {
