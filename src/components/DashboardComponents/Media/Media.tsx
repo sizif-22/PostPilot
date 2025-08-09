@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { deleteMedia } from "@/firebase/storage";
 import { useChannel } from "@/context/ChannelContext";
+import Image from "next/image";
 interface MediaProps {
   media: MediaItem[];
   onRefresh: () => void;
@@ -74,9 +75,11 @@ const MediaThumbnail = React.memo(
           isSelected ? "ring-2 ring-violet-500" : ""
         }`}
         onClick={handleClick}>
-        <img
+        <Image
           src={item.url}
           alt={item.name}
+          width={500}
+          height={1080}
           className="w-full h-fit max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] shadow-md transition-all duration-300 object-cover rounded-lg"
         />
         <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

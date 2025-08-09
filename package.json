@@ -49,6 +49,7 @@
     "react-draggable": "^4.5.0",
     "react-dragula": "^1.1.17",
     "react-icons": "^5.5.0",
+    "react-player": "^3.3.1",
     "react-sortablejs": "^6.1.4",
     "recharts": "^2.12.7",
     "sortablejs": "^1.15.6",

@@ -8,15 +8,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FaUpload, FaImage, FaVideo, FaTrash } from "react-icons/fa";
+import { FaUpload, FaImage, FaVideo, FaTrash, FaSpinner } from "react-icons/fa";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { MediaPreviewProps } from "@/interfaces/Media";
 import { useParams } from "next/navigation";
 import { uploadImage } from "@/firebase/storage";
-
-const MediaPreview: React.FC<MediaPreviewProps> = ({ file, onRemove }) => {
+import { useNotification } from "@/context/NotificationContext";
+const MediaPreview: React.FC<
+  MediaPreviewProps & { isConverting?: boolean }
+> = ({ file, onRemove, isConverting = false }) => {
   const { id } = useParams();
   const isImage = file.type.startsWith("image/");
   const previewUrl = URL.createObjectURL(file);
@@ -40,7 +42,11 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ file, onRemove }) => {
             </video>
             <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
               <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                <FaVideo size={12} className="text-white" />
+                {isConverting ? (
+                  <FaSpinner size={12} className="text-white animate-spin" />
+                ) : (
+                  <FaVideo size={12} className="text-white" />
+                )}
               </div>
             </div>
           </div>
@@ -48,11 +54,17 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ file, onRemove }) => {
       </div>
       <button
         onClick={() => onRemove(file)}
-        className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+        disabled={isConverting}>
         <FaTrash className="w-2.5 h-2.5" />
       </button>
       <p className="mt-1 text-xs text-stone-600 truncate max-w-[96px]">
         {file.name}
+        {isConverting && (
+          <span className="block text-violet-600 text-[10px]">
+            Converting...
+          </span>
+        )}
       </p>
     </div>
   );
@@ -72,11 +84,16 @@ const MediaDialog = ({
   const { id } = useParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [conversionProgress, setConversionProgress] = useState(0);
+  const [convertingFiles, setConvertingFiles] = useState<Set<string>>(
+    new Set()
+  );
   const [open, setOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-
+  const { addNotification } = useNotification();
   const validateFileType = (file: File) => {
     const allowedImageTypes = [
       "image/jpeg",
@@ -94,6 +111,9 @@ const MediaDialog = ({
       "video/ogg",
       "video/quicktime",
       "video/x-msvideo",
+      "video/mov",
+      "video/avi",
+      "video/mkv",
     ];
 
     return (
@@ -153,34 +173,76 @@ const MediaDialog = ({
     if (selectedMedia.length === 0) return;
 
     setIsUploading(true);
+    setIsConverting(true);
     setUploadProgress(0);
+    setConversionProgress(0);
 
     try {
       const totalFiles = selectedMedia.length;
       let completedUploads = 0;
+      let completedConversions = 0;
 
-      await Promise.all(
-        selectedMedia.map(async (file) => {
-          try {
-            const url = await uploadImage({ dir: id as string, file });
-            completedUploads++;
-            const progress = Math.round((completedUploads / totalFiles) * 100);
-            setUploadProgress(progress);
-            return url;
-          } catch (error) {
-            console.error(`Error uploading file ${file.name}:`, error);
-            throw error;
-          }
-        })
+      // Identify videos that need conversion
+      const videosToConvert = selectedMedia.filter(
+        (file) => file.type.startsWith("video/") && file.type !== "video/mp4"
       );
 
-      setSelectedMedia([]);
-      setUploadProgress(100);
-      onUploadComplete?.();
+      const arrayOfPromises = selectedMedia.map(async (file) => {
+        try {
+          // Track conversion progress for videos
+          if (videosToConvert.includes(file)) {
+            setConvertingFiles((prev) => new Set([...prev, file.name]));
+          }
+
+          const url = await uploadImage({ dir: id as string, file });
+
+          // Update conversion progress
+          if (videosToConvert.includes(file)) {
+            completedConversions++;
+            setConversionProgress(
+              Math.round((completedConversions / videosToConvert.length) * 100)
+            );
+            setConvertingFiles((prev) => {
+              const newSet = new Set([...prev]);
+              newSet.delete(file.name);
+              return newSet;
+            });
+          }
+
+          completedUploads++;
+          const progress = Math.round((completedUploads / totalFiles) * 100);
+          setUploadProgress(progress);
+          return url;
+        } catch (error) {
+          console.error(`Error uploading file ${file.name}:`, error);
+          throw error;
+        }
+      });
+      addNotification({
+        messageOnProgress: "Uploading your media...",
+        successMessage: "Your media uploaded successfully.",
+        failMessage: "Failed uploading your media.",
+        func: [
+          new Promise(async (resolve, reject) => {
+            try {
+              await Promise.all(arrayOfPromises);
+              setSelectedMedia([]);
+              setUploadProgress(100);
+              setConversionProgress(100);
+              onUploadComplete?.();
+              resolve(true);
+            } catch {
+              reject(false);
+            }
+          }),
+        ],
+      });
     } catch (error) {
       console.error("Upload failed:", error);
     } finally {
       setIsUploading(false);
+      setIsConverting(false);
+      setConvertingFiles(new Set());
       //close the dialog
       setOpen(false);
     }
@@ -189,6 +251,8 @@ const MediaDialog = ({
   const resetDialog = () => {
     setSelectedMedia([]);
     setUploadProgress(0);
+    setConversionProgress(0);
+    setConvertingFiles(new Set());
     setIsDragOver(false);
   };
 
@@ -198,6 +262,10 @@ const MediaDialog = ({
       resetDialog();
     }
   };
+
+  const videosNeedingConversion = selectedMedia.filter(
+    (file) => file.type.startsWith("video/") && file.type !== "video/mp4"
+  ).length;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -227,19 +295,29 @@ const MediaDialog = ({
           {selectedMedia.length > 0 ? (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <p className="text-sm text-stone-600 dark:text-gray-400">
-                  {selectedMedia.length}{" "}
-                  {selectedMedia.length === 1 ? "file" : "files"} selected
-                  {isDragOver && (
-                    <span className="ml-2 text-violet-600 dark:text-violet-400">
-                      - Drop to add more files
-                    </span>
-                  )}
-                </p>
+                <div>
+                  <p className="text-sm text-stone-600 dark:text-gray-400">
+                    {selectedMedia.length}{" "}
+                    {selectedMedia.length === 1 ? "file" : "files"} selected
+                    {isDragOver && (
+                      <span className="ml-2 text-violet-600 dark:text-violet-400">
+                        - Drop to add more files
+                      </span>
+                    )}
+                  </p>
+                  {/* {videosNeedingConversion > 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      {videosNeedingConversion} video
+                      {videosNeedingConversion > 1 ? "s" : ""} will be converted
+                      to MP4
+                    </p>
+                  )} */}
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => inputRef.current?.click()}
+                  disabled={isUploading}
                   className="flex items-center gap-2 dark:bg-darkButtons dark:hover:bg-gray-700 dark:text-white dark:hover:bg-darkBorder">
                   <FaUpload className="w-3 h-3" />
                   Add More
@@ -261,6 +339,7 @@ const MediaDialog = ({
                         key={`${file.name}-${index}`}
                         file={file}
                         onRemove={handleRemoveMedia}
+                        isConverting={convertingFiles.has(file.name)}
                       />
                     ))}
                   </div>
@@ -296,16 +375,11 @@ const MediaDialog = ({
                   : "Drag and drop or click to upload"}
               </p>
               <p className="text-stone-400 dark:text-gray-500 text-sm mt-2">
-                Supported formats: JPEG, PNG, GIF, TIFF, WEBP, MP4, WEBM
+                Supported formats: JPEG, PNG, GIF, TIFF, WEBP, MP4, WEBM, MOV,
+                AVI
               </p>
-            </div>
-          )}
-
-          {isUploading && (
-            <div className="mt-4">
-              <Progress value={uploadProgress} className="h-2" />
-              <p className="text-sm text-stone-500 dark:text-gray-400 mt-2">
-                Uploading... {uploadProgress}%
+              <p className="text-stone-400 dark:text-gray-500 text-xs mt-1">
+                Videos will be automatically converted to MP4
               </p>
             </div>
           )}
@@ -341,7 +415,16 @@ const MediaDialog = ({
                   storageUsed >= storageLimit
                 }
                 className="dark:bg-violet-600 dark:hover:bg-violet-700 dark:text-white">
-                Upload {selectedMedia.length > 0 && `(${selectedMedia.length})`}
+                {isUploading ? (
+                  <>
+                    <FaSpinner className="animate-spin mr-2" size={12} />
+                    Processing...
+                  </>
+                ) : (
+                  `Upload ${
+                    selectedMedia.length > 0 ? `(${selectedMedia.length})` : ""
+                  }`
+                )}
               </Button>
             </div>
           </div>
