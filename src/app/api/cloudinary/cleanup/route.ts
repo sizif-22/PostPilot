@@ -20,57 +20,57 @@ const generateSignature = (params: Record<string, any>, apiSecret: string): stri
     .digest('hex');
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+//   if (req.method !== 'POST') {
+//     return res.status(405).json({ error: 'Method not allowed' });
+//   }
 
-  const { publicId } = req.body;
+//   const { publicId } = req.body;
 
-  if (!publicId) {
-    return res.status(400).json({ error: 'Public ID is required' });
-  }
+//   if (!publicId) {
+//     return res.status(400).json({ error: 'Public ID is required' });
+//   }
 
-  if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET || !CLOUDINARY_CLOUD_NAME) {
-    return res.status(500).json({ error: 'Cloudinary configuration missing' });
-  }
+//   if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET || !CLOUDINARY_CLOUD_NAME) {
+//     return res.status(500).json({ error: 'Cloudinary configuration missing' });
+//   }
 
-  try {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const params = {
-      public_id: publicId,
-      timestamp: timestamp,
-      api_key: CLOUDINARY_API_KEY,
-    };
+//   try {
+//     const timestamp = Math.round(new Date().getTime() / 1000);
+//     const params = {
+//       public_id: publicId,
+//       timestamp: timestamp,
+//       api_key: CLOUDINARY_API_KEY,
+//     };
 
-    const signature = generateSignature(params, CLOUDINARY_API_SECRET);
+//     const signature = generateSignature(params, CLOUDINARY_API_SECRET);
 
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/destroy`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...params,
-          signature,
-        }),
-      }
-    );
+//     const response = await fetch(
+//       `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/destroy`,
+//       {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           ...params,
+//           signature,
+//         }),
+//       }
+//     );
 
-    const result = await response.json();
+//     const result = await response.json();
 
-    if (response.ok) {
-      res.status(200).json({ success: true, result });
-    } else {
-      res.status(400).json({ error: 'Failed to delete from Cloudinary', result });
-    }
-  } catch (error) {
-    console.error('Cloudinary cleanup error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
+//     if (response.ok) {
+//       res.status(200).json({ success: true, result });
+//     } else {
+//       res.status(400).json({ error: 'Failed to delete from Cloudinary', result });
+//     }
+//   } catch (error) {
+//     console.error('Cloudinary cleanup error:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// }
 
 // For App Router (app/api/cloudinary/cleanup/route.ts)
 export async function POST(request: Request) {

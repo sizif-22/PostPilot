@@ -307,7 +307,7 @@ const ImagePopup = ({
                 <h4 className="font-medium mb-2">{currentItem.name}</h4>
                 <p className="text-sm text-white/70">
                   Type:{" "}
-                  {currentItem.type ||
+                  {currentItem.contentType ||
                     (currentItem.isVideo ? "Video" : "Image")}
                 </p>
               </motion.div>

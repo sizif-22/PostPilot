@@ -917,8 +917,8 @@ export class EnhancedPDFGenerator {
       "image/heic",
     ];
 
-    if (mediaItem.type) {
-      return allowedImageTypes.includes(mediaItem.type.toLowerCase());
+    if (mediaItem.contentType) {
+      return allowedImageTypes.includes(mediaItem.contentType.toLowerCase());
     }
 
     if (typeof mediaItem.isVideo === "boolean") {
