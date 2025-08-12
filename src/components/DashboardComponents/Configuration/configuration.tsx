@@ -59,7 +59,7 @@ export const Configuration = () => {
   const handleFacebookConnect = () => {
     Cookies.set("currentChannel", id as string);
     const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection";
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection`;
     const SCOPE =
       "pages_manage_posts,pages_read_engagement,pages_show_list,business_management,instagram_basic,instagram_content_publish";
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
@@ -72,7 +72,7 @@ export const Configuration = () => {
     Cookies.set("csrfState", csrfState, { expires: 6000 / 86400 });
     Cookies.set("currentChannel", id as string);
     const TIKTOK_CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
-    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/tiktok";
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/tiktok`;
     const scope =
       "user.info.basic,video.publish,video.upload,user.info.profile";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${encodeURIComponent(
@@ -84,7 +84,7 @@ export const Configuration = () => {
   const handleLinkedInConnect = () => {
     Cookies.set("currentChannel", id as string);
     const LINKEDIN_CLIENT_ID = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
-    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/linkedin";
+    const REDIRECT_URI =`${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`;
     const SCOPE =
       "openid w_organization_social rw_organization_admin r_organization_social";
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
@@ -107,7 +107,7 @@ export const Configuration = () => {
     Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 }); // 1 hour
 
     const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
-    const REDIRECT_URI = "https://postpilot-22.vercel.app/connection/x";
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
     const SCOPE =
       "tweet.read tweet.write users.read offline.access media.write";
 
