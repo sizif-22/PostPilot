@@ -43,7 +43,11 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
   const sortedPosts = Object.values(channel?.posts || {})
     .filter((post) => {
       // Ensure scheduledDate exists and is in the future (compared to current Unix timestamp)
-      return post.isScheduled && post.date.toDate() > new Date(Date.now());
+      return (
+        post.isScheduled &&
+        post.date.toDate() > new Date(Date.now()) &&
+        !post.draft
+      );
     })
     .sort((a, b) => {
       const dateA = a.date.seconds;
@@ -140,98 +144,104 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
               </div>
             </div>
             <div className="flex-1 space-y-4">
-              {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-darkButtons border border-gray-100 dark:border-darkBorder cursor-pointer transition-colors duration-200"
-                  onClick={() => setSelectedEvent(post)}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center text-gray-500 dark:text-gray-400">
-                      <FiClock className="w-4 h-4 mr-1" />
-                      <span className="text-sm">
-                        {
-                          formatDateInTimezone(
-                            post.date.seconds,
-                            selectedTimeZone
-                          ).time
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      {post.platforms?.map((platform: string) => (
-                        <span
-                          key={platform}
-                          className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                          {platform === "facebook" ? (
-                            <FiFacebook className="w-4 h-4" />
-                          ) : platform === "instagram" ? (
-                            <FiInstagram className="w-4 h-4" />
-                          ) : platform === "x" ? (
-                            <FaXTwitter className="w-4 h-4" />
-                          ) : platform === "linkedin" ? (
-                            <FiLinkedin className="w-4 h-4" />
-                          ) : platform === "youtube" ? (
-                            <FiYoutube className="w-4 h-4" />
-                          ) : platform === "tiktok" ? (
-                            <FaTiktok className="w-4 h-4" />
-                          ) : null}
+              {posts
+                .filter((post) => !post.draft)
+                .map((post) => (
+                  <div
+                    key={post.id}
+                    className="rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-darkButtons border border-gray-100 dark:border-darkBorder cursor-pointer transition-colors duration-200"
+                    onClick={() => setSelectedEvent(post)}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center text-gray-500 dark:text-gray-400">
+                        <FiClock className="w-4 h-4 mr-1" />
+                        <span className="text-sm">
+                          {
+                            formatDateInTimezone(
+                              post.date.seconds,
+                              selectedTimeZone
+                            ).time
+                          }
                         </span>
-                      ))}
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        {post.platforms?.map((platform: string) => (
+                          <span
+                            key={platform}
+                            className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                            {platform === "facebook" ? (
+                              <FiFacebook className="w-4 h-4" />
+                            ) : platform === "instagram" ? (
+                              <FiInstagram className="w-4 h-4" />
+                            ) : platform === "x" ? (
+                              <FaXTwitter className="w-4 h-4" />
+                            ) : platform === "linkedin" ? (
+                              <FiLinkedin className="w-4 h-4" />
+                            ) : platform === "youtube" ? (
+                              <FiYoutube className="w-4 h-4" />
+                            ) : platform === "tiktok" ? (
+                              <FaTiktok className="w-4 h-4" />
+                            ) : null}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="min-w-1 w-1 self-stretch bg-violet-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
-                        {post.message}
-                      </h3>
-                      {post.media && post.media.length > 0 && (
-                        <div className="flex gap-2 mt-2">
-                          {post.media?.map((image, index) => (
-                            <div key={index} className="relative">
-                              {image.isVideo ? (
-                                <>
-                                  <video
-                                    className="w-10 h-10 object-cover rounded-md"
-                                    preload="metadata">
-                                    <source src={image.url} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                  </video>
-                                  <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                                      <FaPlay
-                                        size={12}
-                                        className="text-white"
+                    <div className="flex gap-3">
+                      <div className="min-w-1 w-1 self-stretch bg-violet-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
+                          {post.message}
+                        </h3>
+                        {post.media && post.media.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {post.media?.map((image, index) => (
+                              <div key={index} className="relative">
+                                {image.isVideo ? (
+                                  <>
+                                    <video
+                                      className="w-10 h-10 object-cover rounded-md"
+                                      preload="metadata">
+                                      <source
+                                        src={image.url}
+                                        type="video/mp4"
                                       />
+                                      Your browser does not support the video
+                                      tag.
+                                    </video>
+                                    <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                                      <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                                        <FaPlay
+                                          size={12}
+                                          className="text-white"
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <Image
-                                  src={image.url}
-                                  alt={post.title || "Post image"}
-                                  className="w-10 h-10 object-cover rounded-md"
-                                  width={48}
-                                  height={48}
-                                />
-                              )}
-                              {index === 3 &&
-                                post.media &&
-                                post.media.length > 4 && (
-                                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-md flex items-center justify-center">
-                                    <span className="text-white text-xs font-medium">
-                                      +{post.media.length - 4}
-                                    </span>
-                                  </div>
+                                  </>
+                                ) : (
+                                  <Image
+                                    src={image.url}
+                                    alt={post.title || "Post image"}
+                                    className="w-10 h-10 object-cover rounded-md"
+                                    width={48}
+                                    height={48}
+                                  />
                                 )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                                {index === 3 &&
+                                  post.media &&
+                                  post.media.length > 4 && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-md flex items-center justify-center">
+                                      <span className="text-white text-xs font-medium">
+                                        +{post.media.length - 4}
+                                      </span>
+                                    </div>
+                                  )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         ))}

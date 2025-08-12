@@ -58,7 +58,7 @@ export const Calendar = ({ media }: { media: MediaItem[] }) => {
     // console.log("DATE:", newYear, newMonth, newDay);
     if (!channel?.id) throw new Error("channel id in invalid");
 
-    if (post.date.toDate() < new Date(Date.now())) {
+    if (post.date.toDate() < new Date(Date.now()) && post.published) {
       addNotification({
         messageOnProgress: "Updating Date",
         successMessage: "",
