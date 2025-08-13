@@ -159,7 +159,7 @@ export const Configuration = () => {
       });
     }
     setShowDeleteConfirm(false);
-    router.replace("/channels");
+    router.replace("/folders");
   };
   const socialMedia = [
     {
