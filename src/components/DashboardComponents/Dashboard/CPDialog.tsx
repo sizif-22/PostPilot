@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FiFacebook,
   FiInstagram,
@@ -62,6 +62,7 @@ export const CPDialog = ({
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
+  const container = [useRef(null), useRef(null)];
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     return (
       localStorage.getItem("userTimeZone") ||
@@ -499,79 +500,110 @@ export const CPDialog = ({
               <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
                 Media
               </h3>
-              <p className="text-xs text-stone-500 dark:text-white/60">
+              {/* <p className="text-xs text-stone-500 dark:text-white/60">
                 Add images or videos (up to 50MB each)
-              </p>
+              </p> */}
               <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-white/60">
-                <FiImage className="w-4 h-4" />
-                <span>Max 20 images</span>
-                <span className="mx-2">•</span>
-                <FaPlay className="w-3 h-3" />
-                <span>Max 1 video</span>
-                <span className="mx-2 text-orange-500">⚠</span>
-                <span className="text-orange-600">
-                  Cannot mix videos and images
-                </span>
+                {/* <FiImage className="w-4 h-4" /> */}
+                {/* <span>Max 20 images</span> */}
+                {/* <span className="mx-2">•</span> */}
+                {selectedImages.filter((item) => item.isVideo).length > 1 && (
+                  <>
+                    <span className="text-orange-500 ml-4">⚠</span>
+                    <span className="text-orange-600">Max 1 video</span>
+                  </>
+                )}
+                
+                {selectedImages.find((item) => item.isVideo) &&
+                  selectedImages.find((item) => !item.isVideo) && (
+                    <>
+                      <span className="text-orange-500 ml-4">⚠</span>
+                      <span className="text-orange-600">
+                        Cannot mix videos and images
+                      </span>
+                    </>
+                  )}
               </div>
 
               <div
-                onClick={() => setIsMediaDialogOpen(true)}
+                ref={container[0]}
+                onClick={(e) => {
+                  console.log("Containers:", container);
+                  if (
+                    e.target == container[0].current ||
+                    e.target == container[1].current
+                  ) {
+                    console.log("Done!");
+                    setIsMediaDialogOpen(true);
+                  }
+                }}
                 className="border-2 border-dashed border-stone-300 dark:border-darkBorder rounded-lg p-8 text-center cursor-pointer hover:border-stone-400 transition-colors">
-                <FiUpload className="mx-auto mb-3 w-8 h-8 text-stone-400" />
-                <p className="text-sm font-medium text-stone-600 dark:text-white/60">
-                  Click to upload or drag & drop
-                </p>
-                <p className="text-xs text-stone-500 dark:text-white/50 mt-1">
+                {selectedImages.length > 0 ? (
+                  <div
+                    className="grid grid-cols-4 gap-2 mt-4"
+                    ref={container[1]}>
+                    {selectedImages.map((item) => (
+                      <div key={item.url} className="relative group">
+                        <div className="w-full aspect-square rounded-lg overflow-hidden">
+                          {!item.isVideo ? (
+                            <Image
+                              src={item.url}
+                              alt={item.name}
+                              width={100}
+                              height={100}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="relative w-full h-full">
+                              <video
+                                className="object-cover w-full h-full"
+                                preload="metadata">
+                                <source src={item.url} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <FaPlay className="text-white w-4 h-4" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            handleImageSelect(item);
+                          }}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div onClick={() => setIsMediaDialogOpen(true)}>
+                    <FiUpload className="mx-auto mb-3 w-8 h-8 text-stone-400" />
+                    <p className="text-sm font-medium text-stone-600 dark:text-white/60">
+                      Click to choose from your media
+                    </p>
+                    {/* <p className="text-xs text-stone-500 dark:text-white/50 mt-1">
                   Support for images and videos
-                </p>
-                <div className="flex items-center justify-center gap-4 mt-3 text-xs text-stone-500 dark:text-white/50">
-                  <div className="flex items-center gap-1">
-                    <FiImage className="w-4 h-4" />
-                    <span>Max 20 images</span>
+                  </p> */}
+                    <div className="flex items-center justify-center gap-4 mt-3 text-xs text-stone-500 dark:text-white/50">
+                      <div className="flex items-center gap-1">
+                        <FiImage className="w-4 h-4" />
+                        <span>Cannot mix videos and images</span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <FaPlay className="w-4 h-4" />
+                        <span>Max 1 video</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <FaPlay className="w-3 h-3" />
-                    <span>Max 1 video</span>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {selectedImages.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mt-4">
-                  {selectedImages.map((item) => (
-                    <div key={item.url} className="relative group">
-                      <div className="w-full aspect-square rounded-lg overflow-hidden">
-                        {!item.isVideo ? (
-                          <Image
-                            src={item.url}
-                            alt={item.name}
-                            width={100}
-                            height={100}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <div className="relative w-full h-full">
-                            <video
-                              className="object-cover w-full h-full"
-                              preload="metadata">
-                              <source src={item.url} type="video/mp4" />
-                              Your browser does not support the video tag.
-                            </video>
-                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                              <FaPlay className="text-white w-4 h-4" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleImageSelect(item)}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* {selectedImages.length > 0 && (
+                
+              )} */}
             </div>
 
             {/* Facebook Video Type Selection */}
@@ -666,7 +698,10 @@ export const CPDialog = ({
                     name="publishOption"
                     value="now"
                     checked={publishOption === "now"}
-                    onChange={() => {setPublishOption("now");setDate("")}}
+                    onChange={() => {
+                      setPublishOption("now");
+                      setDate("");
+                    }}
                     className="w-4 h-4 text-blue-500"
                   />
                   <div className="flex-1">
