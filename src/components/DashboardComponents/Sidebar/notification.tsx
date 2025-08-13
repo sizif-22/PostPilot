@@ -13,7 +13,7 @@ import { IoChevronBackOutline } from "react-icons/io5";
 const NotificationSection = ({
   pageName,
 }: {
-  pageName: "channels" | "channels/id";
+  pageName: "folders" | "folders/id";
 }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
@@ -71,9 +71,9 @@ const NotificationSection = ({
       <span
         className="dark:text-white hover:dark:bg-darkBorder text-xl h-full flex items-center px-1"
         onClick={() => {
-          pageName == "channels"
+          pageName == "folders"
             ? router.push("/home")
-            : router.push("/channels");
+            : router.push("/folders");
         }}>
         <IoChevronBackOutline />
       </span>
