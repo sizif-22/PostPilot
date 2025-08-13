@@ -36,6 +36,14 @@ export default async function RootLayout({
   const email: string | null = data?.email;
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+      <link
+          rel="icon"
+          href="/icon?<generated>"
+          type="image/<generated>"
+          sizes="<generated>"
+        />
+      </head>
       <body className={`${inter.className} text-stone-950 bg-stone-100`}>
         <NotificationProvider>
           <ThemeProvider
