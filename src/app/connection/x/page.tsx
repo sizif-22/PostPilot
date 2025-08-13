@@ -113,7 +113,7 @@ export default function XCallbackPage() {
         "socialMedia.x": socialMediaX,
       });
 
-      router.push(`/channels/${channelId}`);
+      router.push(`/folders/${channelId}`);
     } catch (error: any) {
       console.error("Error saving X profile:", error);
       setError("Failed to save profile selection");
@@ -138,7 +138,7 @@ export default function XCallbackPage() {
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
           <button
             onClick={() =>
-              router.push(`/channels/${Cookies.get("currentChannel")}`)
+              router.push(`/folders/${Cookies.get("currentChannel")}`)
             }
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
             Back to Channel
@@ -184,7 +184,7 @@ export default function XCallbackPage() {
         <div className="flex gap-3">
           <button
             onClick={() =>
-              router.push(`/channels/${Cookies.get("currentChannel")}`)
+              router.push(`/folders/${Cookies.get("currentChannel")}`)
             }
             className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
             Cancel

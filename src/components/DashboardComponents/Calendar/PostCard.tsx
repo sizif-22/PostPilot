@@ -21,10 +21,10 @@ export const PostCard = ({
       className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${
         post.issues &&
         Object.values(post.issues).filter((i) => i.status === "open").length > 0
-          ? "bg-red-950/80"
+          ? "dark:bg-red-950/80 bg-red-700 text-red-200 dark:text-red-200"
           : post.draft === true
-          ? "bg-gray-500/80"
-          : "g-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
+          ? "dark:bg-gray-500/80 bg-gray-500 text-gray-200"
+          : "bg-violet-300 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
       }`}
       title={`${format(new Date(post.date.toDate()), "h:mm a")}`}>
       <div className="w-10 h-10 ml-0.5 rounded-sm relative">
@@ -45,7 +45,7 @@ export const PostCard = ({
           post.media[0].isVideo ? (
           <>
             <video
-              className="object-cover w-full h-full rounded-sm"
+              className="object-cover w-full h-full rounded-sm bg-violet-100 dark:bg-violet-900/30"
               preload="metadata">
               <source src={post.media[0].url} type="video/mp4" />
               Your browser does not support the video tag.
@@ -59,14 +59,14 @@ export const PostCard = ({
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <BsFillChatRightTextFill
-              className="object-cover rounded-sm"
+              className="object-cover rounded-sm "
               size={24}
             />
           </div>
         )}
       </div>
       <div className="flex flex-col justify-between h-full w-[62%]">
-        <div className="flex justify-start mt-1.5 text-sm">
+        <div className="flex justify-start mt-1.5 text-sm ">
           {post.platforms?.map((platform, index) =>
             platform === "facebook" ? (
               <FiFacebook key={index} />
@@ -81,7 +81,7 @@ export const PostCard = ({
             ) : null
           )}
         </div>
-        <div className="flex justify-between items-center w-full text-xs h-2 mb-1">
+        <div className="flex justify-between items-center w-full text-xs h-2 mb-1 ">
           <div className="flex h-2 items-center mb-1 gap-0.5">
             <CiClock2 />
             {format(new Date(post.date.toDate()), "h:mm a")}
@@ -89,7 +89,7 @@ export const PostCard = ({
           {Object.values(post.issues || {}) &&
             Object.values(post.issues || {}).filter((i) => i.status === "open")
               .length > 0 && (
-              <div className="flex h-2 items-center mb-1 gap-0.5">
+              <div className="flex h-2 items-center mb-1 gap-0.5 dark:text-red-500">
                 <CiWarning />
                 {
                   Object.values(post.issues || {}).filter(
@@ -99,7 +99,7 @@ export const PostCard = ({
               </div>
             )}
           {post.published == true && (
-            <div className="flex h-2 items-center mb-1 gap-0.5">
+            <div className="flex h-2 items-center mb-1 gap-0.5 ">
               <IoMdDoneAll />
             </div>
           )}

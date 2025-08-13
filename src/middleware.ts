@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 // import { checkVerified } from "./firebase/auth";
 
-const protectedRoutes = ["/channels", "/connection"];
+const protectedRoutes = ["/folders", "/connection"];
 
 export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -14,7 +14,7 @@ export default async function middleware(req: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL("/home", req.nextUrl));
     }
-    return NextResponse.redirect(new URL("/channels", req.nextUrl));
+    return NextResponse.redirect(new URL("/folders", req.nextUrl));
   }
   if (isProtectedRoute) {
     const origin = req.nextUrl.origin;
@@ -39,9 +39,9 @@ export default async function middleware(req: NextRequest) {
         Cookie: req.headers.get("Cookie") || "",
       },
     });
-    
+
     if (res.status == 200) {
-      return NextResponse.redirect(new URL("/channels", req.nextUrl));
+      return NextResponse.redirect(new URL("/folders", req.nextUrl));
     }
     return NextResponse.next();
   }

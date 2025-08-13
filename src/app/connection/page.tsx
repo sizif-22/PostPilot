@@ -185,7 +185,7 @@ const Connection = () => {
         } as instagramChannel;
       }
       await updateDoc(projectRef, updateData);
-      router.replace(`/channels/${id}`);
+      router.replace(`/folders/${id}`);
     } catch (err) {
       console.error("Error updating page selection:", err);
       setError("Failed to save page selection");

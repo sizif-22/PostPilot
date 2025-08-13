@@ -329,17 +329,17 @@ export const Configuration = () => {
                 <div className="flex justify-between flex-col gap-4 md:flex-row items-center w-full md:gap-2">
                   <div>
                     <h2 className="text-lg font-medium dark:text-white">
-                      Delete Channel
+                      Delete Folder
                     </h2>
                     <h3 className="text-sm text-stone-500 dark:text-stone-400">
-                      Once you delete a channel, there is no going back. Please
+                      Once you delete a folder, there is no going back. Please
                       be certain.
                     </h3>
                   </div>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
                     className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2 dark:bg-red-950 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900">
-                    Delete Channel
+                    Delete Folder
                   </button>
                 </div>
               </div>
@@ -355,10 +355,10 @@ export const Configuration = () => {
                 <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-lg font-semibold mb-2 dark:text-white">
-                    Delete Channel
+                    Delete Folder
                   </h3>
                   <p className="text-stone-600 dark:text-gray-400 mb-4">
-                    Are you sure you want to delete this channel? This action
+                    Are you sure you want to delete this folder? This action
                     cannot be undone.
                   </p>
                   <div className="flex gap-3 justify-end">
@@ -370,7 +370,7 @@ export const Configuration = () => {
                     <button
                       onClick={confirmDelete}
                       className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded`}>
-                      Delete Channel
+                      Delete Folder
                     </button>
                   </div>
                 </div>

@@ -41,6 +41,7 @@ const signInWithEmail = async (email: string, password: string) => {
   if (result.user.emailVerified != true) {
     new Promise(async (resolve, reject) => {
       try {
+        console.log("user:", result.user);
         await sendEmailVerification(result.user);
         resolve(true);
       } catch {

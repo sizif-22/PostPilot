@@ -43,7 +43,7 @@ const ChannelsComponent = ({
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-2 w-full">
                 <div className="flex items-center w-full gap-3 justify-between">
-                  <Link href={`/channels/${channel.id}`}>
+                  <Link href={`/folders/${channel.id}`}>
                     <h3 className="font-bold text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors">
                       {channel.name}
                     </h3>
@@ -72,7 +72,7 @@ const ChannelsComponent = ({
         ))
       ) : (
         <div className="text-center text-stone-500 dark:text-stone-400">
-          <p>No channels found</p>
+          <p>No Folders found</p>
         </div>
       )}
     </>
@@ -96,12 +96,12 @@ const Page = () => {
           <div className="bg-white dark:bg-secondDarkBackground border dark:border-darkBorder h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
             {/* Top Bar */}
             <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-secondDarkBackground px-4 border-b border-stone-200 dark:border-darkBorder z-10">
-              <h2 className="font-bold dark:text-white">Channels</h2>
+              <h2 className="font-bold dark:text-white">Folders</h2>
               <button
                 onClick={() => setCreateNewChannel(true)}
                 className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
                 <FiPlus className="text-violet-500" />
-                <span>New Channel</span>
+                <span>New Folder</span>
               </button>
             </div>
 

@@ -223,17 +223,17 @@ export const Navigation = () => {
                         </p>
                         <p className="text-sm dark:text-white/60 text-black/60">
                           {user.channels.length > 0
-                            ? `You have: ${user.channels.length} channel`
-                            : "You have no channels yet."}
+                            ? `You have: ${user.channels.length} folder`
+                            : "You have no folders yet."}
                         </p>
                         {user?.isVerified == true && (
                           <Button
                             onClick={() => {
-                              router.push("/channels");
+                              router.push("/folders");
                             }}
                             variant={"default"}
                             className="mt-3">
-                            Channels
+                            Folders
                           </Button>
                         )}
                         <Button

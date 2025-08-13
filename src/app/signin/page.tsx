@@ -54,7 +54,7 @@ const Signin = () => {
 
     try {
       await signInWithEmail(email, password);
-      window.location.href = "/";
+      // window.location.href = "/";
     } catch (error) {
       alert("Invalid email or password");
     }
