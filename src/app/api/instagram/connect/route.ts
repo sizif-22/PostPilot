@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const params = new URLSearchParams({
       client_id: process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID!,
       client_secret: process.env.NEXT_PUBLIC_INSTAGRAM_APP_SECRET!,
-      redirect_uri: "https://postpilot-22.vercel.app/instagram",
+      redirect_uri: `${process.env.NEXT_PUBLIC_REDIRECT_URI}/instagram`,
       code,
     });
 

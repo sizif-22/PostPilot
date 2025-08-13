@@ -43,7 +43,7 @@ const TiktokPage = () => {
               client_key: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY!,
               client_secret: process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET!,
               code,
-              redirect_uri: "https://postpilot-22.vercel.app/connection/tiktok",
+              redirect_uri: `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/tiktok`,
               grant_type: "authorization_code",
             }).toString(),
           }

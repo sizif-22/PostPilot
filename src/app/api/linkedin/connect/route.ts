@@ -36,7 +36,7 @@ export async function GET(request: Request) {
           code: code,
           client_id: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID!,
           client_secret: process.env.LINKEDIN_CLIENT_SECRET!,
-          redirect_uri: "https://postpilot-22.vercel.app/connection/linkedin",
+          redirect_uri: `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`,
         }),
       }
     );

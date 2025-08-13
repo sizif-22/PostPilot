@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
   try {
     // Step 1: Exchange code for access token
-    const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET}&redirect_uri=https://postpilot-22.vercel.app/connection&code=${code}`;
+    const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.NEXT_PUBLIC_FACEBOOK_APP_SECRET}&redirect_uri=${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection&code=${code}`;
 
     const tokenResponse = await fetch(tokenUrl);
     const tokenData = await tokenResponse.json();
