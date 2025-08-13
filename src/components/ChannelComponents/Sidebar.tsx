@@ -9,7 +9,7 @@ export const Sidebar = () => {
   return (
     <div>
       <div className="overflow-y-scroll h-[calc(100vh-32px-48px)]">
-        <NotificationSection pageName="channels" />
+        <NotificationSection pageName="folders" />
         <AccountToggle />
         {/* <Search /> */}
       </div>
