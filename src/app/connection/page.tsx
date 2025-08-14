@@ -146,8 +146,8 @@ const Connection = () => {
         return;
       }
       let updateData: any = {
-        "socialMedia.facebook": null,
-        "socialMedia.instagram": null,
+        "socialMedia.facebook": {},
+        "socialMedia.instagram": {},
       };
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
