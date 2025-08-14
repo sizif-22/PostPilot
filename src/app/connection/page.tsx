@@ -109,12 +109,6 @@ const Connection = () => {
           throw new Error(data.error || "Failed to get access token");
         }
 
-        const projectRef = doc(db, "Channels", id as string);
-        // await updateDoc(projectRef, {
-        //   FacebookConnected: true,
-        //   facebookAccessToken: data.access_token,
-        // });
-
         setBusinessAccounts(data.business_accounts || []);
         setStandalonePages(data.standalone_pages || []);
         // Deduplicate pages for display
@@ -153,8 +147,6 @@ const Connection = () => {
       }
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
-      // Always update facebook
-      // console.log("SECRET:", process.env.SECRET);
       const encryptedAccessToken: string = await encrypt(rest.access_token);
       const facebookData = {
         name: rest.name,
