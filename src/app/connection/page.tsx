@@ -92,42 +92,6 @@ const Connection = () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
-        return;
-        if (!code) {
-          console.log("No authorization code found");
-          setError("No authorization code found in URL");
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(
-          `/api/facebook/connect?code=${code.split("&")[0]}`
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to get access token");
-        }
-
-        setBusinessAccounts(data.business_accounts || []);
-        setStandalonePages(data.standalone_pages || []);
-        // Deduplicate pages for display
-        setAllPages(
-          deduplicatePages(
-            data.business_accounts || [],
-            data.standalone_pages || []
-          )
-        );
-
-        if (
-          (data.business_accounts?.length ?? 0) +
-            (data.standalone_pages?.length ?? 0) ===
-          0
-        ) {
-          throw new Error(
-            "No pages found. Please make sure you have access to at least one Facebook page."
-          );
-        }
       } catch (err: any) {
         console.error("Error getting access token:", err);
         setError(err.message);
