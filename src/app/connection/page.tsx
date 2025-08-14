@@ -92,7 +92,7 @@ const Connection = () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
-
+        return;
         if (!code) {
           console.log("No authorization code found");
           setError("No authorization code found in URL");
