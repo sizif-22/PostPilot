@@ -145,6 +145,10 @@ const Connection = () => {
         setError("Please select a page");
         return;
       }
+      let updateData: any = {
+        "socialMedia.facebook": null,
+        "socialMedia.instagram": null,
+      };
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
       const encryptedAccessToken: string = await encrypt(rest.access_token);
@@ -153,7 +157,7 @@ const Connection = () => {
         id: rest.id,
         accessToken: encryptedAccessToken,
       };
-      let updateData: any = {
+      updateData = {
         "socialMedia.facebook": facebookData as facebookChannel,
       };
       // If instagram_id exists, fetch Instagram profile data
