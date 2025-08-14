@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { doc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
@@ -146,9 +146,11 @@ const Connection = () => {
         return;
       }
       let updateData: any = {
-        "socialMedia.facebook": {},
-        "socialMedia.instagram": {},
+        "socialMedia.facebook": null,
+        "socialMedia.instagram": null,
       };
+      await updateDoc(doc(db, "Channels", id as string), updateData);
+      
       const projectRef = doc(db, "Channels", id as string);
       const { businessAccountName, isStandalone, ...rest } = selectedPage;
       const encryptedAccessToken: string = await encrypt(rest.access_token);
