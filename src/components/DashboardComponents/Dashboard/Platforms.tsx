@@ -15,18 +15,6 @@ export const Platforms = () => {
     channel?.socialMedia?.tiktok ||
     channel?.socialMedia?.linkedin ||
     channel?.socialMedia?.x;
-
-  // useEffect(() => {
-  //   const fun = async () => {
-  //     let updateData: any = {
-  //       "socialMedia.facebook": null,
-  //       "socialMedia.instagram": null,
-  //     };
-  //     if (channel && channel.id)
-  //       await updateDoc(doc(db, "Channels", channel.id as string), updateData);
-  //   };
-  //   fun();
-  // }, []);
   return (
     <div className="col-span-1 row-span-2 border shadow-sm dark:shadow-lg rounded-lg p-4 h-[50vh] dark:bg-transparent dark:border-darkBorder">
       <h3 className="text-lg font-semibold mb-4 dark:text-white">

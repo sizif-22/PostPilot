@@ -46,6 +46,7 @@ const Signin = () => {
     } catch (error) {
       alert(error);
     }
+    setOnProgress(false);
   };
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
@@ -56,8 +57,9 @@ const Signin = () => {
       await signInWithEmail(email, password);
       window.location.href = "/";
     } catch (error) {
-      alert("Invalid email or password");
+      alert("Something went wrong.");
     }
+    setOnProgress(false);
   };
 
   return (
@@ -215,9 +217,14 @@ const Oauth = ({
           disabled={onProgress}
           className="flex-1 transition-all duration-200 hover:opacity-95 dark:text-white dark:bg-darkButtons"
           onClick={async () => {
-            setOnProgress(true);
-            await signInWithGoogle();
-            window.location.href = "/";
+            try {
+              setOnProgress(true);
+              await signInWithGoogle();
+              window.location.href = "/";
+            } catch (error) {
+              alert("Something went wrong...");
+            }
+            setOnProgress(false);
           }}>
           {onProgress ? (
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent"></div>
