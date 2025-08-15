@@ -8,6 +8,7 @@ import {
   signInWithGoogle,
   signUpWithEmail,
 } from "@/firebase/auth";
+import { signOut } from "firebase/auth";
 import { FormEvent, useState } from "react";
 import { isStrongPassword } from "validator";
 import {
@@ -18,6 +19,7 @@ import {
 import { signInServer } from "./action";
 import { redirect } from "next/navigation";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
+import { auth } from "@/firebase-admin/config";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -57,7 +59,7 @@ const Signin = () => {
       await signInWithEmail(email, password);
       window.location.href = "/";
     } catch (error) {
-      alert("Something went wrong.");
+      alert("Invalid Email or Password");
     }
     setOnProgress(false);
   };
@@ -221,10 +223,9 @@ const Oauth = ({
               setOnProgress(true);
               await signInWithGoogle();
               window.location.href = "/";
-            } catch (error) {
-              alert("Something went wrong...");
+            } catch {
+              window.location.href = "/signin";
             }
-            setOnProgress(false);
           }}>
           {onProgress ? (
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent"></div>
