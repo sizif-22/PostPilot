@@ -55,7 +55,11 @@ export const acceptJoiningToAChannel = async (
     });
     tm.status = "active";
     await fs.updateDoc(fs.doc(db, "Channels", notification.channelId), {
-      TeamMembers: fs.arrayUnion(tm),
+      TeamMembers: fs.arrayUnion({
+        ...tm,
+        avatar: user.avatar,
+        name: user.name,
+      } as TMBrief),
     });
     await fs.updateDoc(fs.doc(db, "Users", user.email), {
       channels: fs.arrayUnion({

@@ -500,13 +500,8 @@ export const CPDialog = ({
               <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
                 Media
               </h3>
-              {/* <p className="text-xs text-stone-500 dark:text-white/60">
-                Add images or videos (up to 50MB each)
-              </p> */}
               <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-white/60">
-                {/* <FiImage className="w-4 h-4" /> */}
-                {/* <span>Max 20 images</span> */}
-                {/* <span className="mx-2">•</span> */}
+
                 {selectedImages.filter((item) => item.isVideo).length > 1 && (
                   <>
                     <span className="text-orange-500 ml-4">⚠</span>

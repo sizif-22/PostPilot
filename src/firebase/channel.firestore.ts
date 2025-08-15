@@ -25,9 +25,14 @@ import {
   deleteField,
   arrayRemove,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 
-export const addCommentToPost = async (postId: string, channelId: string, comment: any) => {
+export const addCommentToPost = async (
+  postId: string,
+  channelId: string,
+  comment: any
+) => {
   const postDoc = doc(db, `channels/${channelId}/posts`, postId);
   await updateDoc(postDoc, {
     comments: arrayUnion(comment),
@@ -38,10 +43,7 @@ const channelRef = collection(db, "Channels");
 const getChannelBriefs = async (channels: UserChannel[]) => {
   if (channels.length === 0) return [];
   const idList = channels.map((channel) => channel.id);
-  const channelsQuery = query(
-    channelRef,
-    where(documentId(), "in", idList)
-  );
+  const channelsQuery = query(channelRef, where(documentId(), "in", idList));
   const snapshot = await getDocs(channelsQuery);
   const channelBriefs = snapshot.docs.map((doc) => {
     return {
@@ -76,22 +78,6 @@ const getChannel = (
 };
 
 const createPost = async (post: Post, channelId: string) => {
-  // const firestorePost = {
-  //   id: post.id,
-  //   message: post.message,
-  //   published: !post.isScheduled,
-  //   platforms: post.platforms,
-  //   media: post.media,
-  //   date: Timestamp.now(),
-  // };
-
-  // if (post.scheduledDate) {
-  //   firestorePost.scheduledDate =
-  //     typeof post.scheduledDate === "number"
-  //       ? post.scheduledDate
-  //       : Math.floor(new Date(post.scheduledDate).getTime() / 1000);
-  // }
-
   const cleanPost = Object.fromEntries(
     Object.entries(post).filter(([_, value]) => value !== undefined)
   );
@@ -147,7 +133,8 @@ export const sendNotification = async (
   tm: TMBrief,
   role: Authority,
   channel: Channel,
-  user: User
+  user: User,
+  action: "invite" | "add"
 ) => {
   await updateDoc(doc(db, "Channels", channel.id), {
     TeamMembers: arrayUnion({
@@ -156,27 +143,74 @@ export const sendNotification = async (
       status: "pending",
     } as TeamMember),
   });
-  await updateDoc(doc(db, "Users", tm.email), {
-    notifications: arrayUnion({
-      Type: "Ask",
-      owner: user.email,
-      channelName: channel.name,
-      channelDescription: channel.description,
-      channelId: channel.id,
-    } as Notification),
-  });
+  if (action == "add") {
+    await updateDoc(doc(db, "Users", tm.email), {
+      notifications: arrayUnion({
+        Type: "Ask",
+        owner: user.email,
+        channelName: channel.name,
+        channelDescription: channel.description,
+        channelId: channel.id,
+      } as Notification),
+    });
+  } else if (action == "invite") {
+    const userQuery = query(
+      collection(db, "Invitations"),
+      where("email", "==", tm.email)
+    );
+    const querySnapshot = await getDocs(userQuery);
+    if (!querySnapshot.empty) {
+      await updateDoc(doc(db, "Invitations", tm.email), {
+        notifications: arrayUnion({
+          Type: "Ask",
+          owner: user.email,
+          channelName: channel.name,
+          channelDescription: channel.description,
+          channelId: channel.id,
+        } as Notification),
+      });
+    } else {
+      await setDoc(doc(db, "Invitations", tm.email), {
+        notifications: arrayUnion({
+          Type: "Ask",
+          owner: user.email,
+          channelName: channel.name,
+          channelDescription: channel.description,
+          channelId: channel.id,
+        } as Notification),
+      });
+    }
+  }
 };
 
 export const deleteTeamMember = async (tm: TeamMember, channel: Channel) => {
   await updateDoc(doc(db, "Channels", channel.id), {
     TeamMembers: arrayRemove(tm),
   });
-  await updateDoc(doc(db, "Users", tm.email), {
-    channels: arrayRemove({
-      authority: tm.role,
-      id: channel.id,
-    } as UserChannel),
-  });
+  const userQuery = query(
+    collection(db, "Users"),
+    where("email", "==", tm.email)
+  );
+  const querySnapshot = await getDocs(userQuery);
+  if (!querySnapshot.empty)
+    await updateDoc(doc(db, "Users", tm.email), {
+      channels: arrayRemove({
+        authority: tm.role,
+        id: channel.id,
+      } as UserChannel),
+    });
+  const userQuery2 = query(
+    collection(db, "Invitations"),
+    where("email", "==", tm.email)
+  );
+  const querySnapshot2 = await getDocs(userQuery2);
+  if (!querySnapshot2.empty)
+    await updateDoc(doc(db, "Invitations", tm.email), {
+      channels: arrayRemove({
+        authority: tm.role,
+        id: channel.id,
+      } as UserChannel),
+    });
 };
 
 export const updateRole = async (
@@ -187,22 +221,47 @@ export const updateRole = async (
   await updateDoc(doc(db, "Channels", channel.id), {
     TeamMembers: arrayRemove(tm),
   });
-  await updateDoc(doc(db, "Users", tm.email), {
-    channels: arrayRemove({
-      authority: tm.role,
-      id: channel.id,
-    } as UserChannel),
-  });
-  tm.role = newRole;
   await updateDoc(doc(db, "Channels", channel.id), {
-    TeamMembers: arrayUnion(tm),
+    TeamMembers: arrayUnion({...tm,role:newRole}),
   });
-  await updateDoc(doc(db, "Users", tm.email), {
-    channels: arrayUnion({
-      authority: tm.role,
-      id: channel.id,
-    } as UserChannel),
-  });
+  const userQuery = query(
+    collection(db, "Users"),
+    where("email", "==", tm.email)
+  );
+  const querySnapshot = await getDocs(userQuery);
+  if (!querySnapshot.empty) {
+    await updateDoc(doc(db, "Users", tm.email), {
+      channels: arrayRemove({
+        authority: tm.role,
+        id: channel.id,
+      } as UserChannel),
+    });
+    await updateDoc(doc(db, "Users", tm.email), {
+      channels: arrayUnion({
+        authority: newRole,
+        id: channel.id,
+      } as UserChannel),
+    });
+  }
+  const userQuery2 = query(
+    collection(db, "Invitations"),
+    where("email", "==", tm.email)
+  );
+  const querySnapshot2 = await getDocs(userQuery2);
+  if (!querySnapshot2.empty) {
+    await updateDoc(doc(db, "Invitations", tm.email), {
+      channels: arrayRemove({
+        authority: tm.role,
+        id: channel.id,
+      } as UserChannel),
+    });
+    await updateDoc(doc(db, "Invitations", tm.email), {
+      channels: arrayUnion({
+        authority: newRole,
+        id: channel.id,
+      } as UserChannel),
+    });
+  }
 };
 
 export const deleteChannel = async (

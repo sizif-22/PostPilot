@@ -4,8 +4,8 @@ const nextConfig = {
     domains: [
       "firebasestorage.googleapis.com",
       "d11p0alxbet5ud.cloudfront.net",
-      "example.com",
       "api.dicebear.com",
+      "lh3.googleusercontent.com"
     ],
   },
 };

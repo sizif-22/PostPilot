@@ -27,6 +27,12 @@ import {
 } from "@/firebase/channel.firestore";
 import { useChannel } from "@/context/ChannelContext";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
+import { IoSearch } from "react-icons/io5";
+import { Input } from "@/components/ui/input";
+import { FaLessThanEqual } from "react-icons/fa6";
+import { isEmail } from "validator";
+import Image from "next/image";
 
 interface MemberDialogProps {
   open: boolean;
@@ -50,13 +56,16 @@ const MemberDialog = ({
   const [formData, setFormData] = useState<formDateInterface>(
     member || { role: "Reviewer" }
   );
-  console.log("member: " + member);
   const [searchResult, setSearchResult] = useState<TMBrief[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState<TMBrief | null>(null);
+  const [emailFormatError, setEmailFormatError] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const { user } = useUser();
   const { channel } = useChannel();
-
+  const [action, setAction] = useState<"add" | "update" | "invite">(
+    member ? "update" : "add"
+  );
   // Reset form data when member changes or dialog opens
   useEffect(() => {
     if (member) {
@@ -69,15 +78,15 @@ const MemberDialog = ({
     }
   }, [member, open]);
 
-  const handleSubmit = async (state: "update" | "add") => {
-    if (state == "add") {
+  const handleSubmit = async (state: "update" | "add" | "invite") => {
+    if (state == "add" || state == "invite") {
       if (selectedMember && channel && user && formData.role) {
-        await sendNotification(selectedMember, formData.role, channel, user);
+        await sendNotification(selectedMember, formData.role, channel, user,state);
       }
-    } else {
+    } else if(state == "update") {
       if (member && channel && member.role != formData.role)
         await updateRole(member, formData.role, channel);
-    }
+    } 
     setSelectedMember(null);
     onOpenChange(false);
     setFormData({ role: "Reviewer" });
@@ -149,39 +158,63 @@ const MemberDialog = ({
                   )}
                 </div>
               ) : (
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (e.target.value.length > 3) {
-                      getTeamMembers(e.target.value).then((res) => {
-                        setSearchResult(
-                          res.filter(
-                            (tm) =>
-                              !channel?.TeamMembers.some(
-                                (channelTM) => channelTM.email === tm.email
-                              )
-                          )
-                        );
-                      });
-                    } else {
-                      setSearchResult([]);
-                    }
-                  }}
-                  className="w-full p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
-                  placeholder="Search by email"
-                />
+                <>
+                  {emailFormatError && (
+                    <span className="text-orange-600 text-xs mb-0.5 ml-1">
+                      ⚠ this email is not valid.
+                    </span>
+                  )}
+                  <form
+                    className="grid grid-cols-5 gap-2"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setShowResult(false);
+                      if (isEmail(searchQuery)) {
+                        setEmailFormatError(false);
+                        await getTeamMembers(searchQuery).then((res) => {
+                          setSearchResult(
+                            res.filter(
+                              (tm) =>
+                                !channel?.TeamMembers.some(
+                                  (channelTM) => channelTM.email === tm.email
+                                )
+                            )
+                          );
+                        });
+                        setShowResult(true);
+                      } else {
+                        setEmailFormatError(true);
+                      }
+                    }}>
+                    <Input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowResult(false);
+                      }}
+                      className="col-span-4 p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
+                      placeholder="Search by email"
+                    />
+                    <Button type="submit" className="h-full p-2">
+                      <IoSearch />
+                    </Button>
+                  </form>
+                </>
               )}
               <div
                 className={`absolute bg-white dark:bg-secondDarkBackground w-full rounded-lg py-1 top-full z-10 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-gray-700 dark:border-darkBorder ${
-                  searchQuery.length < 4 && "hidden"
+                  !showResult && "hidden"
                 }`}>
                 {searchResult.length > 0 ? (
                   searchResult.map((tm) => (
                     <div
                       key={tm.email}
-                      onClick={() => handleMemberSelect(tm)}
+                      onClick={() => {
+                        handleMemberSelect(tm);
+                        setShowResult(false);
+                        setAction("add");
+                      }}
                       className="p-3 hover:bg-[#eee] dark:hover:bg-darkBorder rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-darkBorder last:border-b-0">
                       <div className="text-start">
                         <span className="text-sm font-semibold block dark:text-white">
@@ -193,9 +226,31 @@ const MemberDialog = ({
                       </div>
                     </div>
                   ))
-                ) : (
+                ) : channel?.TeamMembers.find(
+                    (tm) => tm.email == searchQuery
+                  ) ? (
                   <div className="flex justify-center py-1 text-black/70 dark:text-white/70 font-bold text-sm">
-                    There is no any email like that ...
+                    This user already exists.
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => {
+                      handleMemberSelect({
+                        name: "",
+                        email: searchQuery,
+                      } as TMBrief);
+                      setShowResult(false);
+                      setAction("invite");
+                    }}
+                    className="p-3 hover:bg-[#eee] dark:hover:bg-darkBorder rounded-lg transition-colors duration-200 cursor-pointer border-b border-gray-700 dark:border-darkBorder last:border-b-0">
+                    <div className="text-start">
+                      <span className="text-sm font-semibold block dark:text-white">
+                        Send Invitation to
+                      </span>
+                      <span className="text-xs block text-gray-400 dark:text-gray-500 mt-0.5">
+                        {searchQuery}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -238,14 +293,21 @@ const MemberDialog = ({
 
         <div className="px-6 py-4 bg-stone-50 dark:bg-secondDarkBackground border-t border-stone-200 dark:border-darkBorder flex justify-end gap-2">
           <button
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              setEmailFormatError(false);
+              setShowResult(false);
+              setSearchResult([]);
+              setSelectedMember(null);
+              setSearchQuery("");
+              onOpenChange(false);
+            }}
             className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-darkBorder rounded-lg transition-colors">
             Cancel
           </button>
           <button
-            onClick={() => handleSubmit(member ? "update" : "add")}
+            onClick={() => handleSubmit(action)}
             className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700 rounded-lg transition-colors">
-            {member ? "Update" : "Add"} Member
+            {member ? "Update Role" : "Send Invitation"}
           </button>
         </div>
       </div>
@@ -375,7 +437,10 @@ export const Team = () => {
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
                         <span className="flex items-center justify-center rounded-full border-2 border-violet-900">
                           <img
-                            src={member.avatar}
+                            src={
+                              member.avatar ||
+                              "https://api.dicebear.com/9.x/notionists/svg?seed=5"
+                            }
                             className="size-10 rounded-full shrink-0 bg-violet-500 shadow"
                             alt="avatar"
                           />

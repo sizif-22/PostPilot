@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/ChannelComponents/Sidebar";
 import Link from "next/link";
 import { FiPlus } from "react-icons/fi";
 import { getChannelBriefs } from "@/firebase/channel.firestore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
 import { NewChannel } from "@/components/ChannelComponents/newChannel";
@@ -107,7 +107,9 @@ const Page = () => {
 
             {/* Channels */}
             <div className="px-16 py-4">
+              <Suspense fallback={<Loading/>}>
               <ChannelsComponent channels={user.channels} />
+              </Suspense>
             </div>
           </div>
         </main>

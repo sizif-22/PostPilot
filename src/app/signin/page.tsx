@@ -46,9 +46,9 @@ const Signin = () => {
       await signUpWithEmail(email, password, name);
       window.location.href = "/";
     } catch (error) {
+      setOnProgress(false);
       alert(error);
     }
-    setOnProgress(false);
   };
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
@@ -58,10 +58,10 @@ const Signin = () => {
     try {
       await signInWithEmail(email, password);
       window.location.href = "/";
-    } catch (error) {
+    } catch {
+      setOnProgress(false);
       alert("Invalid Email or Password");
     }
-    setOnProgress(false);
   };
 
   return (
@@ -224,6 +224,7 @@ const Oauth = ({
               await signInWithGoogle();
               window.location.href = "/";
             } catch {
+              alert("Something Went Wrong.");
               window.location.href = "/signin";
             }
           }}>

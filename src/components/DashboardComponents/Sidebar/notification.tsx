@@ -10,12 +10,14 @@ import {
 } from "@/firebase/user.firestore";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { IoChevronBackOutline } from "react-icons/io5";
+
 const NotificationSection = ({
   pageName,
 }: {
   pageName: "folders" | "folders/id";
 }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null); // Add ref for button
   const { user } = useUser();
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
@@ -24,6 +26,7 @@ const NotificationSection = ({
   );
   const [newNotif, setNewNotif] = useState<any>(null);
   const router = useRouter();
+
   // Detect new notification arrival
   useEffect(() => {
     const currentCount = user?.notifications?.length || 0;
@@ -37,14 +40,16 @@ const NotificationSection = ({
       setTimeout(() => setShowNewAlert(false), 3000);
     }
     setLastNotifCount(currentCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.notifications]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      // Check if click is outside both notification panel AND button
       if (
         notificationRef.current &&
-        !notificationRef.current.contains(e.target as Node)
+        !notificationRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
       ) {
         openNotificationBar(false);
       }
@@ -53,6 +58,10 @@ const NotificationSection = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleNotificationToggle = () => {
+    openNotificationBar(!notificationBar);
+  };
 
   return (
     <div className="border-b h-16 flex items-center justify-between border-stone-300 dark:border-stone-800 relative">
@@ -83,9 +92,8 @@ const NotificationSection = ({
         </h1>
       </Link>
       <button
-        onClick={() => {
-          openNotificationBar(!notificationBar);
-        }}
+        ref={buttonRef} // Add ref to button
+        onClick={handleNotificationToggle} // Use dedicated handler
         className="py-1 px-0.5 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">
         <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
         <div
@@ -155,4 +163,5 @@ const NotificationSection = ({
     </div>
   );
 };
+
 export default NotificationSection;

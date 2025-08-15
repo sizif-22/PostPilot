@@ -42,8 +42,7 @@ export const Hero = () => {
                   onClick={async () => {
                     redirect("/signin");
                   }}>
-                  {/* <FaGoogle /> */}
-                  Sign In
+                    Get Started
                 </Button>
               )}
             </div>
