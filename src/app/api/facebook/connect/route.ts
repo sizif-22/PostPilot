@@ -59,12 +59,13 @@ export async function GET(request: Request) {
         const pages: Page[] = [];
         if (businessPagesResponse.ok && businessPagesData.data) {
           for (const page of businessPagesData.data) {
-            pages.push({
-              id: page.id,
-              name: page.name,
-              access_token: page.access_token,
-              instagram_id: page.instagram_business_account?.id || undefined,
-            });
+            if (page.access_token)
+              pages.push({
+                id: page.id,
+                name: page.name,
+                access_token: page.access_token,
+                instagram_id: page.instagram_business_account?.id || undefined,
+              });
           }
         }
 
