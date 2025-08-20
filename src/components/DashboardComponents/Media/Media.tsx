@@ -49,6 +49,7 @@ const MediaThumbnail = React.memo(
           onClick={handleClick}>
           <div className="w-full h-fit media-section bg-gray-900 dark:bg-darkBackground rounded-lg relative flex items-center justify-center overflow-hidden">
             <video
+            
               className="w-full h-auto max-h-[40vh] lg:max-h-[60vh] md:min-h-[150px] min-h-[100px] object-cover"
               preload="metadata">
               <source src={item.url} type="video/mp4" />

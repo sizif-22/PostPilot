@@ -12,8 +12,7 @@ interface UploadResult {
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_UPLOAD_PRESET =
-  process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 const convertVideoToMp4 = async (file: File): Promise<File> => {
   try {
@@ -146,11 +145,48 @@ const uploadImage = async ({
     );
     const url = await FireStorage.getDownloadURL(uploadTask.ref);
 
-    let thumbnailUrl: string | undefined;
+    return {
+      url,
+      type: processedFile.type,
+      name: processedFile.name,
+    };
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    throw err;
+  }
+};
+
+// Fixed function name: uploadThumbnail (was uploadThubmnail - typo)
+const uploadThumbnail = async ({
+  dir,
+  file,
+}: {
+  dir: string;
+  file: File;
+}): Promise<UploadResult> => {
+  try {
+    const isVideo = file.type.startsWith("video/");
+    const fileId = `${randomString.generate(10)}.${
+      isVideo ? "mp4" : file.name.split(".")[file.name.split(".").length - 1]
+    }`;
+    let processedFile = file;
+
+    // Convert video to MP4 if it's a video file and not already MP4
+    if (isVideo && file.type !== "video/mp4") {
+      console.log(`Converting ${file.name} to MP4...`);
+      processedFile = await convertVideoToMp4(file);
+    }
+
+    // Upload the main file (now MP4 if it was a video)
+    const mainStorageRef = FireStorage.ref(storage, `${dir}/thumbnail/${fileId}`);
+    const uploadTask = await FireStorage.uploadBytes(
+      mainStorageRef,
+      processedFile
+    );
+    const url = await FireStorage.getDownloadURL(uploadTask.ref);
 
     return {
       url,
-      thumbnailUrl,
       type: processedFile.type,
       name: processedFile.name,
     };
@@ -177,10 +213,10 @@ export const deleteMedia = async (url: string): Promise<void> => {
 };
 
 // Delete a folder and all its contents
-export const deleteMediaFolder = async (FolderPath: string) => {
+export const deleteMediaFolder = async (folderPath: string) => {
   try {
     // Create a reference to the folder
-    const folderRef = ref(storage, FolderPath);
+    const folderRef = ref(storage, folderPath);
 
     // List all items in the folder
     const result = await listAll(folderRef);
@@ -199,11 +235,12 @@ export const deleteMediaFolder = async (FolderPath: string) => {
     // Wait for all subfolder deletions to complete
     await Promise.all(subfolderPromises);
 
-    console.log(`Successfully deleted folder: ${FolderPath}`);
+    console.log(`Successfully deleted folder: ${folderPath}`);
   } catch (error) {
     console.error("Error deleting media folder:", error);
     throw error;
   }
 };
 
-export { uploadImage, type UploadResult };
+// Export both functions with corrected names
+export { uploadImage, uploadThumbnail, type UploadResult };
