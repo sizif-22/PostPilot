@@ -100,7 +100,7 @@ export async function PostOnTiktok({
             },
             post_info: {
               title: message || "",
-              privacy_level: "SELF_ONLY", // Use SELF_ONLY for unaudited apps
+              privacy_level: "PUBLIC_TO_EVERYONE",
               brand_content_toggle: false,
               brand_organic_toggle: false,
             },
