@@ -72,7 +72,7 @@ export const Configuration = () => {
     Cookies.set("csrfState", csrfState, { expires: 6000 / 86400 });
     Cookies.set("currentChannel", id as string);
     const TIKTOK_CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
-    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/tiktok`;
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_TIKTOK_REDIRECT_URI}/connection/tiktok`;
     const scope =
       "user.info.basic,video.publish,video.upload,user.info.profile";
     const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&scope=${encodeURIComponent(
