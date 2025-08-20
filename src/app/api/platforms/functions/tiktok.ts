@@ -83,7 +83,8 @@ export async function PostOnTiktok({
       );
       console.log(`Number of chunks: ${numOfChunks}`);
 
-      const response = await fetch(
+      // Step 1: Initialize inbox upload (no audit required)
+      const initResponse = await fetch(
         "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/",
         {
           method: "POST",
@@ -100,7 +101,7 @@ export async function PostOnTiktok({
             },
             post_info: {
               title: message || "",
-              privacy_level: "PUBLIC_TO_EVERYONE",
+              privacy_level: "PUBLIC_TO_EVERYONE", // This works for inbox uploads
               brand_content_toggle: false,
               brand_organic_toggle: false,
             },
@@ -108,22 +109,28 @@ export async function PostOnTiktok({
         }
       );
 
-      if (!response.ok) {
-        const data = await response.json();
+      if (!initResponse.ok) {
+        const data = await initResponse.json();
         console.error("TikTok API Error:", data);
         throw new Error(
           data.error?.message ||
-            `HTTP ${response.status}: ${response.statusText}`
+            `HTTP ${initResponse.status}: ${initResponse.statusText}`
         );
       }
 
-      const initData = await response.json();
+      const initData = await initResponse.json();
       console.log("TikTok init response:", initData);
 
-      // Upload video chunks
+      // Step 2: Upload video chunks
       const uploadUrl = initData.data.upload_url;
+      const publishId = initData.data.publish_id;
+      
       if (!uploadUrl) {
         throw new Error("No upload URL received from TikTok API");
+      }
+
+      if (!publishId) {
+        throw new Error("No publish ID received from TikTok API");
       }
 
       // Upload chunks
@@ -152,15 +159,19 @@ export async function PostOnTiktok({
         console.log(`Uploaded chunk ${chunkIndex + 1}/${numOfChunks}`);
       }
 
-      const publishData = await response.json();
-      console.log("TikTok publish response:", publishData);
+      // Step 3: Upload complete - video is now in user's TikTok inbox
+      console.log("Video uploaded successfully to TikTok inbox!");
+      console.log("User will find the video in their TikTok app inbox and can complete posting there.");
 
       return {
         success: true,
-        publishId: initData.data?.publish_id,
-        uploadUrl: initData.data?.upload_url,
-        publishData,
+        publishId: publishId,
+        uploadUrl: uploadUrl,
+        status: "uploaded_to_inbox",
+        message: "Video uploaded to TikTok inbox. User needs to complete posting in TikTok app.",
       };
+    } else {
+      throw new Error("Only single video uploads are currently supported");
     }
   } catch (error) {
     console.error("PostOnTiktok error:", error);
