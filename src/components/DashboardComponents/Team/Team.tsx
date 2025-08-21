@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { FaLessThanEqual } from "react-icons/fa6";
 import { isEmail } from "validator";
 import Image from "next/image";
+import axios from "axios";
 
 interface MemberDialogProps {
   open: boolean;
@@ -81,12 +82,25 @@ const MemberDialog = ({
   const handleSubmit = async (state: "update" | "add" | "invite") => {
     if (state == "add" || state == "invite") {
       if (selectedMember && channel && user && formData.role) {
-        await sendNotification(selectedMember, formData.role, channel, user,state);
+        Promise.all([
+          await axios.post("/api/smtp/invitation", {
+            sender: user.email,
+            receiver: selectedMember.email,
+            channelId: channel.name,
+          }),
+          await sendNotification(
+            selectedMember,
+            formData.role,
+            channel,
+            user,
+            state
+          ),
+        ]);
       }
-    } else if(state == "update") {
+    } else if (state == "update") {
       if (member && channel && member.role != formData.role)
         await updateRole(member, formData.role, channel);
-    } 
+    }
     setSelectedMember(null);
     onOpenChange(false);
     setFormData({ role: "Reviewer" });

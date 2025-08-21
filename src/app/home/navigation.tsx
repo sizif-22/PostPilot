@@ -20,7 +20,7 @@ import {
 import { logOut } from "../signin/action";
 import { Notification as UserNotification } from "@/interfaces/User"; // Alias to avoid conflict
 import { NotificationConfig } from "@/context/NotificationContext";
-
+import axios from "axios";
 export const Navigation = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -112,6 +112,13 @@ export const Navigation = () => {
                 {button.name}
               </Link>
             ))}
+            {/* <Button
+              onClick={async () => {
+                const res = await axios.post("/api/smtp/invitation",{sender:"s1h9e7r4if@gmail.com",receiver:"sheriflotfy22@hotmail.com",channelId:"123"});
+                console.log("Response:", res.data);
+              }}>
+              Send Email
+            </Button> */}
             <ThemeToggle />
             <Suspense fallback={<div>Loading...</div>}>
               {user?.email && (
