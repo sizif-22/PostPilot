@@ -595,10 +595,6 @@ export const CPDialog = ({
                   </div>
                 )}
               </div>
-
-              {/* {selectedImages.length > 0 && (
-                
-              )} */}
             </div>
 
             {/* Facebook Video Type Selection */}

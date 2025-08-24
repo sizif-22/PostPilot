@@ -87,6 +87,7 @@ export const Issues = ({ media }: { media: MediaItem[] }) => {
 
     setFilteredIssues(filtered);
   }, [
+    channel,
     issues,
     resolvedIssues,
     activeTab,

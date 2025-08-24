@@ -24,7 +24,6 @@ import { formatDateInTimezone } from "@/utils/timezone";
 import { deletePost, addCommentToPost } from "@/firebase/channel.firestore";
 import { EditPostDialog } from "../Dashboard/EditPostDialog";
 import { MediaItem } from "@/interfaces/Media";
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { createComment, createIssue } from "@/firebase/issue.firestore";
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
@@ -80,7 +79,7 @@ export const NewDetailsDialog = ({
       );
       setIssues(fetchedIssues);
     }
-  }, [selectedPost, toggle]);
+  }, [channel, selectedPost, toggle]);
 
   useEffect(() => {
     if (selectedPost && selectedPost.id) {
@@ -89,7 +88,7 @@ export const NewDetailsDialog = ({
       );
       setComments(fetchedComments);
     }
-  }, [selectedPost, toggle2]);
+  }, [channel, selectedPost, toggle2]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {

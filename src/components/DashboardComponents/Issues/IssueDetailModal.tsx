@@ -70,7 +70,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
     const fetchedComments =
       channel?.posts?.[issue.postId]?.issues?.[issue.id]?.comments ?? [];
     setComments(fetchedComments);
-  }, [issue, toggle]);
+  }, [channel,issue, toggle]);
 
   const handleAddComment = async () => {
     if (!commentText.trim() || isSubmittingComment) return;

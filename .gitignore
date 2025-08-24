@@ -38,3 +38,5 @@ test.js
 test.html
 .env
 firebase-service-account.json
+
+cors.json
