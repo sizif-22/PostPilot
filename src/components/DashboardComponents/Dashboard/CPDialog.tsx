@@ -44,6 +44,8 @@ import {
 import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import { useNotification } from "@/context/NotificationContext";
+import VideoThumbnailPicker from "../Media/VideoThumbnailPicker";
+import { FiEdit2 } from "react-icons/fi";
 
 export const CPDialog = ({
   open,
@@ -59,6 +61,8 @@ export const CPDialog = ({
   const [postText, setPostText] = useState("");
   const [selectedImages, setSelectedImages] = useState<MediaItem[]>([]);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
+  const [isThumbnailPickerOpen, setIsThumbnailPickerOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<MediaItem | null>(null);
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
@@ -550,18 +554,40 @@ export const CPDialog = ({
                             />
                           ) : (
                             <div className="relative w-full h-full">
-                              <video
-                                className="object-cover w-full h-full"
-                                preload="metadata">
-                                <source src={item.url} type="video/mp4" />
-                                Your browser does not support the video tag.
-                              </video>
-                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                <FaPlay className="text-white w-4 h-4" />
-                              </div>
+                              {item.thumbnailUrl ? (
+                                <Image
+                                  src={item.thumbnailUrl}
+                                  alt={item.name}
+                                  width={100}
+                                  height={100}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <>
+                                  <video
+                                    className="object-cover w-full h-full"
+                                    preload="metadata">
+                                    <source src={item.url} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                  </video>
+                                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <FaPlay className="text-white w-4 h-4" />
+                                  </div>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
+                        {item.isVideo && (
+                          <button
+                            onClick={() => {
+                              setSelectedVideo(item);
+                              setIsThumbnailPickerOpen(true);
+                            }}
+                            className="absolute bottom-1 left-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center text-xs hover:bg-black">
+                            <FiEdit2 className="w-3 h-3" />
+                          </button>
+                        )}
                         <button
                           onClick={(e) => {
                             handleImageSelect(item);
@@ -884,6 +910,32 @@ export const CPDialog = ({
                   ))}
               </div>
             </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Thumbnail Picker Dialog */}
+        <Dialog
+          open={isThumbnailPickerOpen}
+          onOpenChange={setIsThumbnailPickerOpen}>
+          <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
+            <DialogHeader>
+              <DialogTitle>Select Thumbnail</DialogTitle>
+            </DialogHeader>
+            {selectedVideo && (
+              <VideoThumbnailPicker
+                video={selectedVideo}
+                onThumbnailCreated={(thumbnailUrl) => {
+                  setSelectedImages((prev) =>
+                    prev.map((item) =>
+                      item.url === selectedVideo.url
+                        ? { ...item, thumbnailUrl }
+                        : item
+                    )
+                  );
+                  setIsThumbnailPickerOpen(false);
+                }}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </DialogContent>

@@ -178,6 +178,9 @@ async function createAndPublishInstagramPost({
         access_token: accessToken,
         share_to_feed: "true",
       };
+      if (mediaItem.thumbnailUrl) {
+        mediaData.cover_url = mediaItem.thumbnailUrl;
+      }
     } else {
       mediaData = {
         image_url: mediaItem.url,
@@ -219,6 +222,9 @@ async function createAndPublishInstagramPost({
           caption: message,
           access_token: accessToken,
         };
+        if (mediaItem.thumbnailUrl) {
+          mediaData.cover_url = mediaItem.thumbnailUrl;
+        }
         createResponse = await fetch(
           `https://graph.facebook.com/v19.0/${pageId}/media`,
           {

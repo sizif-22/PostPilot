@@ -14,7 +14,7 @@ interface UploadResult {
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-const convertVideoToMp4 = async (file: File): Promise<File> => {
+const convertVideoToMp4 = async (file: File): Promise<{ convertedFile: File; thumbnailUrl: string }> => {
   try {
     // Validate environment variables
     if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
@@ -63,6 +63,8 @@ const convertVideoToMp4 = async (file: File): Promise<File> => {
     );
     console.log("MP4 transformation URL:", mp4Url);
 
+    const thumbnailUrl = result.secure_url.replace(/\.[^/.]+$/, ".jpg");
+
     // Download the converted video
     const convertedVideoResponse = await fetch(mp4Url);
     if (!convertedVideoResponse.ok) {
@@ -76,7 +78,7 @@ const convertVideoToMp4 = async (file: File): Promise<File> => {
 
       // Clean up and return original file
       await cleanupCloudinaryAsset(result.public_id);
-      return new File([originalBlob], file.name, { type: file.type });
+      return { convertedFile: new File([originalBlob], file.name, { type: file.type }), thumbnailUrl };
     }
 
     const convertedVideoBlob = await convertedVideoResponse.blob();
@@ -91,7 +93,7 @@ const convertVideoToMp4 = async (file: File): Promise<File> => {
     // Clean up the Cloudinary asset
     await cleanupCloudinaryAsset(result.public_id);
 
-    return convertedFile;
+    return { convertedFile, thumbnailUrl };
   } catch (error) {
     console.error("Error converting video to MP4:", error);
     throw new Error(
@@ -127,14 +129,17 @@ const uploadImage = async ({
   try {
     const isVideo = file.type.startsWith("video/");
     const fileId = `${randomString.generate(10)}.${
-      isVideo ? "mp4" : file.name.split(".")[file.name.split(".").length - 1]
+      isVideo ? "mp4" : file.name.split(".").pop()
     }`;
     let processedFile = file;
+    let thumbnailUrl: string | undefined;
 
     // Convert video to MP4 if it's a video file and not already MP4
     if (isVideo && file.type !== "video/mp4") {
       console.log(`Converting ${file.name} to MP4...`);
-      processedFile = await convertVideoToMp4(file);
+      const conversionResult = await convertVideoToMp4(file);
+      processedFile = conversionResult.convertedFile;
+      thumbnailUrl = conversionResult.thumbnailUrl;
     }
 
     // Upload the main file (now MP4 if it was a video)
@@ -147,6 +152,7 @@ const uploadImage = async ({
 
     return {
       url,
+      thumbnailUrl,
       type: processedFile.type,
       name: processedFile.name,
     };
