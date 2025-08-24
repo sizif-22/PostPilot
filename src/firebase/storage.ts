@@ -180,7 +180,9 @@ const uploadThumbnail = async ({
     // Convert video to MP4 if it's a video file and not already MP4
     if (isVideo && file.type !== "video/mp4") {
       console.log(`Converting ${file.name} to MP4...`);
-      processedFile = await convertVideoToMp4(file);
+      const conversionResult = await convertVideoToMp4(file);
+      processedFile = conversionResult.convertedFile;
+      // Note: thumbnailUrl is not used in uploadThumbnail, so we ignore it here
     }
 
     // Upload the main file (now MP4 if it was a video)
