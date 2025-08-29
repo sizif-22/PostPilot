@@ -31,7 +31,8 @@ async function getPageAccessToken(pageId: string, userAccessToken: string): Prom
 
   try {
     const response = await fetchWithRetry(
-      `https://graph.facebook.com/v19.0/${pageId}?fields=access_token,name&access_token=${userAccessToken}`
+      `https://graph.facebook.com/v19.0/${pageId}?fields=access_token,name&access_token=${userAccessToken}`,
+      { method: "GET" }
     );
     const data = await response.json();
     if (data.access_token) {
@@ -62,7 +63,11 @@ async function uploadVideo({ pageId, pageAccessToken, message, mediaItem }: { pa
   if (mediaItem.thumbnailUrl && isValidImageUrl(mediaItem.thumbnailUrl)) {
     console.log("Fetching thumbnail from:", mediaItem.thumbnailUrl);
     try {
-      const response = await fetchWithRetry(mediaItem.thumbnailUrl);
+      // fetchWithRetry expects at least 2 arguments: url and options
+      const response = await fetchWithRetry(
+        mediaItem.thumbnailUrl,
+        { method: "GET" }
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch thumbnail: ${response.statusText}`);
       }

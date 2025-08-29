@@ -7,7 +7,6 @@ import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
 import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
-import { getUserById } from "../../../../firebase/user.firestore";
 import { transporter } from "../../../../utils/smtp.config";
 
 export async function POST(request: Request) {
