@@ -204,7 +204,7 @@ const MemberDialog = ({
                       type="text"
                       value={searchQuery}
                       onChange={(e) => {
-                        setSearchQuery(e.target.value);
+                        setSearchQuery(e.target.value.toLowerCase());
                         setShowResult(false);
                       }}
                       className="col-span-4 p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
