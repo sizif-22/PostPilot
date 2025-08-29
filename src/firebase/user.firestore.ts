@@ -9,6 +9,16 @@ export const addUser = async (user: Partial<User>) => {
   await fs.setDoc(userRef, user);
 };
 
+export const getUserById = async (email: string): Promise<User | null> => {
+  const userRef = fs.doc(fs.collection(db, "Users"), email);
+  const doc = await fs.getDoc(userRef);
+  if (doc.exists()) {
+    return doc.data() as User;
+  } else {
+    return null;
+  }
+}
+
 export const getUser = (
   email: string,
   callback: (user: User | null) => void

@@ -1,3 +1,24 @@
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries: number = 3,
+  delayMs: number = 2000
+): Promise<Response> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fetch(url, options);
+    } catch (error: any) {
+      if (error.cause?.code === 'ETIMEDOUT' && i < maxRetries - 1) {
+        console.warn(`Fetch timed out. Retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
 // facebook.ts - Fixed version with proper thumbnail handling
 import { MediaItem } from "@/interfaces/Media";
 import { Blob } from 'buffer';
@@ -9,7 +30,7 @@ async function getPageAccessToken(pageId: string, userAccessToken: string): Prom
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `https://graph.facebook.com/v19.0/${pageId}?fields=access_token,name&access_token=${userAccessToken}`
     );
     const data = await response.json();
@@ -41,7 +62,7 @@ async function uploadVideo({ pageId, pageAccessToken, message, mediaItem }: { pa
   if (mediaItem.thumbnailUrl && isValidImageUrl(mediaItem.thumbnailUrl)) {
     console.log("Fetching thumbnail from:", mediaItem.thumbnailUrl);
     try {
-      const response = await fetch(mediaItem.thumbnailUrl);
+      const response = await fetchWithRetry(mediaItem.thumbnailUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch thumbnail: ${response.statusText}`);
       }
@@ -62,7 +83,7 @@ async function uploadVideo({ pageId, pageAccessToken, message, mediaItem }: { pa
     thumb: formData.has("thumb") ? "Exists" : "Does not exist"
   });
 
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://graph.facebook.com/v19.0/${pageId}/videos`,
     {
       method: "POST",
@@ -89,7 +110,7 @@ async function uploadReel({ pageId, pageAccessToken, message, mediaItem }: { pag
   }
 
   // Step 1: Initialize upload session
-  const initRes = await fetch(
+  const initRes = await fetchWithRetry(
     `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
     {
       method: "POST",
@@ -109,7 +130,7 @@ async function uploadReel({ pageId, pageAccessToken, message, mediaItem }: { pag
   const { video_id, upload_url } = initData;
 
   // Step 2: Upload the video file
-  const uploadRes = await fetch(upload_url, {
+  const uploadRes = await fetchWithRetry(upload_url, {
     method: "POST",
     headers: {
       Authorization: `OAuth ${pageAccessToken}`,
@@ -138,7 +159,7 @@ async function uploadReel({ pageId, pageAccessToken, message, mediaItem }: { pag
     publishPayload.thumb_url = mediaItem.thumbnailUrl;
   }
 
-  const publishRes = await fetch(
+  const publishRes = await fetchWithRetry(
     `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
     {
       method: "POST",
@@ -202,7 +223,7 @@ export async function PostOnFacebook({
       if (media.length === 1) {
         // Single Image Post
         const photoData = { url: media[0].url, caption: message, access_token: pageAccessToken };
-        const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
+        const response = await fetchWithRetry(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
           method: "POST",
           body: new URLSearchParams(photoData),
         });
@@ -213,7 +234,7 @@ export async function PostOnFacebook({
         // Multi-Image Post
         const attached_media = await Promise.all(media.map(async (item) => {
           const photoParams = { url: item.url, published: "false", access_token: pageAccessToken };
-          const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
+          const response = await fetchWithRetry(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
             method: "POST",
             body: new URLSearchParams(photoParams),
           });
@@ -223,7 +244,7 @@ export async function PostOnFacebook({
         }));
 
         const feedData = { message, access_token: pageAccessToken, attached_media: JSON.stringify(attached_media) };
-        const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
+        const response = await fetchWithRetry(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
           method: "POST",
           body: new URLSearchParams(feedData),
         });
@@ -235,7 +256,7 @@ export async function PostOnFacebook({
 
     // Text-only Post
     const feedData = { message, access_token: pageAccessToken };
-    const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
+    const response = await fetchWithRetry(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
       method: "POST",
       body: new URLSearchParams(feedData),
     });

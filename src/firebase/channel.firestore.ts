@@ -92,6 +92,7 @@ const createChannel = async (channel: Channel, user: User) => {
   const { id, authority, ...channelWithoutIdAndAuthority } = channel;
   const newChannel = await addDoc(collection(db, "Channels"), {
     ...channelWithoutIdAndAuthority,
+    owner: user.email,
   } as Channel);
   await updateDoc(doc(db, "Users", user.email), {
     channels: arrayUnion({ id: newChannel.id, authority: "Owner" }),

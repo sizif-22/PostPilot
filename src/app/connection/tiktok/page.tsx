@@ -57,7 +57,6 @@ const TiktokPage = () => {
         }
 
         const tokenData = await tokenResponse.json();
-        console.log("Token response:", tokenData);
 
         const accessToken = tokenData.access_token;
         const refreshToken = tokenData.refresh_token;

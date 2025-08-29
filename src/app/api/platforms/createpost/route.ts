@@ -7,6 +7,8 @@ import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
 import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
+import { getUserById } from "../../../../firebase/user.firestore";
+import { transporter } from "../../../../utils/smtp.config";
 
 export async function POST(request: Request) {
   try {
@@ -63,9 +65,7 @@ export async function POST(request: Request) {
     if (
       post.media &&
       (!Array.isArray(post.media) ||
-        post.media.some(
-          (url) => !url || typeof url !== "object" || !url.url
-        ))
+        post.media.some((url) => !url || typeof url !== "object" || !url.url))
     ) {
       console.error("Invalid media:", post.media);
       return NextResponse.json(
@@ -91,7 +91,10 @@ export async function POST(request: Request) {
                   pageId: channel.socialMedia?.facebook?.id,
                   media: post.media,
                   message: post.message,
-                  facebookVideoType: post.facebookVideoType as "default" | "reel" | undefined,
+                  facebookVideoType: post.facebookVideoType as
+                    | "default"
+                    | "reel"
+                    | undefined,
                 });
 
                 return {
@@ -159,6 +162,7 @@ export async function POST(request: Request) {
                   openId: channel.socialMedia.tiktok.openId,
                   message: post.message,
                   media: post.media,
+                  // channelId: channel.id,
                 });
 
                 return {
@@ -332,6 +336,47 @@ export async function POST(request: Request) {
     await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
       [`posts.${postId}.published`]: true,
     });
+
+    if (channel.TeamMembers[0]) {
+      const user = channel.TeamMembers[0];
+
+      if (user) {
+        const successfulPlatforms = validResults.filter((r) => r.success);
+        const failedPlatforms = validResults.filter((r) => !r.success);
+
+        let emailBody = `Hi ${user.name},<br><br>Here is the summary of your recent post publication:<br><br>`;
+
+        if (successfulPlatforms.length > 0) {
+          emailBody += "<b>Successfully published on:</b><br>";
+          successfulPlatforms.forEach((p) => {
+            emailBody += `- ${p.platform}<br>`;
+            if (p.platform.toLowerCase() === "tiktok") {
+              emailBody += `<em>(Your post has been sent to TikTok and is ready. Please publish it manually from the TikTok app.)</em><br>`;
+            }
+          });
+          emailBody += "<br>";
+        }
+
+        if (failedPlatforms.length > 0) {
+          emailBody += "<b>Failed to publish on:</b><br>";
+          failedPlatforms.forEach((p) => {
+            emailBody += `- ${p.platform}: ${p.message}<br>`;
+          });
+          emailBody += "<br>";
+        }
+
+        await transporter.sendMail({
+          from: '"PostPilot" <postpilot@webbingstone.org>',
+          to: user.email,
+          subject: "Your Post Publication Summary",
+          html: emailBody,
+        });
+      } else {
+        console.error("Could not find user to send email to.");
+      }
+    } else {
+      console.error("Channel owner is not defined.");
+    }
 
     return NextResponse.json(
       {

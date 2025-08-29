@@ -1,3 +1,24 @@
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries: number = 3,
+  delayMs: number = 2000
+): Promise<Response> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fetch(url, options);
+    } catch (error: any) {
+      if (error.cause?.code === 'ETIMEDOUT' && i < maxRetries - 1) {
+        console.warn(`Fetch timed out. Retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
 // instagram.ts - Fixed version with proper thumbnail handling
 import { MediaItem } from "@/interfaces/Media";
 
@@ -79,7 +100,7 @@ async function createAndPublishInstagramPost({
         reelsData.cover_url = mediaItem.thumbnailUrl; // Use cover_url for REELS
       }
 
-      createResponse = await fetch(
+      createResponse = await fetchWithRetry(
         `https://graph.facebook.com/v19.0/${pageId}/media`,
         {
           method: "POST",
@@ -108,7 +129,7 @@ async function createAndPublishInstagramPost({
           videoData.thumb = mediaItem.thumbnailUrl; // Use thumb for regular VIDEO
         }
 
-        createResponse = await fetch(
+        createResponse = await fetchWithRetry(
           `https://graph.facebook.com/v19.0/${pageId}/media`,
           {
             method: "POST",
@@ -140,7 +161,7 @@ async function createAndPublishInstagramPost({
       // Publish if requested
       if (published) {
         console.log("Publishing video...");
-        const publishResponse = await fetch(
+        const publishResponse = await fetchWithRetry(
           `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
           {
             method: "POST",
@@ -176,7 +197,7 @@ async function createAndPublishInstagramPost({
         ...(message ? { caption: message } : {}),
       };
 
-      const createResponse = await fetch(
+      const createResponse = await fetchWithRetry(
         `https://graph.facebook.com/v19.0/${pageId}/media`,
         {
           method: "POST",
@@ -195,7 +216,7 @@ async function createAndPublishInstagramPost({
       }
 
       if (published) {
-        const publishResponse = await fetch(
+        const publishResponse = await fetchWithRetry(
           `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
           {
             method: "POST",
@@ -245,7 +266,7 @@ async function createAndPublishInstagramPost({
         mediaParams.media_type = "IMAGE";
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `https://graph.facebook.com/v19.0/${pageId}/media`,
         {
           method: "POST",
@@ -286,7 +307,7 @@ async function createAndPublishInstagramPost({
       ...(message ? { caption: message } : {}),
     };
 
-    const carouselResponse = await fetch(
+    const carouselResponse = await fetchWithRetry(
       `https://graph.facebook.com/v19.0/${pageId}/media`,
       {
         method: "POST",
@@ -312,7 +333,7 @@ async function createAndPublishInstagramPost({
 
     // Publish carousel
     if (published) {
-      const publishResponse = await fetch(
+      const publishResponse = await fetchWithRetry(
         `https://graph.facebook.com/v19.0/${pageId}/media_publish`,
         {
           method: "POST",
@@ -345,14 +366,14 @@ async function createAndPublishInstagramPost({
 async function waitForContainerReady(
   containerId: string,
   accessToken: string,
-  maxAttempts: number = 15, // Increased attempts
-  delayMs: number = 2000 // Reduced delay
+  maxAttempts: number = 30, // Increased attempts
+  delayMs: number = 3000 // Reduced delay
 ): Promise<boolean> {
   console.log(`Checking container status for ID: ${containerId}`);
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const statusResponse = await fetch(
+      const statusResponse = await fetchWithRetry(
         `https://graph.facebook.com/v19.0/${containerId}?fields=status_code,status&access_token=${accessToken}`,
         { method: "GET" }
       );
@@ -372,7 +393,7 @@ async function waitForContainerReady(
         console.log("Container is ready!");
         return true;
       } else if (statusData.status_code === "ERROR" || statusData.status === "ERROR") {
-        throw new Error("Container processing failed with ERROR status");
+        throw new Error(`Container processing failed with status: ${statusData.status}. Full error: ${JSON.stringify(statusData)}`);
       } else if (statusData.status_code === "IN_PROGRESS" || statusData.status === "IN_PROGRESS") {
         console.log(`Container still processing... (attempt ${attempt}/${maxAttempts})`);
       }
