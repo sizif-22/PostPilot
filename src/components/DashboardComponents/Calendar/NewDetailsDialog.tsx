@@ -345,7 +345,7 @@ export const NewDetailsDialog = ({
 
             {/* Media Section */}
             {selectedPost?.media && selectedPost.media.length > 0 && (
-              <div className="col-span-1 lg:col-span-5 bg-gray-50 dark:bg-secondDarkBackground flex items-center justify-center min-h-[300px] lg:min-h-full">
+              <div className="col-span-1 lg:col-span-5 bg-gray-50 dark:bg-secondDarkBackground  flex items-center justify-center min-h-[300px] lg:min-h-full">
                 <div className="relative w-full h-full">
                   {!selectedPost.media[currentIndex]?.isVideo ? (
                     <Image
@@ -357,14 +357,24 @@ export const NewDetailsDialog = ({
                     />
                   ) : (
                     <>
-                      <video
-                        className="w-full h-full object-cover"
-                        preload="metadata">
-                        <source src={selectedPost.media[currentIndex].url} />
-                        Your browser does not support the video tag.
-                      </video>
-                      <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                      {selectedPost.media[currentIndex]?.thumbnailUrl ? (
+                        <Image
+                          src={selectedPost.media[currentIndex].thumbnailUrl}
+                          width={1000}
+                          height={1000}
+                          alt="Post media"
+                          className="w-full h-full object-contain border-r  dark:border-darkBorder"
+                        />
+                      ) : (
+                        <video
+                          className="w-full h-full object-cover"
+                          preload="metadata">
+                          <source src={selectedPost.media[currentIndex].url} />
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
+                      <div className="absolute inset-0 bg-black/20  hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                        <div className="w-12 h-12 rounded-full flex items-center bg-black/30 justify-center">
                           <FaPlay size={12} className="text-white" />
                         </div>
                       </div>
@@ -432,7 +442,7 @@ export const NewDetailsDialog = ({
             )}
 
             {/* Post Content Section */}
-            <div className="col-span-1 lg:col-span-5 flex flex-col p-6 space-y-6">
+            <div className="col-span-1 lg:col-span-5 flex flex-col h-[80vh] p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -452,7 +462,7 @@ export const NewDetailsDialog = ({
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
+              <div className="flex   items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                 <div className="flex items-center gap-1">
                   <FiClock className="text-stone-400 dark:text-stone-500" />
                   {(() => {
@@ -472,7 +482,7 @@ export const NewDetailsDialog = ({
               </div>
 
               {/* Post Message */}
-              <div className="flex-1">
+              <div className="flex-1 max-h-[60vh] overflow-auto">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Post Content
                 </h3>
@@ -481,6 +491,18 @@ export const NewDetailsDialog = ({
                     {selectedPost.message}
                   </p>
                 </div>
+                {selectedPost.xText && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      X Text
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                          {selectedPost.xText}
+                        </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Action Buttons */}
