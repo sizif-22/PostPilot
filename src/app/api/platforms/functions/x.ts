@@ -58,6 +58,7 @@ export async function PostOnX({
   media,
   refreshToken,
   tokenExpiry,
+  xText,
 }: {
   media?: MediaItem[];
   accessToken: string;
@@ -65,6 +66,7 @@ export async function PostOnX({
   message?: string;
   refreshToken?: string;
   tokenExpiry?: string;
+  xText?: string;
 }) {
   try {
     let currentAccessToken = accessToken;
@@ -131,7 +133,7 @@ export async function PostOnX({
 
     // 2. Post the tweet using Twitter API v2 (OAuth 2.0)
     const tweetBody: any = {
-      text: message || "",
+      text: xText || message || "",
     };
 
     if (media_ids.length > 0) {

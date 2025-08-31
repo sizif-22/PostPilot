@@ -96,4 +96,5 @@ export type Post = {
   facebookVideoType?: string;
   title?: string;
   clientTimeZone?: string;
+  xText?: string;
 };

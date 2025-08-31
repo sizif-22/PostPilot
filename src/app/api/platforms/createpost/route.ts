@@ -255,6 +255,7 @@ export async function POST(request: Request) {
                   pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
                   message: post.message,
                   media: post.media,
+                  xText: post.xText,
                   ...(channel.socialMedia.x.refreshToken &&
                   channel.socialMedia.x.tokenExpiry
                     ? {
