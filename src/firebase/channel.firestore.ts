@@ -59,22 +59,18 @@ const getChannelBriefs = async (channels: UserChannel[]) => {
   return channelBriefs;
 };
 
-import { checkTokenExpiration } from "@/utils/token-expiration";
-
 const getChannel = (
   channel: UserChannel,
   callback: (channel: Channel | null) => void
 ) => {
   const channelRef = doc(db, "Channels", channel.id);
-  return onSnapshot(channelRef, async (doc) => {
+  return onSnapshot(channelRef, (doc) => {
     if (doc.exists()) {
-      const channelData = {
+      callback({
         ...doc.data(),
         id: doc.id,
         authority: channel.authority,
-      } as Channel;
-      const updatedChannel = await checkTokenExpiration(channelData);
-      callback(updatedChannel);
+      } as Channel);
     } else {
       callback(null);
     }
