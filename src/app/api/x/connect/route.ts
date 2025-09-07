@@ -1,16 +1,10 @@
-// 2. Updated route.ts - API handler
+// Fixed route.ts - API handler
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import Cookies from "js-cookie";
+
 const CLIENT_ID = process.env.X_CLIENT_ID!;
 const CLIENT_SECRET = process.env.X_CLIENT_SECRET!;
 const REDIRECT_URI = process.env.X_REDIRECT_URI!;
-
-interface XUserProfile {
-  id: string;
-  name: string;
-  username: string;
-}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -89,7 +83,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Check if we got a refresh token (required for long-lived tokens)
+    // Check if we got a refresh token (required for token refresh later)
     if (!tokenData.refresh_token) {
       console.error(
         "No refresh token received. Make sure 'offline.access' scope is requested."
@@ -103,47 +97,14 @@ export async function GET(request: Request) {
       );
     }
 
-    // Exchange refresh token for long-lived access token
-    const refreshParams = new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: tokenData.refresh_token,
-      client_id: CLIENT_ID,
-    });
+    // Use the access token directly (it's valid for 2 hours)
+    const accessToken = tokenData.access_token;
+    const refreshToken = tokenData.refresh_token;
 
-    const refreshRes = await fetch("https://api.twitter.com/2/oauth2/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(
-          `${CLIENT_ID}:${CLIENT_SECRET}`
-        ).toString("base64")}`,
-      },
-      body: refreshParams,
-    });
-
-    const refreshData = await refreshRes.json();
-
-    if (!refreshRes.ok) {
-      console.error("Refresh token exchange failed:", refreshData);
-      return NextResponse.json(
-        {
-          error:
-            refreshData.error_description ||
-            refreshData.error ||
-            "Failed to get long-lived access token",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Use the long-lived access token
-    const longLivedAccessToken = refreshData.access_token;
-    const newRefreshToken = refreshData.refresh_token; // X provides a new refresh token
-
-    // Fetch user profile with long-lived token
+    // Fetch user profile
     const userRes = await fetch("https://api.twitter.com/2/users/me", {
       headers: {
-        Authorization: `Bearer ${longLivedAccessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -157,11 +118,13 @@ export async function GET(request: Request) {
       );
     }
 
-    // Clean up cookies
+    // Return the tokens and user data
     const response = NextResponse.json({
-      access_token: longLivedAccessToken,
-      refresh_token: newRefreshToken,
-      expires_in: refreshData.expires_in,
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: tokenData.expires_in, // 7200 seconds (2 hours)
+      token_type: tokenData.token_type,
+      scope: tokenData.scope,
       organizations: [], // X doesn't have organizations like LinkedIn
       user: {
         id: userData.data.id,
