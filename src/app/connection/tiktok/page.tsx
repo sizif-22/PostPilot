@@ -5,6 +5,7 @@ import { db } from "@/firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { encrypt } from "@/utils/encryption";
 
 const TiktokPage = () => {
   const router = useRouter();
@@ -85,8 +86,8 @@ const TiktokPage = () => {
           await updateDoc(doc(db, "Channels", id as string), {
             "socialMedia.tiktok": {
               name: "TikTok User", // Fallback name
-              accessToken: accessToken,
-              refreshToken: refreshToken,
+              accessToken: await encrypt(accessToken),
+              refreshToken: await encrypt(refreshToken),
               openId: openId,
               username: "tiktok_user", // Fallback username
               connectedAt: new Date().toISOString(),
@@ -112,8 +113,8 @@ const TiktokPage = () => {
             name,
             username,
             avatarUrl,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
+            accessToken: await encrypt(accessToken),
+            refreshToken: await encrypt(refreshToken),
             openId: openId,
             connectedAt: new Date().toISOString(),
             scope: scope,

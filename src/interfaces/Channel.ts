@@ -19,6 +19,8 @@ export interface facebookChannel {
   name: string;
   id: string;
   accessToken: string;
+  tokenExpiry?: string;
+  remainingTime?: number;
 }
 export interface instagramChannel {
   pageId: string;
@@ -28,18 +30,24 @@ export interface instagramChannel {
   instagramUsername: string;
   instagramName: string;
   profilePictureUrl: string;
+  tokenExpiry?: string;
+  remainingTime?: number;
 }
 export interface tiktok {
   accessToken: string;
   name?: string;
   username: string;
   openId: string;
+  tokenExpiry?: string;
+  remainingTime?: number;
 }
 export interface linkedinChannel {
   name: string;
   urn: string;
   accessToken: string;
   organizationId: string;
+  tokenExpiry?: string;
+  remainingTime?: number;
 }
 export interface xChannel {
   name: string;
@@ -49,6 +57,7 @@ export interface xChannel {
   isPersonal: boolean;
   refreshToken?: string;
   tokenExpiry?: string;
+  remainingTime?: number;
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {

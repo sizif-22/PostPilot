@@ -157,7 +157,9 @@ export async function POST(request: Request) {
                   );
                 }
                 const result = await PostOnTiktok({
-                  accessToken: channel.socialMedia.tiktok.accessToken,
+                  accessToken: await decrypt(
+                    channel.socialMedia.tiktok.accessToken
+                  ),
                   openId: channel.socialMedia.tiktok.openId,
                   message: post.message,
                   media: post.media,
