@@ -71,6 +71,7 @@ export const NewDetailsDialog = ({
   const [toggle2, setToggle2] = useState<boolean>(false);
   const { user } = useUser();
   const { addNotification } = useNotification();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (selectedPost && selectedPost.id) {
@@ -324,6 +325,7 @@ export const NewDetailsDialog = ({
             if (e.target === e.currentTarget) {
               setCurrentIndex(0);
               setOpen(false);
+              setIsPlaying(false);
             }
           }}>
           <div
@@ -338,6 +340,7 @@ export const NewDetailsDialog = ({
               onClick={() => {
                 setCurrentIndex(0);
                 setOpen(false);
+                setIsPlaying(false);
               }}
               className="absolute top-4 right-4 z-10 p-2  ">
               <FiX className="w-5 h-5 text-black dark:text-white" />
@@ -355,6 +358,15 @@ export const NewDetailsDialog = ({
                       alt="Post media"
                       className="w-full h-full object-contain border-r dark:border-darkBorder"
                     />
+                  ) : isPlaying ? (
+                    <video
+                      className="w-full h-full object-cover"
+                      controls
+                      autoPlay
+                      preload="metadata">
+                      <source src={selectedPost.media[currentIndex].url} />
+                      Your browser does not support the video tag.
+                    </video>
                   ) : (
                     <>
                       {selectedPost.media[currentIndex]?.thumbnailUrl ? (
@@ -373,7 +385,9 @@ export const NewDetailsDialog = ({
                           Your browser does not support the video tag.
                         </video>
                       )}
-                      <div className="absolute inset-0 bg-black/20  hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md">
+                      <div
+                        onClick={() => setIsPlaying(true)}
+                        className="absolute inset-0 bg-black/20  hover:bg-black/50 transition-all duration-300 flex items-center justify-center rounded-md cursor-pointer">
                         <div className="w-12 h-12 rounded-full flex items-center bg-black/30 justify-center">
                           <FaPlay size={12} className="text-white" />
                         </div>
@@ -400,6 +414,7 @@ export const NewDetailsDialog = ({
                                   : currentIndex - 1
                               );
                             }
+                            setIsPlaying(false);
                           }}
                           className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
                           disabled={selectedPost.media.length <= 1}>
@@ -422,6 +437,7 @@ export const NewDetailsDialog = ({
                                 (currentIndex + 1) % selectedPost.media.length
                               );
                             }
+                            setIsPlaying(false);
                           }}
                           className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 shadow hover:bg-white/20 transition-colors group"
                           disabled={selectedPost.media.length <= 1}>
