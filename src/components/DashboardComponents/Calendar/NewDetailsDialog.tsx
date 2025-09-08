@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Command } from "cmdk";
 import {
   FiX,
   FiFacebook,
