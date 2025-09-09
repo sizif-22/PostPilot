@@ -9,6 +9,7 @@ import Loading from "@/components/ui/Loading";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 import { encrypt } from "@/utils/encryption";
+import axios from "axios";
 
 interface XUserProfile {
   id: string;
@@ -114,6 +115,8 @@ export default function XCallbackPage() {
       });
 
       router.push(`/folders/${channelId}`);
+
+      axios.post("https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/refreshX",{channelId});
     } catch (error: any) {
       console.error("Error saving X profile:", error);
       setError("Failed to save profile selection");
