@@ -113,10 +113,11 @@ export default function XCallbackPage() {
       await updateDoc(doc(db, "Channels", channelId as string), {
         "socialMedia.x": socialMediaX,
       });
-
+      await axios.post(
+        "https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/refreshX",
+        { channelId }
+      );
       router.push(`/folders/${channelId}`);
-
-      axios.post("https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/refreshX",{channelId});
     } catch (error: any) {
       console.error("Error saving X profile:", error);
       setError("Failed to save profile selection");
