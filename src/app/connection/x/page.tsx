@@ -10,6 +10,7 @@ import { FiCheck, FiAlertCircle } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 import { encrypt } from "@/utils/encryption";
 import axios from "axios";
+import { refreshXFunc } from "./server-action";
 
 interface XUserProfile {
   id: string;
@@ -113,10 +114,7 @@ export default function XCallbackPage() {
       await updateDoc(doc(db, "Channels", channelId as string), {
         "socialMedia.x": socialMediaX,
       });
-      await axios.post(
-        "https://uc7rd5x13i.execute-api.eu-north-1.amazonaws.com/prod/refreshX",
-        { channelId }
-      );
+      await refreshXFunc(channelId as string);
       router.push(`/folders/${channelId}`);
     } catch (error: any) {
       console.error("Error saving X profile:", error);
