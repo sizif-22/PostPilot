@@ -51,7 +51,7 @@ export interface LinkedinChannel {
   lastName?: string;
   tokenExpiry?: string;
   remainingTime?: number;
-  vanityName: string;
+  url: string;
 }
 export interface xChannel {
   name: string;

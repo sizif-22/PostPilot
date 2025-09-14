@@ -89,7 +89,7 @@ export const Configuration = () => {
     const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`;
     // Comprehensive scope for both personal and organization access
     const SCOPE =
-      "openid profile email w_member_social rw_organization_admin w_organization_social r_organization_social";
+      "openid profile email w_member_social rw_organization_admin w_organization_social r_organization_social r_basicprofile";
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI
     )}&scope=${encodeURIComponent(SCOPE)}`;

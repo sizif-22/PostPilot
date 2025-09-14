@@ -5,6 +5,8 @@ interface LinkedInOrganization {
   name: string;
   urn: string;
   type: 'organization';
+  vanityName?: string;
+  profileUrl?: string;
 }
 
 interface LinkedInPersonalAccount {
@@ -13,6 +15,10 @@ interface LinkedInPersonalAccount {
   firstName: string;
   lastName: string;
   type: 'personal';
+  vanityName?: string;
+  profileUrl?: string;
+  profilePicture?: string;
+  headline?: string;
 }
 
 interface LinkedInResponse {
@@ -71,14 +77,15 @@ export async function GET(request: Request) {
     // Debug info
     const debugInfo: any = {};
 
-    // Step 2: Try to get personal profile
+    // Step 2: Get personal profile using multiple approaches
     let personalAccount: LinkedInPersonalAccount | null = null;
     
     console.log("Attempting to fetch personal profile...");
+    
+    // Try OpenID userinfo endpoint first (most reliable)
     try {
-      // Try userinfo endpoint first (requires 'openid' scope)
-      console.log("Trying userinfo endpoint...");
-      const profileResponse = await fetch(
+      console.log("Trying OpenID userinfo endpoint...");
+      const userinfoResponse = await fetch(
         "https://api.linkedin.com/v2/userinfo",
         {
           headers: {
@@ -87,57 +94,144 @@ export async function GET(request: Request) {
         }
       );
 
-      console.log(`Userinfo response status: ${profileResponse.status}`);
+      console.log(`Userinfo response status: ${userinfoResponse.status}`);
       
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json();
-        console.log("Userinfo response data:", profileData);
+      if (userinfoResponse.ok) {
+        const userinfoData = await userinfoResponse.json();
+        console.log("Userinfo response data:", userinfoData);
+        
         personalAccount = {
-          id: profileData.sub,
-          firstName: profileData.given_name || 'LinkedIn',
-          lastName: profileData.family_name || 'User',
-          name: profileData.name || 'LinkedIn User',
-          type: 'personal'
+          id: userinfoData.sub,
+          firstName: userinfoData.given_name || 'LinkedIn',
+          lastName: userinfoData.family_name || 'User',
+          name: userinfoData.name || 'LinkedIn User',
+          type: 'personal',
+          profilePicture: userinfoData.picture
         };
+        
         console.log("Personal profile fetched successfully via userinfo");
       } else {
-        const errorData = await profileResponse.json();
+        const errorData = await userinfoResponse.json();
         console.log("Userinfo failed with error:", errorData);
-        debugInfo.personal_account_error = `Userinfo failed: ${profileResponse.status} - ${JSON.stringify(errorData)}`;
-        
-        // Try basic profile endpoint as fallback (requires 'profile' scope)
-        console.log("Userinfo failed, trying basic profile endpoint...");
-        const basicProfileResponse = await fetch(
-          "https://api.linkedin.com/v2/people/~:(id,firstName,lastName)",
+        debugInfo.userinfo_error = `${userinfoResponse.status} - ${JSON.stringify(errorData)}`;
+      }
+    } catch (userinfoError) {
+      console.log("Userinfo endpoint failed:", userinfoError);
+      debugInfo.userinfo_error = `Exception: ${userinfoError}`;
+    }
+
+    // Try basic profile endpoint if userinfo didn't work or for additional data
+    if (!personalAccount) {
+      try {
+        console.log("Trying basic profile endpoint...");
+        const profileResponse = await fetch(
+          "https://api.linkedin.com/v2/people/~:(id,firstName,lastName,profilePicture(displayImage~:playableStreams),headline)",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
+              "X-Restli-Protocol-Version": "2.0.0"
             },
           }
         );
 
-        console.log(`Basic profile response status: ${basicProfileResponse.status}`);
+        console.log(`Basic profile response status: ${profileResponse.status}`);
 
-        if (basicProfileResponse.ok) {
-          const basicData = await basicProfileResponse.json();
-          console.log("Basic profile response data:", basicData);
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          console.log("Basic profile response data:", profileData);
+          
+          // Extract profile picture URL if available
+          let profilePicture = null;
+          if (profileData.profilePicture?.displayImage?.elements?.length > 0) {
+            const imageElement = profileData.profilePicture.displayImage.elements[0];
+            if (imageElement.identifiers?.length > 0) {
+              profilePicture = imageElement.identifiers[0].identifier;
+            }
+          }
+          
           personalAccount = {
-            id: basicData.id,
-            firstName: basicData.firstName?.localized?.en_US || 'LinkedIn',
-            lastName: basicData.lastName?.localized?.en_US || 'User',
-            name: `${basicData.firstName?.localized?.en_US || 'LinkedIn'} ${basicData.lastName?.localized?.en_US || 'User'}`,
-            type: 'personal'
+            id: profileData.id,
+            firstName: profileData.firstName?.localized?.en_US || 'LinkedIn',
+            lastName: profileData.lastName?.localized?.en_US || 'User',
+            name: `${profileData.firstName?.localized?.en_US || 'LinkedIn'} ${profileData.lastName?.localized?.en_US || 'User'}`,
+            type: 'personal',
+            profilePicture,
+            headline: profileData.headline?.localized?.en_US
           };
+          
           console.log("Personal profile fetched successfully via basic profile");
         } else {
-          const basicErrorData = await basicProfileResponse.json();
-          console.log("Basic profile also failed:", basicErrorData);
-          debugInfo.personal_account_error += ` | Basic profile failed: ${basicProfileResponse.status} - ${JSON.stringify(basicErrorData)}`;
+          const errorData = await profileResponse.json();
+          console.log("Basic profile failed:", errorData);
+          debugInfo.basic_profile_error = `${profileResponse.status} - ${JSON.stringify(errorData)}`;
         }
+      } catch (profileError) {
+        console.log("Basic profile fetch failed:", profileError);
+        debugInfo.basic_profile_error = `Exception: ${profileError}`;
       }
-    } catch (profileError) {
-      console.log("Personal profile fetch failed with exception:", profileError);
-      debugInfo.personal_account_error = `Exception: ${profileError}`;
+    }
+
+    // Try to get vanity name and profile URL if we have personal account
+    if (personalAccount) {
+      try {
+        console.log("Fetching vanity name for personal account...");
+        // Use the correct endpoint for current LinkedIn API
+        const vanityResponse = await fetch(
+          `https://api.linkedin.com/v2/people/(id:${personalAccount.id})?projection=(vanityName,publicProfileUrl)`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "LinkedIn-Version": "202405",
+            },
+          }
+        );
+
+        if (vanityResponse.ok) {
+          const vanityData = await vanityResponse.json();
+          console.log("Vanity name response:", vanityData);
+          
+          if (vanityData.vanityName) {
+            personalAccount.vanityName = vanityData.vanityName;
+            personalAccount.profileUrl = `https://www.linkedin.com/in/${vanityData.vanityName}/`;
+          } else if (vanityData.publicProfileUrl) {
+            personalAccount.profileUrl = vanityData.publicProfileUrl;
+          }
+          
+          console.log("Vanity name/URL fetched successfully");
+        } else {
+          const errorData = await vanityResponse.json();
+          console.log("Vanity name fetch failed:", errorData);
+          debugInfo.vanity_error = `${vanityResponse.status} - ${JSON.stringify(errorData)}`;
+          
+          // Fallback: try the basic profile endpoint which might have vanity name
+          try {
+            console.log("Trying fallback vanity name fetch...");
+            const fallbackResponse = await fetch(
+              `https://api.linkedin.com/v2/people/(id:${personalAccount.id})?projection=(vanityName)`,
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "LinkedIn-Version": "202405",
+                },
+              }
+            );
+            
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json();
+              if (fallbackData.vanityName) {
+                personalAccount.vanityName = fallbackData.vanityName;
+                personalAccount.profileUrl = `https://www.linkedin.com/in/${fallbackData.vanityName}/`;
+                console.log("Vanity name fetched via fallback");
+              }
+            }
+          } catch (fallbackError) {
+            console.log("Fallback vanity name fetch also failed:", fallbackError);
+          }
+        }
+      } catch (vanityError) {
+        console.log("Vanity name fetch exception:", vanityError);
+        debugInfo.vanity_error = `Exception: ${vanityError}`;
+      }
     }
 
     // Step 3: Get organizations
@@ -170,8 +264,9 @@ export async function GET(request: Request) {
               const orgId = orgUrn.split(":").pop();
 
               try {
+                // Fetch organization details with more fields
                 const orgDetailsResponse = await fetch(
-                  `https://api.linkedin.com/v2/organizations/${orgId}`,
+                  `https://api.linkedin.com/v2/organizations/${orgId}?projection=(id,name,vanityName,logoV2(cropped~:playableStreams))`,
                   {
                     headers: {
                       Authorization: `Bearer ${accessToken}`,
@@ -189,18 +284,25 @@ export async function GET(request: Request) {
                   if (typeof orgDetails.name === 'string') {
                     organizationName = orgDetails.name;
                   } else if (orgDetails.name?.localized) {
-                    // Try different locales, fallback to first available
                     organizationName = orgDetails.name.localized.en_US || 
                                     orgDetails.name.localized[Object.keys(orgDetails.name.localized)[0]] ||
                                     'Unknown Organization';
                   }
                   
-                  organizations.push({
-                    id: orgDetails.id,
+                  const organization: LinkedInOrganization = {
+                    id: orgDetails.id.toString(),
                     name: organizationName,
                     urn: orgUrn,
-                    type: 'organization'
-                  });
+                    type: 'organization',
+                    vanityName: orgDetails.vanityName
+                  };
+                  
+                  // Construct profile URL if vanity name exists
+                  if (orgDetails.vanityName) {
+                    organization.profileUrl = `https://www.linkedin.com/company/${orgDetails.vanityName}/`;
+                  }
+                  
+                  organizations.push(organization);
                   console.log(`Added organization: ${organizationName}`);
                 } else {
                   const orgErrorData = await orgDetailsResponse.json();
@@ -217,10 +319,10 @@ export async function GET(request: Request) {
       } else {
         const errorData = await organizationsResponse.json();
         console.log("Organizations request failed:", errorData);
-        debugInfo.organizations_error = `Organizations failed: ${organizationsResponse.status} - ${JSON.stringify(errorData)}`;
+        debugInfo.organizations_error = `${organizationsResponse.status} - ${JSON.stringify(errorData)}`;
       }
     } catch (orgsError) {
-      console.warn("Organizations fetch failed with exception:", orgsError);
+      console.warn("Organizations fetch failed:", orgsError);
       debugInfo.organizations_error = `Exception: ${orgsError}`;
     }
 
@@ -228,7 +330,7 @@ export async function GET(request: Request) {
     if (!personalAccount && organizations.length === 0) {
       return NextResponse.json(
         { 
-          error: "No LinkedIn accounts available. Please make sure you have the correct scopes (openid, profile) and are an administrator of at least one LinkedIn organization.",
+          error: "No LinkedIn accounts available. Please ensure you have the correct permissions and try again.",
           debug_info: debugInfo
         },
         { status: 400 }

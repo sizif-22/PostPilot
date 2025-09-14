@@ -82,11 +82,7 @@ export const Platforms = () => {
           )}
           {channel?.socialMedia?.linkedin && (
             <Link
-              href={`https://linkedin.com/${
-                channel.socialMedia.linkedin.accountType == "organization"
-                  ? "company"
-                  : "in"
-              }/${channel.socialMedia.linkedin.vanityName}`}
+              href={channel.socialMedia.linkedin.url || "#"}
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
               <FaLinkedin className="text-blue-700 text-xl" />
               <div>
