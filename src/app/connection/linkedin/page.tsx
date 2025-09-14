@@ -6,12 +6,14 @@ import { db } from "@/firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import Loading from "@/components/ui/Loading";
 import { FiLinkedin, FiCheck, FiAlertCircle, FiUser } from "react-icons/fi";
+import { LinkedinChannel } from "@/interfaces/Channel";
+import { decrypt, encrypt, isValidEncryptedFormat } from "@/utils/encryption";
 
 interface LinkedInOrganization {
   id: string;
   name: string;
   urn: string;
-  type: 'organization';
+  type: "organization";
 }
 
 interface LinkedInPersonalAccount {
@@ -19,7 +21,7 @@ interface LinkedInPersonalAccount {
   name: string;
   firstName: string;
   lastName: string;
-  type: 'personal';
+  type: "personal";
 }
 
 type LinkedInAccount = LinkedInPersonalAccount | LinkedInOrganization;
@@ -29,9 +31,13 @@ export default function LinkedInCallbackPage() {
   const [loading, setLoading] = useState(true);
   const [connectingLoading, setConnectingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [personalAccount, setPersonalAccount] = useState<LinkedInPersonalAccount | null>(null);
-  const [organizations, setOrganizations] = useState<LinkedInOrganization[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<LinkedInAccount | null>(null);
+  const [personalAccount, setPersonalAccount] =
+    useState<LinkedInPersonalAccount | null>(null);
+  const [organizations, setOrganizations] = useState<LinkedInOrganization[]>(
+    []
+  );
+  const [selectedAccount, setSelectedAccount] =
+    useState<LinkedInAccount | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,7 +77,6 @@ export default function LinkedInCallbackPage() {
         } else if (data.organizations && data.organizations.length > 0) {
           setSelectedAccount(data.organizations[0]);
         }
-
       } catch (error: any) {
         console.error("LinkedIn auth error:", error);
         setError(error.message || "Failed to connect to LinkedIn");
@@ -92,15 +97,37 @@ export default function LinkedInCallbackPage() {
       setConnectingLoading(true);
       const channelId = Cookies.get("currentChannel");
 
+      // Properly encrypt the access token using your encryption function
+      console.log("Encrypting LinkedIn access token...");
+      const encryptedAccessToken = await encrypt(accessToken);
+      console.log("LinkedIn access token encrypted successfully");
+
+      // Validate that the encryption worked correctly
+      if (!isValidEncryptedFormat(encryptedAccessToken)) {
+        throw new Error("Failed to encrypt access token in the correct format");
+      }
+
+      // Test decryption to make sure it works
+      try {
+        const testDecrypt = await decrypt(encryptedAccessToken);
+        if (testDecrypt !== accessToken) {
+          throw new Error("Encryption/decryption validation failed");
+        }
+        console.log("Encryption validation successful");
+      } catch (validationError) {
+        console.error("Encryption validation failed:", validationError);
+        throw new Error("Failed to properly encrypt the access token");
+      }
+
       let linkedinData;
 
-      if (selectedAccount.type === 'personal') {
+      if (selectedAccount.type === "personal") {
         // Personal account connection
         linkedinData = {
           name: selectedAccount.name,
-          accountType: 'personal',
-          accessToken: accessToken,
-          userId: selectedAccount.id,
+          accountType: "personal",
+          accessToken: encryptedAccessToken,
+          accountId: selectedAccount.id,
           firstName: selectedAccount.firstName,
           lastName: selectedAccount.lastName,
         };
@@ -108,17 +135,19 @@ export default function LinkedInCallbackPage() {
         // Organization connection
         linkedinData = {
           name: selectedAccount.name,
-          accountType: 'organization',
+          accountType: "organization",
           urn: selectedAccount.urn,
-          accessToken: accessToken,
-          organizationId: selectedAccount.id,
+          accessToken: encryptedAccessToken,
+          accountId: selectedAccount.id,
         };
       }
 
       // Save the selected account to the database
       await updateDoc(doc(db, "Channels", channelId as string), {
-        "socialMedia.linkedin": linkedinData,
+        "socialMedia.linkedin": linkedinData as LinkedinChannel,
       });
+
+      console.log("LinkedIn account saved successfully");
 
       // Clean up cookies
       Cookies.remove("currentChannel");
@@ -127,14 +156,13 @@ export default function LinkedInCallbackPage() {
       router.push(`/folders/${channelId}`);
     } catch (error: any) {
       console.error("Error saving LinkedIn account:", error);
-      setError("Failed to save account selection");
+      setError("Failed to save account selection: " + error.message);
       setConnectingLoading(false);
     }
   };
-
   const allAccounts: LinkedInAccount[] = [
     ...(personalAccount ? [personalAccount] : []),
-    ...organizations
+    ...organizations,
   ];
 
   if (loading) {
@@ -175,14 +203,18 @@ export default function LinkedInCallbackPage() {
         </div>
 
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Choose which LinkedIn account you want to connect to PostPilot. You can connect to your personal account or any organizations where you are an administrator.
+          Choose which LinkedIn account you want to connect to PostPilot. You
+          can connect to your personal account or any organizations where you
+          are an administrator.
         </p>
 
         {allAccounts.length === 0 ? (
           <div className="text-center py-8">
             <FiAlertCircle className="text-yellow-500 text-4xl mx-auto mb-4" />
             <p className="text-gray-600 dark:text-gray-400">
-              No accounts found. Please make sure you have access to your LinkedIn account or are an administrator of at least one LinkedIn organization.
+              No accounts found. Please make sure you have access to your
+              LinkedIn account or are an administrator of at least one LinkedIn
+              organization.
             </p>
           </div>
         ) : (
@@ -240,7 +272,10 @@ export default function LinkedInCallbackPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
                           {/* Replace FiBuilding with a generic building emoji or SVG if FiBuilding is not imported */}
-                          <span className="text-blue-600 dark:text-blue-400 text-2xl" role="img" aria-label="Organization">
+                          <span
+                            className="text-blue-600 dark:text-blue-400 text-2xl"
+                            role="img"
+                            aria-label="Organization">
                             🏢
                           </span>
                         </div>

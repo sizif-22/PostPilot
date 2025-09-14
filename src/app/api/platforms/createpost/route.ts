@@ -5,6 +5,7 @@ import { Channel, Post } from "@/interfaces/Channel";
 import { PostOnInstagram } from "../functions/instagram";
 import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
+import { PostOnLinkedIn } from "../functions/linkedin";
 import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
 import { transporter } from "../../../../utils/smtp.config";
@@ -183,40 +184,67 @@ export async function POST(request: Request) {
             }
             case "linkedin": {
               try {
-                const response = await fetch(
-                  `https://postpilot-22.vercel.app/api/linkedin/createpost`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      postId: postId,
-                      channelId: channelId,
-                    }),
+                if (!channel.socialMedia?.linkedin?.accessToken)
+                  throw new Error("LinkedIn access token not found");
+                if (!channel.socialMedia?.linkedin?.accountId)
+                  throw new Error("LinkedIn person ID not found");
+
+                let decryptedAccessToken: string;
+                const linkedinToken = channel.socialMedia.linkedin.accessToken;
+
+                // Check if the token is in the expected encrypted format
+                if (isValidEncryptedFormat(linkedinToken)) {
+                  // Token is properly encrypted, decrypt it
+                  console.log(
+                    "LinkedIn token is in encrypted format, decrypting..."
+                  );
+                  decryptedAccessToken = await decrypt(linkedinToken);
+                } else {
+                  // Token is not in the expected format - treat as plain token
+                  console.log(
+                    "LinkedIn token is not in expected encrypted format, treating as plain token"
+                  );
+
+                  // Check if it looks like a valid LinkedIn access token
+                  if (
+                    linkedinToken.length > 50 &&
+                    /^[A-Za-z0-9+/=_-]+$/.test(linkedinToken)
+                  ) {
+                    decryptedAccessToken = linkedinToken;
+                    console.log(
+                      "Using LinkedIn token as-is (appears to be plain access token)"
+                    );
+                  } else {
+                    throw new Error(
+                      "LinkedIn access token format is not recognized - please reconnect your LinkedIn account"
+                    );
                   }
-                );
+                }
 
-                const success = response.ok;
-                console.log(
-                  success
-                    ? "Post Published successfully on LinkedIn."
-                    : "Post didn't get published on LinkedIn"
-                );
+                const result = await PostOnLinkedIn({
+                  accessToken: decryptedAccessToken,
+                  author: channel.socialMedia.linkedin.accountId,
+                  message: post.message as string,
+                  media: post.media || [],
+                  accountType: channel.socialMedia.linkedin
+                    .accountType as string, // Pass account type
+                  urn: channel.socialMedia.linkedin.urn as string, // Pass URN for organizations
+                });
 
+                console.log("Post Published successfully on LinkedIn.");
                 return {
                   platform: "linkedin",
-                  success,
-                  message: success
-                    ? "Published successfully"
-                    : "Failed to publish",
+                  success: true,
+                  result,
+                  message: "Published successfully",
                 };
               } catch (error) {
                 console.error("Error posting to LinkedIn:", error);
                 return {
                   platform: "linkedin",
                   success: false,
-                  message: "Error occurred",
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
                 };
               }
             }

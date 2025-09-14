@@ -41,11 +41,14 @@ export interface tiktok {
   tokenExpiry?: string;
   remainingTime?: number;
 }
-export interface linkedinChannel {
+export interface LinkedinChannel {
   name: string;
-  urn: string;
+  accountType: string;
+  urn?: string; // Make urn optional since personal accounts don't have it
   accessToken: string;
-  organizationId: string;
+  accountId: string;
+  firstName?: string;
+  lastName?: string;
   tokenExpiry?: string;
   remainingTime?: number;
 }
@@ -64,7 +67,7 @@ export interface Channel extends ChannelBrief {
     facebook?: facebookChannel;
     instagram?: instagramChannel;
     tiktok?: tiktok;
-    linkedin?: linkedinChannel;
+    linkedin?: LinkedinChannel;
     x?: xChannel;
   };
   posts: { [postId: string]: Post };
