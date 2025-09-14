@@ -84,9 +84,10 @@ export const Configuration = () => {
   const handleLinkedInConnect = () => {
     Cookies.set("currentChannel", id as string);
     const LINKEDIN_CLIENT_ID = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
-    const REDIRECT_URI =`${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`;
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`;
+    // Updated scope to include personal profile access and member social posting
     const SCOPE =
-      "openid w_organization_social rw_organization_admin r_organization_social";
+      "openid profile w_member_social rw_organization_admin w_organization_social r_organization_social";
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
     window.location.href = authUrl;
   };

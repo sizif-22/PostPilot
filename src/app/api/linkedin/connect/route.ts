@@ -4,10 +4,20 @@ interface LinkedInOrganization {
   id: string;
   name: string;
   urn: string;
+  type: 'organization';
+}
+
+interface LinkedInPersonalAccount {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  type: 'personal';
 }
 
 interface LinkedInResponse {
   access_token: string;
+  personal_account: LinkedInPersonalAccount;
   organizations: LinkedInOrganization[];
 }
 
@@ -52,7 +62,34 @@ export async function GET(request: Request) {
 
     const accessToken = tokenData.access_token;
 
-    // Step 2: Get user's organizations (companies they are admin of)
+    // Step 2: Get user's personal profile information
+    const profileResponse = await fetch(
+      "https://api.linkedin.com/v2/people/~:(id,firstName,lastName,profilePicture(displayImage~:playableStreams))",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "LinkedIn-Version": "202405",
+        },
+      }
+    );
+
+    const profileData = await profileResponse.json();
+
+    if (!profileResponse.ok) {
+      console.error("LinkedIn profile error:", profileData);
+      throw new Error("Failed to fetch user profile");
+    }
+
+    // Extract personal account information
+    const personalAccount: LinkedInPersonalAccount = {
+      id: profileData.id,
+      firstName: profileData.firstName?.localized?.en_US || 'Unknown',
+      lastName: profileData.lastName?.localized?.en_US || 'Unknown',
+      name: `${profileData.firstName?.localized?.en_US || 'Unknown'} ${profileData.lastName?.localized?.en_US || 'Unknown'}`,
+      type: 'personal'
+    };
+
+    // Step 3: Get user's organizations (companies they are admin of)
     const organizationsResponse = await fetch(
       "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED",
       {
@@ -64,40 +101,40 @@ export async function GET(request: Request) {
     );
 
     const organizationsData = await organizationsResponse.json();
-
-    if (!organizationsResponse.ok) {
-      console.error("LinkedIn organizations error:", organizationsData);
-      throw new Error("Failed to fetch organizations");
-    }
-
-    // Step 3: Extract organization URNs and fetch their details
     const organizations: LinkedInOrganization[] = [];
 
-    if (organizationsData.elements && organizationsData.elements.length > 0) {
+    // Only process organizations if the request was successful
+    if (organizationsResponse.ok && organizationsData.elements && organizationsData.elements.length > 0) {
       for (const element of organizationsData.elements) {
         if (element.organizationalTarget) {
           const orgUrn = element.organizationalTarget;
 
-          // Fetch organization details
-          const orgDetailsResponse = await fetch(
-            `https://api.linkedin.com/v2/organizations/${orgUrn
-              .split(":")
-              .pop()}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "LinkedIn-Version": "202405",
-              },
-            }
-          );
+          try {
+            // Fetch organization details
+            const orgDetailsResponse = await fetch(
+              `https://api.linkedin.com/v2/organizations/${orgUrn
+                .split(":")
+                .pop()}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "LinkedIn-Version": "202405",
+                },
+              }
+            );
 
-          if (orgDetailsResponse.ok) {
-            const orgDetails = await orgDetailsResponse.json();
-            organizations.push({
-              id: orgDetails.id,
-              name: orgDetails.name,
-              urn: orgUrn,
-            });
+            if (orgDetailsResponse.ok) {
+              const orgDetails = await orgDetailsResponse.json();
+              organizations.push({
+                id: orgDetails.id,
+                name: orgDetails.name,
+                urn: orgUrn,
+                type: 'organization'
+              });
+            }
+          } catch (orgError) {
+            console.warn("Failed to fetch organization details:", orgError);
+            // Continue with other organizations
           }
         }
       }
@@ -105,6 +142,7 @@ export async function GET(request: Request) {
 
     const response: LinkedInResponse = {
       access_token: accessToken,
+      personal_account: personalAccount,
       organizations: organizations,
     };
 
