@@ -6,13 +6,12 @@ import { db } from "@/firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import Loading from "@/components/ui/Loading";
 import { FiLinkedin, FiCheck, FiAlertCircle, FiUser } from "react-icons/fi";
-import { encrypt } from "@/utils/encryption";
 
 interface LinkedInOrganization {
   id: string;
   name: string;
   urn: string;
-  type: "organization";
+  type: 'organization';
 }
 
 interface LinkedInPersonalAccount {
@@ -20,7 +19,7 @@ interface LinkedInPersonalAccount {
   name: string;
   firstName: string;
   lastName: string;
-  type: "personal";
+  type: 'personal';
 }
 
 type LinkedInAccount = LinkedInPersonalAccount | LinkedInOrganization;
@@ -29,13 +28,9 @@ export default function LinkedInCallbackPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [personalAccount, setPersonalAccount] =
-    useState<LinkedInPersonalAccount | null>(null);
-  const [organizations, setOrganizations] = useState<LinkedInOrganization[]>(
-    []
-  );
-  const [selectedAccount, setSelectedAccount] =
-    useState<LinkedInAccount | null>(null);
+  const [personalAccount, setPersonalAccount] = useState<LinkedInPersonalAccount | null>(null);
+  const [organizations, setOrganizations] = useState<LinkedInOrganization[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<LinkedInAccount | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,10 +64,13 @@ export default function LinkedInCallbackPage() {
         setPersonalAccount(data.personal_account);
         setOrganizations(data.organizations || []);
 
-        // Auto-select personal account if available
+        // Auto-select personal account if available, otherwise select first organization
         if (data.personal_account) {
           setSelectedAccount(data.personal_account);
+        } else if (data.organizations && data.organizations.length > 0) {
+          setSelectedAccount(data.organizations[0]);
         }
+
       } catch (error: any) {
         console.error("LinkedIn auth error:", error);
         setError(error.message || "Failed to connect to LinkedIn");
@@ -95,12 +93,12 @@ export default function LinkedInCallbackPage() {
 
       let linkedinData;
 
-      if (selectedAccount.type === "personal") {
+      if (selectedAccount.type === 'personal') {
         // Personal account connection
         linkedinData = {
           name: selectedAccount.name,
-          accountType: "personal",
-          accessToken: await encrypt(accessToken),
+          accountType: 'personal',
+          accessToken: accessToken,
           userId: selectedAccount.id,
           firstName: selectedAccount.firstName,
           lastName: selectedAccount.lastName,
@@ -109,9 +107,9 @@ export default function LinkedInCallbackPage() {
         // Organization connection
         linkedinData = {
           name: selectedAccount.name,
-          accountType: "organization",
+          accountType: 'organization',
           urn: selectedAccount.urn,
-          accessToken: await encrypt(accessToken),
+          accessToken: accessToken,
           organizationId: selectedAccount.id,
         };
       }
@@ -135,7 +133,7 @@ export default function LinkedInCallbackPage() {
 
   const allAccounts: LinkedInAccount[] = [
     ...(personalAccount ? [personalAccount] : []),
-    ...organizations,
+    ...organizations
   ];
 
   if (loading) {
@@ -176,17 +174,14 @@ export default function LinkedInCallbackPage() {
         </div>
 
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Choose which LinkedIn account you want to connect to PostPilot. You
-          can connect to your personal account or any organizations where you
-          are an administrator.
+          Choose which LinkedIn account you want to connect to PostPilot. You can connect to your personal account or any organizations where you are an administrator.
         </p>
 
         {allAccounts.length === 0 ? (
           <div className="text-center py-8">
             <FiAlertCircle className="text-yellow-500 text-4xl mx-auto mb-4" />
             <p className="text-gray-600 dark:text-gray-400">
-              No accounts found. Please make sure you have access to your
-              LinkedIn account.
+              No accounts found. Please make sure you have access to your LinkedIn account.
             </p>
           </div>
         ) : (
@@ -243,11 +238,8 @@ export default function LinkedInCallbackPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                          {/* Replace FiBuilding with a generic building emoji or SVG if FiBuilding is not imported */}
-                          <span
-                            className="text-blue-600 dark:text-blue-400 text-2xl"
-                            role="img"
-                            aria-label="Organization">
+                          {/* Replace FiBuilding with a generic building icon or fallback */}
+                          <span className="text-blue-600 dark:text-blue-400 text-2xl" role="img" aria-label="Organization">
                             🏢
                           </span>
                         </div>

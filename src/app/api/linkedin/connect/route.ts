@@ -17,7 +17,7 @@ interface LinkedInPersonalAccount {
 
 interface LinkedInResponse {
   access_token: string;
-  personal_account: LinkedInPersonalAccount;
+  personal_account: LinkedInPersonalAccount | null;
   organizations: LinkedInOrganization[];
 }
 

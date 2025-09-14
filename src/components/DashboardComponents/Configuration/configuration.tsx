@@ -81,14 +81,19 @@ export const Configuration = () => {
     console.log("client id:", authUrl);
     window.location.href = authUrl;
   };
+  // Update only the handleLinkedInConnect function in configuration.tsx
+
   const handleLinkedInConnect = () => {
     Cookies.set("currentChannel", id as string);
     const LINKEDIN_CLIENT_ID = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
     const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/linkedin`;
-    // Updated scope to include personal profile access and member social posting
+    // Updated scope - openid and profile are required for userinfo endpoint
+    // w_member_social for personal posting, organization scopes for company posting
     const SCOPE =
-      "openid profile w_member_social rw_organization_admin w_organization_social r_organization_social";
-    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
+      "openid profile email w_member_social rw_organization_admin w_organization_social r_organization_social";
+    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(
+      SCOPE
+    )}`;
     window.location.href = authUrl;
   };
   // 1. Updated configuration.tsx - handleXConnect function
