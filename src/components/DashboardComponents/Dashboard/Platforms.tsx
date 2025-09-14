@@ -81,14 +81,20 @@ export const Platforms = () => {
             </Link>
           )}
           {channel?.socialMedia?.linkedin && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
+            <Link
+              href={`https://linkedin.com/${
+                channel.socialMedia.linkedin.accountType == "organization"
+                  ? "company"
+                  : "in"
+              }/${channel.socialMedia.linkedin.vanityName}`}
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
               <FaLinkedin className="text-blue-700 text-xl" />
               <div>
                 <p className="font-medium dark:text-gray-100">
                   {channel.socialMedia.linkedin.name}
                 </p>
               </div>
-            </div>
+            </Link>
           )}
         </div>
       )}

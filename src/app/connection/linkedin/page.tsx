@@ -14,6 +14,7 @@ interface LinkedInOrganization {
   name: string;
   urn: string;
   type: "organization";
+  vanityName: string;
 }
 
 interface LinkedInPersonalAccount {
@@ -22,6 +23,7 @@ interface LinkedInPersonalAccount {
   firstName: string;
   lastName: string;
   type: "personal";
+  vanityName: string;
 }
 
 type LinkedInAccount = LinkedInPersonalAccount | LinkedInOrganization;
@@ -130,6 +132,7 @@ export default function LinkedInCallbackPage() {
           accountId: selectedAccount.id,
           firstName: selectedAccount.firstName,
           lastName: selectedAccount.lastName,
+          vanityName: selectedAccount.vanityName,
         };
       } else {
         // Organization connection
@@ -139,6 +142,7 @@ export default function LinkedInCallbackPage() {
           urn: selectedAccount.urn,
           accessToken: encryptedAccessToken,
           accountId: selectedAccount.id,
+          vanityName: selectedAccount.vanityName,
         };
       }
 
