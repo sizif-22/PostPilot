@@ -27,6 +27,7 @@ type LinkedInAccount = LinkedInPersonalAccount | LinkedInOrganization;
 export default function LinkedInCallbackPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [connectingLoading, setConnectingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [personalAccount, setPersonalAccount] = useState<LinkedInPersonalAccount | null>(null);
   const [organizations, setOrganizations] = useState<LinkedInOrganization[]>([]);
@@ -88,7 +89,7 @@ export default function LinkedInCallbackPage() {
     }
 
     try {
-      setLoading(true);
+      setConnectingLoading(true);
       const channelId = Cookies.get("currentChannel");
 
       let linkedinData;
@@ -127,7 +128,7 @@ export default function LinkedInCallbackPage() {
     } catch (error: any) {
       console.error("Error saving LinkedIn account:", error);
       setError("Failed to save account selection");
-      setLoading(false);
+      setConnectingLoading(false);
     }
   };
 
@@ -181,7 +182,7 @@ export default function LinkedInCallbackPage() {
           <div className="text-center py-8">
             <FiAlertCircle className="text-yellow-500 text-4xl mx-auto mb-4" />
             <p className="text-gray-600 dark:text-gray-400">
-              No accounts found. Please make sure you have access to your LinkedIn account.
+              No accounts found. Please make sure you have access to your LinkedIn account or are an administrator of at least one LinkedIn organization.
             </p>
           </div>
         ) : (
@@ -238,7 +239,7 @@ export default function LinkedInCallbackPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                          {/* Replace FiBuilding with a generic building icon or fallback */}
+                          {/* Replace FiBuilding with a generic building emoji or SVG if FiBuilding is not imported */}
                           <span className="text-blue-600 dark:text-blue-400 text-2xl" role="img" aria-label="Organization">
                             🏢
                           </span>
@@ -268,14 +269,15 @@ export default function LinkedInCallbackPage() {
             onClick={() =>
               router.push(`/folders/${Cookies.get("currentChannel")}`)
             }
-            className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
+            disabled={connectingLoading}
+            className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors disabled:opacity-50">
             Cancel
           </button>
           <button
             onClick={handleAccountSelect}
-            disabled={!selectedAccount}
+            disabled={!selectedAccount || connectingLoading}
             className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed">
-            {loading ? "Connecting..." : "Connect Account"}
+            {connectingLoading ? "Connecting..." : "Connect Account"}
           </button>
         </div>
       </div>
