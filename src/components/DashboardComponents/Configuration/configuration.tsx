@@ -96,33 +96,74 @@ export const Configuration = () => {
     window.location.href = authUrl;
   };
   // 1. Updated configuration.tsx - handleXConnect function
+  // const handleXConnect = async () => {
+  //   // Generate a proper state parameter
+  //   const state = `${new Date().getTime()}-${Math.random()
+  //     .toString(36)
+  //     .substring(2, 9)}`;
+
+  //   // Generate PKCE code verifier and challenge
+  //   const codeVerifier = generateCodeVerifier();
+  //   const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+  //   // Store in cookies for later use
+  //   Cookies.set("currentChannel", id as string);
+  //   Cookies.set("xState", state, { expires: 1 / 24 }); // 1 hour
+  //   Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 }); // 1 hour
+
+  //   const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
+  //   const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
+  //   const SCOPE =
+  //     "tweet.read tweet.write users.read offline.access media.write";
+
+  //   const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+  //     REDIRECT_URI
+  //   )}&scope=${encodeURIComponent(
+  //     SCOPE
+  //   )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+
+  //   window.location.href = authUrl;
+  // };
   const handleXConnect = async () => {
-    // Generate a proper state parameter
-    const state = `${new Date().getTime()}-${Math.random()
-      .toString(36)
-      .substring(2, 9)}`;
-
-    // Generate PKCE code verifier and challenge
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-    // Store in cookies for later use
-    Cookies.set("currentChannel", id as string);
-    Cookies.set("xState", state, { expires: 1 / 24 }); // 1 hour
-    Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 }); // 1 hour
-
-    const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
-    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
-    const SCOPE =
-      "tweet.read tweet.write users.read offline.access media.write";
-
-    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&scope=${encodeURIComponent(
-      SCOPE
-    )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
-
-    window.location.href = authUrl;
+    // Step 1: First get OAuth 1.0a tokens for media upload
+    try {
+      const oauth1Response = await fetch('/api/x/oauth1/request-token', {
+        method: 'POST',
+      });
+      
+      if (!oauth1Response.ok) {
+        throw new Error('Failed to get OAuth 1.0a request token');
+      }
+      
+      const oauth1Data = await oauth1Response.json();
+      
+      // Store OAuth 1.0a tokens temporarily
+      Cookies.set('oauth1_token', oauth1Data.oauth_token, { expires: 1 / 24 });
+      Cookies.set('oauth1_token_secret', oauth1Data.oauth_token_secret, { expires: 1 / 24 });
+      
+      // Step 2: Continue with OAuth 2.0 flow as before
+      const state = `${new Date().getTime()}-${Math.random().toString(36).substring(2, 9)}`;
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+  
+      Cookies.set("currentChannel", id as string);
+      Cookies.set("xState", state, { expires: 1 / 24 });
+      Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 });
+  
+      const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID;
+      const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
+      const SCOPE = "tweet.read tweet.write users.read offline.access";
+  
+      const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${X_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+        REDIRECT_URI
+      )}&scope=${encodeURIComponent(
+        SCOPE
+      )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+  
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Error initiating X connection:', error);
+    }
   };
 
   const confirmDelete = async () => {

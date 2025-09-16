@@ -7,6 +7,7 @@ const consumer_secret = process.env.X_API_KEY_SECRET;
 const access_token = process.env.X_ACCESS_TOKEN;
 const token_secret = process.env.X_ACCESS_TOKEN_SECRET;
 
+// OAuth 1.0a instance for media uploads
 const oauth = new OAuth({
   consumer: {
     key: consumer_key || "",
@@ -17,7 +18,9 @@ const oauth = new OAuth({
     return createHmac("sha1", key).update(base_string).digest("base64");
   },
 });
-const token = {
+
+// Global token for v1.1 API (media uploads only)
+const globalToken = {
   key: access_token || "",
   secret: token_secret || "",
 };
@@ -53,12 +56,14 @@ async function testAccessToken(accessToken: string): Promise<boolean> {
 
 export async function PostOnX({
   accessToken,
-  pageId, // Not used for X, but kept for interface compatibility
+  pageId,
   message,
   media,
   refreshToken,
   tokenExpiry,
   xText,
+  oauth1AccessToken,
+  oauth1AccessTokenSecret,
 }: {
   media?: MediaItem[];
   accessToken: string;
@@ -67,71 +72,58 @@ export async function PostOnX({
   refreshToken?: string;
   tokenExpiry?: string;
   xText?: string;
+  oauth1AccessToken?: string;
+  oauth1AccessTokenSecret?: string;
 }) {
   try {
     let currentAccessToken = accessToken;
 
-    // If we have refresh token and expiry, check if we need to refresh
-    // if (refreshToken && tokenExpiry) {
-    //   try {
-    //     const { getValidXToken } = await import("@/utils/x-token-manager");
-    //     const tokenResult = await getValidXToken(
-    //       accessToken,
-    //       refreshToken,
-    //       tokenExpiry
-    //     );
-    //     currentAccessToken = tokenResult.accessToken;
-
-    //     // If token was refreshed, we should update the stored token
-    //     if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
-    //       console.log(
-    //         "X token was refreshed, new token data available for update"
-    //       );
-    //       // Note: You might want to update the stored token in your database here
-    //     }
-    //   } catch (refreshError) {
-    //     console.error("Failed to refresh X token:", refreshError);
-    //     throw new Error(
-    //       "Failed to refresh X access token. Please reconnect your X account."
-    //     );
-    //   }
-    // } else {
-    //   // Fallback to old validation method if no refresh token
-    //   const isTokenValid = await testAccessToken(accessToken);
-    //   if (!isTokenValid) {
-    //     throw new Error("Invalid or expired access token");
-    //   }
-    // }
+    // Validate the access token
+    const isTokenValid = await testAccessToken(currentAccessToken);
+    if (!isTokenValid) {
+      throw new Error("Invalid or expired access token");
+    }
 
     let media_ids: string[] = [];
 
-    // 1. Upload media if present - if this fails, the entire post should fail
+    // 1. Upload media if present (using v1.1 API for all media)
     if (media && media.length > 0) {
-      // X allows up to 4 images or 1 video per tweet
+      // Check if we have user's OAuth 1.0a tokens
+      if (!oauth1AccessToken || !oauth1AccessTokenSecret) {
+        throw new Error("OAuth 1.0a tokens required for media upload");
+      }
+
+      const userOAuth1Token = {
+        key: oauth1AccessToken,
+        secret: oauth1AccessTokenSecret,
+      };
+
       const mediaToUpload = media.slice(0, 4);
       console.log(
-        `Attempting to upload ${mediaToUpload.length} media items to X`
+        `Attempting to upload ${mediaToUpload.length} media items to X using user's tokens`
       );
 
-      for (const media of mediaToUpload) {
-        if (media.url) {
-          console.log(`Uploading media: ${media.url}`);
-          // Try to upload media - if this fails, throw error to stop the entire process
-          const media_id = await uploadMediaToX(
-            media.url,
-            media.isVideo,
-            currentAccessToken
+      for (const mediaItem of mediaToUpload) {
+        if (mediaItem.url) {
+          console.log(`Uploading media: ${mediaItem.url}`);
+          
+          const media_id = await uploadMediaToXV1(
+            mediaItem.url,
+            mediaItem.isVideo || false,
+            userOAuth1Token
           );
+          
           if (!media_id) {
-            throw new Error(`Failed to upload media: ${media.url}`);
+            throw new Error(`Failed to upload media: ${mediaItem.url}`);
           }
+          
           media_ids.push(media_id);
           console.log(`Successfully uploaded media with ID: ${media_id}`);
         }
       }
     }
 
-    // 2. Post the tweet using Twitter API v2 (OAuth 2.0)
+    // 2. Post the tweet using Twitter API v2
     const tweetBody: any = {
       text: xText || "",
     };
@@ -170,17 +162,17 @@ export async function PostOnX({
   }
 }
 
-// Media upload using the user's access token
-async function uploadMediaToX(
+// Unified media upload function using v1.1 API for both images and videos
+async function uploadMediaToXV1(
   mediaUrl: string,
   isVideo: boolean,
-  accessToken: string
+  userToken: { key: string; secret: string }
 ): Promise<string | null> {
   try {
     console.log(`Starting media upload for: ${mediaUrl}`);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 seconds
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     let mediaResponse;
     try {
@@ -191,6 +183,7 @@ async function uploadMediaToX(
     } finally {
       clearTimeout(timeout);
     }
+
     if (!mediaResponse || !mediaResponse.ok) {
       console.error(
         `Failed to download media: ${mediaResponse?.status} ${mediaResponse?.statusText}`
@@ -201,7 +194,6 @@ async function uploadMediaToX(
     const mediaBuffer = await mediaResponse.arrayBuffer();
     let mediaType = getMediaTypeFromURL(mediaUrl);
 
-    // Try to get the type from the response header if the fallback is used
     if (mediaType === "application/octet-stream") {
       const contentType = mediaResponse.headers.get("content-type");
       if (contentType) {
@@ -212,12 +204,13 @@ async function uploadMediaToX(
     console.log(
       `Media downloaded successfully. Type: ${mediaType}, Size: ${mediaBuffer.byteLength} bytes`
     );
+
     if (isVideo) {
-      console.log("Uploading as video using v1.1 API");
-      return await uploadVideoV1(mediaBuffer, mediaType, accessToken);
+      console.log("Uploading video using v1.1 API with chunked upload");
+      return await uploadVideoV1(mediaBuffer, mediaType, userToken);
     } else {
-      console.log("Uploading as image using v2 API");
-      return await uploadImageV2(mediaBuffer, mediaType, accessToken);
+      console.log("Uploading image using v1.1 API");
+      return await uploadImageV1(mediaBuffer, mediaType, userToken);
     }
   } catch (error) {
     console.error("Error uploading media to X:", error);
@@ -225,73 +218,65 @@ async function uploadMediaToX(
   }
 }
 
-// Upload images using v2 API
-async function uploadImageV2(
+// Upload images using v1.1 API (simpler method)
+async function uploadImageV1(
   mediaBuffer: ArrayBuffer,
   mediaType: string,
-  accessToken: string
+  userToken: { key: string; secret: string }
 ): Promise<string | null> {
   try {
-    if (!accessToken || accessToken.trim() === "") {
-      console.error("Access token is missing or empty");
-      return null;
-    }
-
     if (mediaBuffer.byteLength > 5 * 1024 * 1024) {
       console.error("Image too large, must be under 5MB");
       return null;
     }
 
-    // Twitter v2 /media/upload expects a JSON body with base64-encoded media
     const base64Data = Buffer.from(mediaBuffer).toString("base64");
-    const body = JSON.stringify({
-      media: base64Data,
-      media_category: "tweet_image",
-      media_type: mediaType,
-    });
+    
+    const formData = new FormData();
+    formData.append("media_data", base64Data);
+    formData.append("media_category", "tweet_image");
 
-    const response = await fetch("https://api.twitter.com/2/media/upload", {
+    const url = "https://upload.twitter.com/1.1/media/upload.json";
+    const request_data = {
+      url: url,
+      method: "POST",
+    };
+
+    const headers = oauth.toHeader(oauth.authorize(request_data, userToken));
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        Authorization: headers.Authorization,
       },
-      body,
+      body: formData,
     });
 
     console.log(`Image upload response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Image upload failed: ${response.status} ${response.statusText}`
-      );
+      console.error(`Image upload failed: ${response.status} ${response.statusText}`);
       console.error("Error response body:", errorText);
       return null;
     }
 
     const data = await response.json();
     console.log("Image upload successful:", data);
-    return data.data?.id || null;
+    return data.media_id_string || null;
   } catch (error) {
     console.error("Error in image upload:", error);
     return null;
   }
 }
 
-// Video upload using Twitter API v1.1 (chunked upload)
+// Video upload using Twitter API v1.1 with OAuth 1.0a (chunked upload)
 async function uploadVideoV1(
   mediaBuffer: ArrayBuffer,
   mediaType: string,
-  accessToken: string
+  userToken: { key: string; secret: string }
 ): Promise<string | null> {
   try {
-    if (!accessToken || accessToken.trim() === "") {
-      console.error("Access token is missing or empty");
-      return null;
-    }
-
-    // Twitter's limit: 512MB for videos
     if (mediaBuffer.byteLength > 512 * 1024 * 1024) {
       console.error("Video too large, must be under 512MB");
       return null;
@@ -302,6 +287,8 @@ async function uploadVideoV1(
     );
 
     const url = "https://upload.twitter.com/1.1/media/upload.json";
+    
+    // Step 1: INIT
     const params = {
       command: "INIT",
       total_bytes: mediaBuffer.byteLength.toString(),
@@ -313,9 +300,9 @@ async function uploadVideoV1(
       url: url + "?" + new URLSearchParams(params).toString(),
       method: "POST",
     };
-    const headers = oauth.toHeader(oauth.authorize(request_data, token));
+    
+    const headers = oauth.toHeader(oauth.authorize(request_data, userToken));
 
-    // Step 1: INIT
     const initResponse = await fetch(request_data.url, {
       method: "POST",
       headers: {
@@ -348,25 +335,19 @@ async function uploadVideoV1(
       formData.append("segment_index", i.toString());
       formData.append("media", new Blob([chunk], { type: mediaType }));
 
-      // For OAuth 1.0a with FormData, we need to include the form data in the signature
-      const formDataParams = new URLSearchParams();
-      formDataParams.append("command", "APPEND");
-      formDataParams.append("media_id", mediaId);
-      formDataParams.append("segment_index", i.toString());
-
-      const request_data = {
+      const appendRequestData = {
         url: "https://upload.twitter.com/1.1/media/upload.json",
         method: "POST",
       };
 
-      const oauthHeaders = oauth.toHeader(oauth.authorize(request_data, token));
+      const oauthHeaders = oauth.toHeader(oauth.authorize(appendRequestData, userToken));
 
       const appendResponse = await fetch(
         "https://upload.twitter.com/1.1/media/upload.json",
         {
           method: "POST",
           headers: {
-            ...oauthHeaders,
+            Authorization: oauthHeaders.Authorization,
           },
           body: formData,
         }
@@ -394,7 +375,7 @@ async function uploadVideoV1(
     finalFormData.set("media_id", mediaId);
 
     const finalizeOauthHeaders = oauth.toHeader(
-      oauth.authorize(finalizeRequestData, token)
+      oauth.authorize(finalizeRequestData, userToken)
     );
 
     const finalizeResponse = await fetch(
@@ -402,7 +383,7 @@ async function uploadVideoV1(
       {
         method: "POST",
         headers: {
-          ...finalizeOauthHeaders,
+          Authorization: finalizeOauthHeaders.Authorization,
         },
         body: finalFormData,
       }
@@ -420,7 +401,7 @@ async function uploadVideoV1(
     // Step 4: Check processing status (for videos)
     if (finalizeData.processing_info) {
       console.log("Video is being processed...");
-      const processedMediaId = await waitForProcessing(mediaId, accessToken);
+      const processedMediaId = await waitForProcessing(mediaId, userToken);
       return processedMediaId;
     }
 
@@ -434,8 +415,8 @@ async function uploadVideoV1(
 // Wait for video processing to complete
 async function waitForProcessing(
   mediaId: string,
-  accessToken: string,
-  maxAttempts: number = 10
+  userToken: { key: string; secret: string },
+  maxAttempts: number = 15 // Increased from 10
 ): Promise<string | null> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
@@ -445,13 +426,13 @@ async function waitForProcessing(
         method: "GET",
       };
       const statusOauthHeaders = oauth.toHeader(
-        oauth.authorize(statusRequestData, token)
+        oauth.authorize(statusRequestData, userToken)
       );
 
       const statusResponse = await fetch(statusUrl, {
         method: "GET",
         headers: {
-          ...statusOauthHeaders,
+          Authorization: statusOauthHeaders.Authorization,
         },
       });
 
@@ -482,7 +463,6 @@ async function waitForProcessing(
           );
           return null;
         } else if (state === "in_progress" || state === "pending") {
-          // Wait before checking again
           const checkAfterSecs =
             statusData.processing_info.check_after_secs || 5;
           console.log(`Waiting ${checkAfterSecs} seconds before next check...`);
