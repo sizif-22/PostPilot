@@ -205,7 +205,7 @@ export default function LinkedInCallbackPage() {
       Cookies.remove("currentChannel");
 
       // Redirect back to the channel
-      router.push(`/folders/${channelId}`);
+      router.push(`/collections/${channelId}`);
     } catch (error: any) {
       console.error("Error saving LinkedIn account:", error);
       setError("Failed to save account selection: " + error.message);
@@ -247,7 +247,7 @@ export default function LinkedInCallbackPage() {
           <div className="flex gap-3">
             <button
               onClick={() =>
-                router.push(`/folders/${Cookies.get("currentChannel")}`)
+                router.push(`/collections/${Cookies.get("currentChannel")}`)
               }
               className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-2 px-4 rounded-lg transition-colors">
               Back to Channel
@@ -291,7 +291,7 @@ export default function LinkedInCallbackPage() {
             </div>
             <button
               onClick={() =>
-                router.push(`/folders/${Cookies.get("currentChannel")}`)
+                router.push(`/collections/${Cookies.get("currentChannel")}`)
               }
               className="mt-4 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
               Back to Channel
@@ -397,7 +397,7 @@ export default function LinkedInCallbackPage() {
             <div className="flex gap-3 pt-4 border-t dark:border-darkBorder">
               <button
                 onClick={() =>
-                  router.push(`/folders/${Cookies.get("currentChannel")}`)
+                  router.push(`/collections/${Cookies.get("currentChannel")}`)
                 }
                 disabled={connectingLoading}
                 className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors disabled:opacity-50 font-medium">

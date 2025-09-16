@@ -128,9 +128,9 @@ export const Configuration = () => {
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {
       addNotification({
-        messageOnProgress: "Deleting channel",
-        successMessage: "Channel deleted successfully",
-        failMessage: "Failed deleting channel",
+        messageOnProgress: "Deleting collection",
+        successMessage: "Collection deleted successfully",
+        failMessage: "Failed deleting collection",
         func: [
           new Promise(async (resolve, reject) => {
             try {
@@ -164,7 +164,7 @@ export const Configuration = () => {
       });
     }
     setShowDeleteConfirm(false);
-    router.replace("/folders");
+    router.replace("/collections");
   };
   const socialMedia = [
     {
@@ -228,7 +228,7 @@ export const Configuration = () => {
               Manage your channel's basic information and settings
             </p>
             <div className="flex flex-col gap-2 mt-4 justify-start dark:text-white">
-              <h3>Update Description:</h3>
+              <h3>Update Name:</h3>
               <div className="flex gap-2">
                 <Input
                   className="w-60"
@@ -334,17 +334,17 @@ export const Configuration = () => {
                 <div className="flex justify-between flex-col gap-4 md:flex-row items-center w-full md:gap-2">
                   <div>
                     <h2 className="text-lg font-medium dark:text-white">
-                      Delete Folder
+                      Delete Collection
                     </h2>
                     <h3 className="text-sm text-stone-500 dark:text-stone-400">
-                      Once you delete a folder, there is no going back. Please
-                      be certain.
+                      Once you delete a collection, there is no going back.
+                      Please be certain.
                     </h3>
                   </div>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
                     className="text-red-600 min-w-36 text-sm bg font-bold hover:bg-red-700 duration-300 hover:text-white transition-colors rounded-lg border bg-stone-100 border-red-200/50 py-2 dark:bg-red-950 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900">
-                    Delete Folder
+                    Delete Collection
                   </button>
                 </div>
               </div>
@@ -360,10 +360,10 @@ export const Configuration = () => {
                 <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-lg font-semibold mb-2 dark:text-white">
-                    Delete Folder
+                    Delete Collection
                   </h3>
                   <p className="text-stone-600 dark:text-gray-400 mb-4">
-                    Are you sure you want to delete this folder? This action
+                    Are you sure you want to delete this collection? This action
                     cannot be undone.
                   </p>
                   <div className="flex gap-3 justify-end">
@@ -375,7 +375,7 @@ export const Configuration = () => {
                     <button
                       onClick={confirmDelete}
                       className={`px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 rounded`}>
-                      Delete Folder
+                      Delete Collection
                     </button>
                   </div>
                 </div>

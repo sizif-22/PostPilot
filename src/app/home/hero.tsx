@@ -34,15 +34,15 @@ export const Hero = () => {
                     user?.isVerified != true && "cursor-not-allowed"
                   }`}
                   disabled={user?.isVerified != true}
-                  onClick={() => router.push("/folders")}>
-                  Folders
+                  onClick={() => router.push("/collections")}>
+                  Collections
                 </Button>
               ) : (
                 <Button
                   onClick={async () => {
                     redirect("/signin");
                   }}>
-                    Get Started
+                  Get Started
                 </Button>
               )}
             </div>

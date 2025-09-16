@@ -238,14 +238,11 @@ export const Navigation = () => {
                               : "You have no folders yet."}
                           </p>
                           {user?.isVerified == true && (
-                            <Button
-                              onClick={() => {
-                                router.push("/folders");
-                              }}
-                              variant={"default"}
-                              className="mt-3">
-                              Folders
-                            </Button>
+                            <Link href={"/collections"} className="mt-3">
+                              <Button variant={"default"} className="w-full">
+                                Collections
+                              </Button>
+                            </Link>
                           )}
                           <Button
                             onClick={async () => {

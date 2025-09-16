@@ -20,14 +20,14 @@ const TiktokPage = () => {
 
       if (!code) {
         console.log("No authorization code found");
-        router.push("/folders/" + id);
+        router.push("/collections/" + id);
         return;
       }
 
       // Verify state parameter to prevent CSRF attacks
       if (!state || state !== storedState) {
         console.error("State parameter mismatch - possible CSRF attack");
-        router.push("/folders/" + id);
+        router.push("/collections/" + id);
         return;
       }
 
@@ -130,7 +130,7 @@ const TiktokPage = () => {
         console.error("TikTok authentication error:", error);
         // Even on error, redirect back to channels page
       } finally {
-        router.push("/folders/" + id);
+        router.push("/collections/" + id);
       }
     };
 

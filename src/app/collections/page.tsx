@@ -65,7 +65,7 @@ const ChannelsComponent = ({
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-3 w-full">
                 <div className="flex items-start w-full gap-3 justify-between flex-wrap">
-                  <Link href={`/folders/${channel.id}`} className="flex-1 min-w-0">
+                  <Link href={`/collections/${channel.id}`} className="flex-1 min-w-0">
                     <h3 className="font-bold text-lg lg:text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors truncate">
                       {channel.name}
                     </h3>
