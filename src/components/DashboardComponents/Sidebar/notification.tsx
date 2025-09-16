@@ -80,7 +80,7 @@ const NotificationSection = ({
       <span
         className="dark:text-white hover:dark:bg-darkBorder text-xl h-full flex items-center px-1"
         onClick={() => {
-          pageName == "folders"
+          pageName == "collections"
             ? router.push("/home")
             : router.push("/collections");
         }}>
