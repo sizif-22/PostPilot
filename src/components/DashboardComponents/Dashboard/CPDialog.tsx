@@ -11,6 +11,8 @@ import {
   FiUpload,
 } from "react-icons/fi";
 
+import { TabsList, Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { useChannel } from "@/context/ChannelContext";
 import { createPost } from "@/firebase/channel.firestore";
@@ -507,14 +509,13 @@ export const CPDialog = ({
                 Media
               </h3>
               <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-white/60">
-
                 {selectedImages.filter((item) => item.isVideo).length > 1 && (
                   <>
                     <span className="text-orange-500 ml-4">⚠</span>
                     <span className="text-orange-600">Max 1 video</span>
                   </>
                 )}
-                
+
                 {selectedImages.find((item) => item.isVideo) &&
                   selectedImages.find((item) => !item.isVideo) && (
                     <>
@@ -679,27 +680,32 @@ export const CPDialog = ({
               )}
 
             {/* Post Content */}
-            <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-              <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                Post Content
-              </h3>
-              <p className="text-xs text-stone-500 dark:text-white/60">
-                Write your message
-              </p>
-              <textarea
-                value={postText}
-                onChange={(e) => setPostText(e.target.value)}
-                placeholder="What do you want to share?"
-                className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
-                rows={6}
-              />
-              <div className="text-right text-xs text-stone-400 dark:text-white/50">
-                {postText.length}/2200
-              </div>
-            </div>
-
-            {selectedPlatforms.includes("x") && (
-              <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+            <Tabs defaultValue="default">
+              <TabsList>
+                <TabsTrigger value="default">Default Message</TabsTrigger>
+                <TabsTrigger value="x">X Message</TabsTrigger>
+              </TabsList>
+              <TabsContent value="default">
+                <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    Post Content
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Write your message
+                  </p>
+                  <textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder="What do you want to share?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                    rows={6}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {postText.length}/2200
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="x"><div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
                 <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
                   X Post
                 </h3>
@@ -717,8 +723,8 @@ export const CPDialog = ({
                 <div className="text-right text-xs text-stone-400 dark:text-white/50">
                   {xText.length}/280
                 </div>
-              </div>
-            )}
+              </div></TabsContent>
+            </Tabs>
           </div>
 
           {/* Right Column - Publishing Options */}

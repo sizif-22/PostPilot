@@ -405,7 +405,7 @@ export async function POST(request: Request) {
         console.error("Could not find user to send email to.");
       }
     } else {
-      console.error("Channel owner is not defined.");
+      console.error("Collection owner is not defined.");
     }
 
     return NextResponse.json(

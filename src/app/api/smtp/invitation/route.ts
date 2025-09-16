@@ -11,15 +11,15 @@ export async function POST(req: NextRequest) {
     const info = await transporter.sendMail({
      from: '"PostPilot" <postpilot@webbingstone.org>',
      to: receiver,
-     subject: `${sender} invited you to join "${channelId}" on PostPilot`,
+     subject: `${sender} invited you to join the Collection: "${channelId}" on PostPilot`,
      text: `
    Hi there!
    
-   ${sender} has invited you to join their channel "${channelId}" on PostPilot.
+   ${sender} has invited you to join their collection "${channelId}" on PostPilot.
    
    PostPilot makes it easy to stay connected with your team and share updates in real-time.
    
-   Join the channel: https://postpilot.webbingstone.org/
+   Join the collection: https://postpilot.webbingstone.org/
    
    If you have any questions, feel free to reach out to us.
    
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
              </h2>
              
              <p style="text-align: center; font-size: 16px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
-               <strong style="color: #1e293b;">${sender}</strong> has invited you to join their channel 
+               <strong style="color: #1e293b;">${sender}</strong> has invited you to join their collection 
                <strong style="color: #667eea;">"${channelId}"</strong> on PostPilot.
              </p>
    
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
              <div style="text-align: center; margin: 32px 0;">
                <a href="https://postpilot.webbingstone.org/" 
                   style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.4); transition: all 0.3s ease;">
-                 Join Channel
+                 Join Collection
                </a>
              </div>
    

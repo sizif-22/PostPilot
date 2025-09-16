@@ -72,36 +72,36 @@ export async function PostOnX({
     let currentAccessToken = accessToken;
 
     // If we have refresh token and expiry, check if we need to refresh
-    if (refreshToken && tokenExpiry) {
-      try {
-        const { getValidXToken } = await import("@/utils/x-token-manager");
-        const tokenResult = await getValidXToken(
-          accessToken,
-          refreshToken,
-          tokenExpiry
-        );
-        currentAccessToken = tokenResult.accessToken;
+    // if (refreshToken && tokenExpiry) {
+    //   try {
+    //     const { getValidXToken } = await import("@/utils/x-token-manager");
+    //     const tokenResult = await getValidXToken(
+    //       accessToken,
+    //       refreshToken,
+    //       tokenExpiry
+    //     );
+    //     currentAccessToken = tokenResult.accessToken;
 
-        // If token was refreshed, we should update the stored token
-        if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
-          console.log(
-            "X token was refreshed, new token data available for update"
-          );
-          // Note: You might want to update the stored token in your database here
-        }
-      } catch (refreshError) {
-        console.error("Failed to refresh X token:", refreshError);
-        throw new Error(
-          "Failed to refresh X access token. Please reconnect your X account."
-        );
-      }
-    } else {
-      // Fallback to old validation method if no refresh token
-      const isTokenValid = await testAccessToken(accessToken);
-      if (!isTokenValid) {
-        throw new Error("Invalid or expired access token");
-      }
-    }
+    //     // If token was refreshed, we should update the stored token
+    //     if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
+    //       console.log(
+    //         "X token was refreshed, new token data available for update"
+    //       );
+    //       // Note: You might want to update the stored token in your database here
+    //     }
+    //   } catch (refreshError) {
+    //     console.error("Failed to refresh X token:", refreshError);
+    //     throw new Error(
+    //       "Failed to refresh X access token. Please reconnect your X account."
+    //     );
+    //   }
+    // } else {
+    //   // Fallback to old validation method if no refresh token
+    //   const isTokenValid = await testAccessToken(accessToken);
+    //   if (!isTokenValid) {
+    //     throw new Error("Invalid or expired access token");
+    //   }
+    // }
 
     let media_ids: string[] = [];
 
@@ -133,7 +133,7 @@ export async function PostOnX({
 
     // 2. Post the tweet using Twitter API v2 (OAuth 2.0)
     const tweetBody: any = {
-      text: xText || message || "",
+      text: xText || "",
     };
 
     if (media_ids.length > 0) {
