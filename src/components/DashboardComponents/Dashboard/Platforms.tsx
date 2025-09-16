@@ -82,7 +82,7 @@ export const Platforms = () => {
           )}
           {channel?.socialMedia?.linkedin && (
             <Link
-              href={channel.socialMedia.linkedin.url || "#"}
+              href={channel.socialMedia.linkedin.url}
               target="_blank"
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg">
               <FaLinkedin className="text-blue-700 text-xl" />

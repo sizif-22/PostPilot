@@ -44,7 +44,7 @@ export default async function RootLayout({
           sizes="<generated>"
         />
       </head>
-      <body className={`${inter.className} text-stone-950 bg-stone-100`}>
+      <body className={`${inter.className} text-stone-950 bg-stone-100 vsc-initialized`}>
         <NotificationProvider>
           <ThemeProvider
             attribute="class"

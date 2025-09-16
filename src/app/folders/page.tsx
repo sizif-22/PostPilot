@@ -1,12 +1,10 @@
 "use client";
 import { Sidebar } from "@/components/ChannelComponents/Sidebar";
 import Link from "next/link";
-import { FiPlus } from "react-icons/fi";
 import { getChannelBriefs } from "@/firebase/channel.firestore";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/ui/Loading";
-import { NewChannel } from "@/components/ChannelComponents/newChannel";
 import { ChannelBrief } from "@/interfaces/Channel";
 import { UserChannel } from "@/interfaces/User";
 import { Button } from "@/components/ui/button";
@@ -15,18 +13,26 @@ import {
   acceptJoiningToAChannel,
 } from "@/firebase/user.firestore";
 import { IoIosNotificationsOutline } from "react-icons/io";
-import { Notification as UserNotification } from "@/interfaces/User"; // Alias to avoid conflict
-import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@radix-ui/react-hover-card";
+import { Notification as UserNotification } from "@/interfaces/User";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import router from "next/router";
 import { logOut } from "../signin/action";
+import { NewFolderResponsive } from "@/components/ChannelComponents/NewFolderResponsive";
+import { FiPlus, FiUser, FiFolder, FiMoon, FiSun, FiLogOut } from "react-icons/fi";
+import { useTheme } from "next-themes";
 
 const ChannelsComponent = ({
   channels,
 }: {
   channels: UserChannel[];
 }): JSX.Element => {
-  const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [channelBriefs, setChannelBriefs] = useState<ChannelBrief[]>([]);
   useEffect(() => {
     const fetchChannels = async () => {
@@ -48,42 +54,43 @@ const ChannelsComponent = ({
     };
     fetchChannels();
   }, [channels]);
+  
   return (
     <>
       {channelBriefs.length > 0 ? (
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-lg p-4 my-4 border border-stone-200 dark:border-darkBorder hover:border-stone-300 dark:hover:border-stone-600">
+            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-xl p-4 my-3 border border-stone-200 dark:border-darkBorder hover:border-stone-300 dark:hover:border-stone-600 shadow-sm hover:shadow-md dark:shadow-lg">
             <div className="flex justify-between flex-col w-full items-start">
-              <div className="space-y-2 w-full">
-                <div className="flex items-center w-full gap-3 justify-between">
-                  <Link href={`/folders/${channel.id}`}>
-                    <h3 className="font-bold text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors">
+              <div className="space-y-3 w-full">
+                <div className="flex items-start w-full gap-3 justify-between flex-wrap">
+                  <Link href={`/folders/${channel.id}`} className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg lg:text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors truncate">
                       {channel.name}
                     </h3>
                   </Link>
-                  <div className="text-sm bg-stone-100 dark:bg-darkBorder px-2 rounded-md dark:text-white flex items-center gap-1 cursor-default group-hover:bg-stone-200 dark:group-hover:bg-darkBorder dark:group-hover:shadow  transition-colors">
+                  <div className="text-xs lg:text-sm bg-stone-100 dark:bg-darkBorder px-2.5 py-1 rounded-lg dark:text-white flex items-center gap-1.5 cursor-default group-hover:bg-stone-200 dark:group-hover:bg-darkBorder dark:group-hover:shadow transition-colors shrink-0">
                     {channel.authority === "Owner" ? (
-                      <span className="text-lg pb-1">👑</span>
+                      <span className="text-sm">👑</span>
                     ) : channel.authority === "Reviewer" ? (
-                      <span className="text-lg pb-1">🔍</span>
+                      <span className="text-sm">📋</span>
                     ) : (
-                      <span className="text-lg pb-1">✒️</span>
+                      <span className="text-sm">✏️</span>
                     )}
-                    {channel.authority}
+                    <span className="font-medium">{channel.authority}</span>
                   </div>
                 </div>
-                <p className="text-sm text-stone-600 dark:text-stone-400">
-                  {channel.description.substring(0, 250)}
+                <p className="text-sm text-stone-600 dark:text-stone-400 line-clamp-3">
+                  {channel.description.substring(0, 180)}
                   {channel.description &&
-                    channel.description.length > 250 &&
+                    channel.description.length > 180 &&
                     "..."}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-500">
-                  <span>•</span>
-                  <span>
-                    CreatedAt: {channel.createdAt.toDate().toUTCString()}
+                <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-500">
+                  <span className="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+                  <span className="truncate">
+                    Created: {new Date(channel.createdAt.toDate()).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -91,8 +98,12 @@ const ChannelsComponent = ({
           </div>
         ))
       ) : (
-        <div className="text-center text-stone-500 dark:text-stone-400">
-          <p>No Folders found</p>
+        <div className="text-center text-stone-500 dark:text-stone-400 py-12">
+          <div className="bg-stone-100 dark:bg-darkButtons rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <FiFolder className="w-8 h-8" />
+          </div>
+          <p className="text-lg font-medium mb-2">No Collections found</p>
+          <p className="text-sm">Create your first collection to get started</p>
         </div>
       )}
     </>
@@ -101,9 +112,10 @@ const ChannelsComponent = ({
 
 const Page = () => {
   const { user } = useUser();
+  const { theme, setTheme } = useTheme();
   const notificationRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
 
-  const [createNewChannel, setCreateNewChannel] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
@@ -144,6 +156,7 @@ const Page = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  
   useEffect(() => {
     if (user?.isVerified == false) {
       setNotifications([
@@ -159,200 +172,255 @@ const Page = () => {
       ]);
     }
   }, [user]);
+  
   if (!user) {
     return <Loading />;
   }
+
   return (
     <>
-      {createNewChannel ? (
-        <NewChannel setCreateNewChannel={setCreateNewChannel} />
-      ) : (
-        <>
-          {/* Desktop View */}
-          <main className="hidden lg:grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-darkBackground">
-            <Sidebar />
-            <div className="bg-white dark:bg-secondDarkBackground border dark:border-darkBorder h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
-              {/* Top Bar */}
-              <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-secondDarkBackground px-4 border-b border-stone-200 dark:border-darkBorder z-10">
-                <h2 className="font-bold dark:text-white">Folders</h2>
-                <button
-                  onClick={() => setCreateNewChannel(true)}
-                  className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
-                  <FiPlus className="text-violet-500" />
-                  <span>New Folder</span>
-                </button>
-              </div>
+    <NewFolderResponsive open={open} setOpen={setOpen} />
+      {/* Desktop View */}
+      <main className="hidden lg:grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-darkBackground">
+        <Sidebar />
+        <div className="bg-white dark:bg-secondDarkBackground border dark:border-darkBorder h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
+          {/* Top Bar */}
+          <div className="flex py-3 h-16 justify-between items-center sticky top-0 bg-white dark:bg-secondDarkBackground px-4 border-b border-stone-200 dark:border-darkBorder z-10">
+            <h2 className="font-bold dark:text-white">Collections</h2>
+            <button
+              onClick={() => setOpen(true)}
+              className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
+              <FiPlus className="text-violet-500" />
+              <span>New Collection</span>
+            </button>
+          </div>
 
-              {/* Channels */}
-              <div className="px-16 py-4">
-                <Suspense fallback={<Loading />}>
-                  <ChannelsComponent channels={user.channels} />
-                </Suspense>
-              </div>
-            </div>
-          </main>
-          {/* Mobile & Tablet View */}
-          <main className="h-screen dark:bg-darkBackground lg:hidden">
-            {/* Header */}
-            <div className="bg-white dark:bg-secondDarkBackground h-16 px-4 flex items-center justify-between shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
-                PostPilot
-              </h1>
-              <div className="flex gap-2 justify-center items-center">
+          {/* Channels */}
+          <div className="px-16 py-4">
+            <Suspense fallback={<Loading />}>
+              <ChannelsComponent channels={user.channels} />
+            </Suspense>
+          </div>
+        </div>
+      </main>
+      
+      {/* Mobile & Tablet View */}
+      <main className="h-screen dark:bg-darkBackground lg:hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-white dark:bg-secondDarkBackground px-4 py-3 flex items-center justify-between shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] sticky top-0 z-50">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-violet-700 select-none tracking-wide cursor-pointer font-PlaywriteHU to-gray-600 dark:to-white/80 text-transparent bg-clip-text">
+            PostPilot
+          </h1>
+          <div className="flex gap-3 justify-center items-center">
+            {/* Notifications */}
+            <div className="relative">
+              <button
+                ref={buttonRef}
+                onClick={() => {
+                  openNotificationBar(!notificationBar);
+                }}
+                className="p-2 transition-all hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl relative">
+                <IoIosNotificationsOutline className="w-6 h-6 dark:text-white" />
+                {notifications && notifications.length > 0 && (
+                  <div className="w-2 h-2 absolute top-1.5 rounded-full right-1.5 bg-red-500 animate-pulse"></div>
+                )}
+              </button>
               
-                <div className="relative">
-                  <button
-                    ref={buttonRef} // Add ref to button
-                    onClick={() => {
-                      openNotificationBar(!notificationBar);
-                    }}
-                    className="p-1 transition-all hover:bg-stone-200 dark:hover:bg-stone-900 rounded relative">
-                    <IoIosNotificationsOutline className="w-6 h-auto dark:text-white" />
-                    <div
-                      className={`w-2 h-2 absolute top-1.5 rounded-full right-2 bg-red-600 ${
-                        (notifications == undefined ||
-                          notifications.length == 0) &&
-                        "hidden"
-                      }`}></div>
-                  </button>
-                  <div
-                    ref={notificationRef}
-                    className={`absolute -right-5 z-[51] w-80 bg-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl text-white transition-all duration-300 ${
-                      !notificationBar && "hidden"
-                    }`}>
-                    {notifications == undefined || notifications.length == 0 ? (
-                      <div className="flex justify-center items-center py-8 text-gray-400 text-sm">
-                        No notifications at the moment
-                      </div>
-                    ) : (
-                      <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-700/50">
-                        {notifications.map(
-                          (notification: UserNotification, index: number) => (
-                            <div
-                              key={index}
-                              className="p-4 hover:bg-white/5 transition-all duration-200">
-                              <div className="flex flex-col gap-1">
-                                <div className="flex flex-col  items-start gap-2 text-sm">
-                                  {notification.Type == "Ask" && (
-                                    <span className="font-semibold">
-                                      {notification.owner}
-                                    </span>
-                                  )}
-                                  <span className="text-gray-400">
-                                    {notification.Type == "Ask" &&
-                                      "invited you to join"}{" "}
-                                    <span className="font-medium text-gray-200 text-sm">
-                                      {notification.channelName}
-                                    </span>
-                                  </span>
-                                </div>
-                                <div className="pl-1">
-                                  <p className="text-xs text-gray-400">
-                                    {notification.channelDescription}
-                                  </p>
-                                </div>
-                                {notification.Type === "Ask" && (
-                                  <div className="flex justify-end gap-2 mt-4">
-                                    <Button
-                                      onClick={() =>
-                                        rejectJoiningToAChannel(
-                                          notification,
-                                          user.email
-                                        )
-                                      }
-                                      variant={"link"}
-                                      className=" text-red-400 px-4 py-1.5 rounded-lg text-xs font-medium transition">
-                                      Reject
-                                    </Button>
-                                    <Button
-                                      onClick={() =>
-                                        acceptJoiningToAChannel(
-                                          notification,
-                                          user
-                                        )
-                                      }
-                                      variant={"secondary"}
-                                      className=" text-black dark:text-white px-4 py-1.5 rounded-lg text-xs font-medium transition">
-                                      Accept
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
+              {/* Notification Dropdown */}
+              <div
+                ref={notificationRef}
+                className={`absolute right-0 top-12 z-[51] w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#1a1a1a] border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl transition-all duration-300 ${
+                  !notificationBar && "hidden"
+                }`}>
+                <div className="p-3 border-b border-stone-200 dark:border-stone-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                </div>
+                {notifications == undefined || notifications.length == 0 ? (
+                  <div className="flex flex-col justify-center items-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+                    <IoIosNotificationsOutline className="w-8 h-8 mb-2 opacity-50" />
+                    <p>No notifications yet</p>
+                  </div>
+                ) : (
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {notifications.map(
+                      (notification: UserNotification, index: number) => (
+                        <div
+                          key={index}
+                          className="p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-all duration-200 border-b border-stone-100 dark:border-stone-800 last:border-b-0">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-col items-start gap-1">
+                              {notification.Type == "Ask" && (
+                                <span className="font-medium text-gray-900 dark:text-white text-sm">
+                                  {notification.owner}
+                                </span>
+                              )}
+                              <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                {notification.Type == "Ask" && "invited you to join"}{" "}
+                                <span className="font-medium text-violet-600 dark:text-violet-400">
+                                  {notification.channelName}
+                                </span>
+                              </span>
                             </div>
-                          )
-                        )}
-                      </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                              {notification.channelDescription}
+                            </p>
+                            {notification.Type === "Ask" && (
+                              <div className="flex justify-end gap-2 mt-2">
+                                <Button
+                                  onClick={() =>
+                                    rejectJoiningToAChannel(
+                                      notification,
+                                      user.email
+                                    )
+                                  }
+                                  variant={"ghost"}
+                                  size="sm"
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950">
+                                  Reject
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    acceptJoiningToAChannel(
+                                      notification,
+                                      user
+                                    )
+                                  }
+                                  size="sm"
+                                  className="bg-violet-600 hover:bg-violet-700 text-white">
+                                  Accept
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
                     )}
                   </div>
-                </div>
-                <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className="rounded-full border border-violet-600 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center">
-                        <img
-                          src={user.avatar}
-                          alt="avatar"
-                          className="size-8 rounded-full shrink-0 bg-violet-500 shadow"
-                        />
-                      </Button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-fit">
-                      <div className="flex justify-between gap-3">
-                        <Avatar>
-                          <AvatarImage
-                            src={user.avatar}
-                            className="bg-violet-500"
-                          />
-                        </Avatar>
-                        <div className="flex flex-col gap-1">
-                          <h4 className="text-sm font-semibold">{user.name}</h4>
-                          <p className="text-sm dark:text-white/60 text-black/60">
-                            {user.email}
-                          </p>
-                          <p className="text-sm dark:text-white/60 text-black/60">
-                            {user.channels.length > 0
-                              ? `You have: ${user.channels.length} folder`
-                              : "You have no folders yet."}
-                          </p>
-                          {user?.isVerified == true && (
-                            <Button
-                              onClick={() => {
-                                router.push("/folders");
-                              }}
-                              variant={"default"}
-                              className="mt-3">
-                              Folders
-                            </Button>
-                          )}
-                          <Button
-                            onClick={async () => {
-                              await logOut();
-                              window.location.reload();
-                            }}
-                            variant={"outline"}
-                            className="mt-3 text-red-700 hover:text-red-700">
-                            Log out
-                          </Button>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-              </div>
-            </div>
-            <div className="overflow-y-auto relative">
-              {/* Channels */}
-              <div className="p-4">
-                <Suspense fallback={<Loading />}>
-                  <ChannelsComponent channels={user.channels} />
-                </Suspense>
+                )}
               </div>
             </div>
             
-            <div></div>
-          </main>
-        </>
-      )}
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className="rounded-full border-2 border-violet-200 dark:border-violet-800 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center hover:border-violet-400 dark:hover:border-violet-600 transition-colors">
+                  <img
+                    src={user.avatar}
+                    alt="avatar"
+                    className="size-8 rounded-full shrink-0 bg-violet-500 shadow object-cover"
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64 mr-4" align="end">
+                {/* User Info Section */}
+                <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={user.avatar}
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full bg-violet-500 shadow object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Stats */}
+                <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Collections</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {user.channels.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm mt-1">
+                    <span className="text-gray-600 dark:text-gray-400">Status</span>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      user.isVerified 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
+                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                    }`}>
+                      {user.isVerified ? 'Verified' : 'Pending'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                {user?.isVerified && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/folders")}
+                    className="px-3 py-2 cursor-pointer">
+                    <FiFolder className="w-4 h-4 mr-3" />
+                    <span>My Collections</span>
+                  </DropdownMenuItem>
+                )}
+                
+                {/* Theme Toggle */}
+                <DropdownMenuItem
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="px-3 py-2 cursor-pointer">
+                  {theme === 'dark' ? (
+                    <>
+                      <FiSun className="w-4 h-4 mr-3" />
+                      <span>Light Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiMoon className="w-4 h-4 mr-3" />
+                      <span>Dark Mode</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* Logout */}
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await logOut();
+                    window.location.reload();
+                  }}
+                  className="px-3 py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                  <FiLogOut className="w-4 h-4 mr-3" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto pb-20">
+          <div className="p-4">
+            <Suspense fallback={<Loading />}>
+              <ChannelsComponent channels={user.channels} />
+            </Suspense>
+          </div>
+        </div>
+
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6 z-40 lg:hidden">
+          {/* <Button
+            onClick={() => setOpen(true)}
+            className="bg-violet-600 hover:bg-violet-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">
+            <span><FiPlus className="w-6 h-6"/></span> 
+          </Button> */}
+          <button
+              onClick={() => setOpen(true)}
+              className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
+              <FiPlus className="text-violet-500" />
+              <span>New Collection</span>
+            </button>
+        </div>
+      </main>
     </>
   );
 };
