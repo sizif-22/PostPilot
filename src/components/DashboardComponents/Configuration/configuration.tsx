@@ -96,7 +96,7 @@ export const Configuration = () => {
     window.location.href = authUrl;
   };
   // 1. Updated configuration.tsx - handleXConnect function
-  const handleXConnect = async () => {
+const handleXConnect = async () => {
     // Generate a proper state parameter
     const state = `${new Date().getTime()}-${Math.random()
       .toString(36)
@@ -105,7 +105,7 @@ export const Configuration = () => {
     // Generate PKCE code verifier and challenge
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
-
+    
     // Store in cookies for later use
     Cookies.set("currentChannel", id as string);
     Cookies.set("xState", state, { expires: 1 / 24 }); // 1 hour
@@ -121,9 +121,9 @@ export const Configuration = () => {
     )}&scope=${encodeURIComponent(
       SCOPE
     )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
-
+    
     window.location.href = authUrl;
-  };
+};
 
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {
