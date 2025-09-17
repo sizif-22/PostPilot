@@ -62,6 +62,8 @@ export interface xChannel {
   refreshToken?: string;
   tokenExpiry?: string;
   remainingTime?: number;
+  v1aAccessToken?: string;
+  v1aAccessSecret?: string;
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {

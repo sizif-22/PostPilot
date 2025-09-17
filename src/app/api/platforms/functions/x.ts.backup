@@ -1,0 +1,106 @@
+
+import { TwitterApi } from 'twitter-api-v2';
+import { getValidXToken } from '../../../../utils/x-token-manager';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import axios from 'axios';
+import { MediaItem } from '@/interfaces/Media';
+
+interface PostOnXParams {
+    accessToken: string;
+    refreshToken: string;
+    tokenExpiry: string;
+    message?: string;
+    media?: MediaItem[];
+    xText?: string;
+}
+
+interface PostOnXResult {
+    success: boolean;
+    tweetId?: string;
+    errorCode?: string;
+    message?: string;
+}
+
+async function downloadMedia(url: string, tempDir: string): Promise<string> {
+    const response = await axios({ url, responseType: 'stream' });
+    const fileName = path.basename(new URL(url).pathname);
+    const localPath = path.join(tempDir, fileName);
+    const writer = fs.createWriteStream(localPath);
+    response.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+        writer.on('finish', () => resolve(localPath));
+        writer.on('error', reject);
+    });
+}
+
+export async function PostOnX(params: PostOnXParams): Promise<PostOnXResult> {
+    const { accessToken, refreshToken, tokenExpiry, message, media, xText } = params;
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'postpilot-x-'));
+    let mediaIds: string[] = [];
+
+    try {
+        const tokenResult = await getValidXToken(accessToken, refreshToken, tokenExpiry);
+        if (tokenResult.error) {
+            return { success: false, errorCode: 'TOKEN_REFRESH_FAILED', message: tokenResult.error };
+        }
+
+        const client = new TwitterApi(tokenResult.accessToken);
+
+        if (media && media.length > 0) {
+            try {
+                console.log('[PostOnX] Uploading media...');
+                const uploadPromises = media.map(async (mediaItem) => {
+                    const localPath = await downloadMedia(mediaItem.url, tempDir);
+                    const mediaId = await client.v1.uploadMedia(localPath);
+                    return mediaId;
+                });
+                mediaIds = await Promise.all(uploadPromises);
+                console.log('[PostOnX] Media uploaded successfully:', mediaIds);
+            } catch (uploadError: any) {
+                console.error('[PostOnX] Error uploading media:', JSON.stringify(uploadError, null, 2));
+                throw new Error(`Media upload failed: ${uploadError.message}`);
+            }
+        }
+
+        const text = xText || message || '';
+
+        if (mediaIds.length > 4) {
+            throw new Error('A maximum of 4 media items are allowed for a tweet.');
+        }
+
+        const tweetPayload: any = { text };
+        if (mediaIds.length > 0) {
+            tweetPayload.media = { media_ids: mediaIds };
+        }
+
+        try {
+            console.log('[PostOnX] Creating tweet with payload:', tweetPayload);
+            const { data: tweet } = await client.v2.tweet(tweetPayload);
+            console.log('[PostOnX] Tweet created successfully:', tweet.id);
+            return { success: true, tweetId: tweet.id };
+        } catch (tweetError: any) {
+            console.error('[PostOnX] Error creating tweet:', tweetError);
+            throw new Error(`Tweet creation failed: ${tweetError.message}`);
+        }
+
+    } catch (error: any) {
+        console.error('[PostOnX] Error posting to X:', error);
+        // The error from the library might have more details in the `data` property
+        if (error.data) {
+            console.error('[PostOnX] X API Error Data:', error.data);
+        }
+        return { success: false, errorCode: 'X_API_ERROR', message: error.message || 'An unknown error occurred.' };
+    } finally {
+        // Clean up temporary directory
+        if (fs.existsSync(tempDir)) {
+            fs.rm(tempDir, { recursive: true, force: true }, (err) => {
+                if (err) {
+                    console.error(`Error removing temp directory ${tempDir}:`, err);
+                }
+            });
+        }
+    }
+}

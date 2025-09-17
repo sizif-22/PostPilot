@@ -250,49 +250,30 @@ export async function POST(request: Request) {
             }
             case "x": {
               try {
-                const xAccessToken = channel.socialMedia?.x?.accessToken;
-                if (!xAccessToken) {
-                  throw new Error("X access token is undefined");
+                const xSocialMedia = channel.socialMedia?.x;
+                if (!xSocialMedia?.accessToken || !xSocialMedia.refreshToken || !xSocialMedia.tokenExpiry) {
+                  throw new Error("X credentials (accessToken, refreshToken, tokenExpiry) are missing.");
                 }
 
-                // Validate encrypted token format
-                if (!isValidEncryptedFormat(xAccessToken)) {
-                  throw new Error(
-                    "X access token is not in valid encrypted format"
-                  );
+                if (!isValidEncryptedFormat(xSocialMedia.accessToken)) {
+                  throw new Error("X access token is not in a valid encrypted format.");
                 }
+                
+                const decryptedAccessToken = await decrypt(xSocialMedia.accessToken);
 
-                let decryptedAccessToken: string;
-                try {
-                  decryptedAccessToken = await decrypt(xAccessToken);
-                } catch (decryptError) {
-                  console.error(
-                    "Failed to decrypt X access token:",
-                    decryptError
-                  );
-                  throw new Error(
-                    `Token decryption failed: ${
-                      decryptError instanceof Error
-                        ? decryptError.message
-                        : String(decryptError)
-                    }`
-                  );
-                }
-                if (!channel.socialMedia || !channel || !channel.socialMedia.x)
-                  throw new Error("L2");
+                const decryptedV1aAccessToken = xSocialMedia.v1aAccessToken ? await decrypt(xSocialMedia.v1aAccessToken) : undefined;
+                const decryptedV1aAccessSecret = xSocialMedia.v1aAccessSecret ? await decrypt(xSocialMedia.v1aAccessSecret) : undefined;
+
                 const result = await PostOnX({
                   accessToken: decryptedAccessToken,
-                  pageId: channel.socialMedia?.x?.userId || "", // X doesn't use pageId but kept for interface compatibility
+                  refreshToken: xSocialMedia.refreshToken,
+                  tokenExpiry: xSocialMedia.tokenExpiry,
                   message: post.message,
                   media: post.media,
                   xText: post.xText,
-                  ...(channel.socialMedia.x.refreshToken &&
-                  channel.socialMedia.x.tokenExpiry
-                    ? {
-                        refreshToken: channel.socialMedia.x.refreshToken,
-                        tokenExpiry: channel.socialMedia.x.tokenExpiry,
-                      }
-                    : {}),
+                  pageId: "", // Not used for X
+                  v1aAccessToken: decryptedV1aAccessToken,
+                  v1aAccessSecret: decryptedV1aAccessSecret,
                 });
 
                 console.log("Post Published successfully on X.");

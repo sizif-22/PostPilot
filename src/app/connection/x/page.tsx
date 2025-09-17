@@ -115,7 +115,7 @@ export default function XCallbackPage() {
         "socialMedia.x": socialMediaX,
       });
       await refreshXFunc(channelId as string);
-      router.push(`/collections/${channelId}`);
+      router.push(`/connection/x/connect-v1`);
     } catch (error: any) {
       console.error("Error saving X profile:", error);
       setError("Failed to save profile selection");
