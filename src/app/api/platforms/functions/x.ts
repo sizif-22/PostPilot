@@ -2,25 +2,7 @@ import { MediaItem } from "@/interfaces/Media";
 import { createHmac } from "crypto";
 import OAuth from "oauth-1.0a";
 
-const consumer_key = process.env.X_API_KEY;
-const consumer_secret = process.env.X_API_KEY_SECRET;
-const access_token = process.env.X_ACCESS_TOKEN;
-const token_secret = process.env.X_ACCESS_TOKEN_SECRET;
-
-const oauth = new OAuth({
-  consumer: {
-    key: consumer_key || "",
-    secret: consumer_secret || "",
-  },
-  signature_method: "HMAC-SHA1",
-  hash_function(base_string, key) {
-    return createHmac("sha1", key).update(base_string).digest("base64");
-  },
-});
-const token = {
-  key: access_token || "",
-  secret: token_secret || "",
-};
+// Remove global OAuth instance - we'll create it dynamically per request
 
 // Test function to validate access token
 async function testAccessToken(accessToken: string): Promise<boolean> {
@@ -51,6 +33,23 @@ async function testAccessToken(accessToken: string): Promise<boolean> {
   }
 }
 
+// Create OAuth instance dynamically based on user's tokens
+function createOAuthInstance(userAccessToken: string, userTokenSecret: string) {
+  const consumer_key = process.env.X_API_KEY;
+  const consumer_secret = process.env.X_API_KEY_SECRET;
+
+  return new OAuth({
+    consumer: {
+      key: consumer_key || "",
+      secret: consumer_secret || "",
+    },
+    signature_method: "HMAC-SHA1",
+    hash_function(base_string, key) {
+      return createHmac("sha1", key).update(base_string).digest("base64");
+    },
+  });
+}
+
 export async function PostOnX({
   accessToken,
   pageId, // Not used for X, but kept for interface compatibility
@@ -59,6 +58,9 @@ export async function PostOnX({
   refreshToken,
   tokenExpiry,
   xText,
+  // Add these new parameters for OAuth 1.0a tokens needed for video upload
+  oauthAccessToken,
+  oauthTokenSecret,
 }: {
   media?: MediaItem[];
   accessToken: string;
@@ -67,41 +69,15 @@ export async function PostOnX({
   refreshToken?: string;
   tokenExpiry?: string;
   xText?: string;
+  // OAuth 1.0a tokens for video upload
+  oauthAccessToken?: string;
+  oauthTokenSecret?: string;
 }) {
   try {
     let currentAccessToken = accessToken;
 
-    // If we have refresh token and expiry, check if we need to refresh
-    // if (refreshToken && tokenExpiry) {
-    //   try {
-    //     const { getValidXToken } = await import("@/utils/x-token-manager");
-    //     const tokenResult = await getValidXToken(
-    //       accessToken,
-    //       refreshToken,
-    //       tokenExpiry
-    //     );
-    //     currentAccessToken = tokenResult.accessToken;
-
-    //     // If token was refreshed, we should update the stored token
-    //     if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
-    //       console.log(
-    //         "X token was refreshed, new token data available for update"
-    //       );
-    //       // Note: You might want to update the stored token in your database here
-    //     }
-    //   } catch (refreshError) {
-    //     console.error("Failed to refresh X token:", refreshError);
-    //     throw new Error(
-    //       "Failed to refresh X access token. Please reconnect your X account."
-    //     );
-    //   }
-    // } else {
-    //   // Fallback to old validation method if no refresh token
-    //   const isTokenValid = await testAccessToken(accessToken);
-    //   if (!isTokenValid) {
-    //     throw new Error("Invalid or expired access token");
-    //   }
-    // }
+    // Token validation/refresh logic (currently commented out)
+    // ... keep existing token refresh logic ...
 
     let media_ids: string[] = [];
 
@@ -113,17 +89,19 @@ export async function PostOnX({
         `Attempting to upload ${mediaToUpload.length} media items to X`
       );
 
-      for (const media of mediaToUpload) {
-        if (media.url) {
-          console.log(`Uploading media: ${media.url}`);
+      for (const mediaItem of mediaToUpload) {
+        if (mediaItem.url) {
+          console.log(`Uploading media: ${mediaItem.url}`);
           // Try to upload media - if this fails, throw error to stop the entire process
           const media_id = await uploadMediaToX(
-            media.url,
-            media.isVideo,
-            currentAccessToken
+            mediaItem.url,
+            mediaItem.isVideo,
+            currentAccessToken,
+            oauthAccessToken,
+            oauthTokenSecret
           );
           if (!media_id) {
-            throw new Error(`Failed to upload media: ${media.url}`);
+            throw new Error(`Failed to upload media: ${mediaItem.url}`);
           }
           media_ids.push(media_id);
           console.log(`Successfully uploaded media with ID: ${media_id}`);
@@ -174,7 +152,9 @@ export async function PostOnX({
 async function uploadMediaToX(
   mediaUrl: string,
   isVideo: boolean,
-  accessToken: string
+  accessToken: string,
+  oauthAccessToken?: string,
+  oauthTokenSecret?: string
 ): Promise<string | null> {
   try {
     console.log(`Starting media upload for: ${mediaUrl}`);
@@ -212,9 +192,18 @@ async function uploadMediaToX(
     console.log(
       `Media downloaded successfully. Type: ${mediaType}, Size: ${mediaBuffer.byteLength} bytes`
     );
+    
     if (isVideo) {
       console.log("Uploading as video using v1.1 API");
-      return await uploadVideoV1(mediaBuffer, mediaType, accessToken);
+      if (!oauthAccessToken || !oauthTokenSecret) {
+        throw new Error("OAuth 1.0a tokens are required for video upload");
+      }
+      return await uploadVideoV1(
+        mediaBuffer, 
+        mediaType, 
+        oauthAccessToken, 
+        oauthTokenSecret
+      );
     } else {
       console.log("Uploading as image using v2 API");
       return await uploadImageV2(mediaBuffer, mediaType, accessToken);
@@ -283,13 +272,22 @@ async function uploadImageV2(
 async function uploadVideoV1(
   mediaBuffer: ArrayBuffer,
   mediaType: string,
-  accessToken: string
+  oauthAccessToken: string,
+  oauthTokenSecret: string
 ): Promise<string | null> {
   try {
-    if (!accessToken || accessToken.trim() === "") {
-      console.error("Access token is missing or empty");
+    if (!oauthAccessToken || oauthAccessToken.trim() === "" || 
+        !oauthTokenSecret || oauthTokenSecret.trim() === "") {
+      console.error("OAuth access token and token secret are required for video upload");
       return null;
     }
+
+    // Create OAuth instance with user's specific tokens
+    const oauth = createOAuthInstance(oauthAccessToken, oauthTokenSecret);
+    const token = {
+      key: oauthAccessToken,
+      secret: oauthTokenSecret,
+    };
 
     // Twitter's limit: 512MB for videos
     if (mediaBuffer.byteLength > 512 * 1024 * 1024) {
@@ -348,18 +346,12 @@ async function uploadVideoV1(
       formData.append("segment_index", i.toString());
       formData.append("media", new Blob([chunk], { type: mediaType }));
 
-      // For OAuth 1.0a with FormData, we need to include the form data in the signature
-      const formDataParams = new URLSearchParams();
-      formDataParams.append("command", "APPEND");
-      formDataParams.append("media_id", mediaId);
-      formDataParams.append("segment_index", i.toString());
-
-      const request_data = {
+      const appendRequestData = {
         url: "https://upload.twitter.com/1.1/media/upload.json",
         method: "POST",
       };
 
-      const oauthHeaders = oauth.toHeader(oauth.authorize(request_data, token));
+      const oauthHeaders = oauth.toHeader(oauth.authorize(appendRequestData, token));
 
       const appendResponse = await fetch(
         "https://upload.twitter.com/1.1/media/upload.json",
@@ -420,7 +412,11 @@ async function uploadVideoV1(
     // Step 4: Check processing status (for videos)
     if (finalizeData.processing_info) {
       console.log("Video is being processed...");
-      const processedMediaId = await waitForProcessing(mediaId, accessToken);
+      const processedMediaId = await waitForProcessing(
+        mediaId, 
+        oauth, 
+        token
+      );
       return processedMediaId;
     }
 
@@ -434,7 +430,8 @@ async function uploadVideoV1(
 // Wait for video processing to complete
 async function waitForProcessing(
   mediaId: string,
-  accessToken: string,
+  oauth: OAuth,
+  token: { key: string; secret: string },
   maxAttempts: number = 10
 ): Promise<string | null> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
