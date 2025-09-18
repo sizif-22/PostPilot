@@ -96,38 +96,40 @@ export const Configuration = () => {
     window.location.href = authUrl;
   };
 
-const handleXConnect = async () => {
-  const state = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
+  const handleXConnect = async () => {
+    const state = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-  Cookies.set("currentChannel", id as string);
-  Cookies.set("xState", state, { expires: 1 / 24 });
-  Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 });
+    Cookies.set("currentChannel", id as string);
+    Cookies.set("xState", state, { expires: 1 / 24 });
+    Cookies.set("xCodeVerifier", codeVerifier, { expires: 1 / 24 });
 
-  const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID!;
-  const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
+    const X_CLIENT_ID = process.env.NEXT_PUBLIC_X_CLIENT_ID!;
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_REDIRECT_URI}/connection/x`;
 
-  // Updated scopes - removed media.write as it may not be available for your app type
-  // The upload functionality should work with just tweet.write scope
-  const SCOPE = [
-    "tweet.read",
-    "tweet.write",    // This should include media upload permissions
-    "users.read", 
-    "offline.access"  // Required for refresh tokens
-  ].join(" ");
+    // Updated scopes - removed media.write as it may not be available for your app type
+    // The upload functionality should work with just tweet.write scope
+    const SCOPE = [
+      "tweet.read",
+      "tweet.write", // This should include media upload permissions
+      "users.read",
+      "media.write",
+      "offline.access", // Required for refresh tokens
+    ].join(" ");
 
-  console.log('[X Connect] Using scopes:', SCOPE);
+    console.log("[X Connect] Using scopes:", SCOPE);
 
-  const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(
-    X_CLIENT_ID
-  )}&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}&scope=${encodeURIComponent(SCOPE)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+    const authUrl = `https://x.com/i/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(
+      X_CLIENT_ID
+    )}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&scope=${encodeURIComponent(
+      SCOPE
+    )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
 
-  window.location.href = authUrl;
-};
-  
+    window.location.href = authUrl;
+  };
 
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {

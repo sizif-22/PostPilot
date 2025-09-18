@@ -180,6 +180,7 @@ export const CPDialog = ({
   };
 
   const resetForm = () => {
+    setXText("");
     setPostText("");
     setSelectedImages([]);
     setSelectedPlatforms([]);
@@ -199,15 +200,57 @@ export const CPDialog = ({
     });
   };
 
-  const isTextOnly = postText.trim() && selectedImages.length === 0;
-  const isFacebookOrXOnly =
-    selectedPlatforms.length === 1 &&
-    (selectedPlatforms[0] === "facebook" || selectedPlatforms[0] === "x");
+  const isFormValid = (() => {
+    if (selectedPlatforms.length === 0) {
+      return false;
+    }
 
-  const isFormValid =
-    ((postText.trim() && selectedImages.length === 0 && isFacebookOrXOnly) ||
-      selectedImages.length > 0) &&
-    selectedPlatforms.length > 0;
+    const hasMedia = selectedImages.length > 0;
+    const hasVideo = selectedImages.some((item) => item.isVideo);
+    const hasImage = selectedImages.some((item) => !item.isVideo);
+
+    if (hasVideo && hasImage) {
+      return false;
+    }
+
+    if (selectedImages.filter((item) => item.isVideo).length > 1) {
+      return false;
+    }
+
+    // If there's media, the form is valid as long as a platform is selected.
+    if (hasMedia) {
+      return true;
+    }
+
+    // If there's no media, we need to check for valid text-only posts.
+    const textOnlyPlatforms = ["facebook", "linkedin", "x"];
+    const allPlatformsAreTextOnly = selectedPlatforms.every((p) =>
+      textOnlyPlatforms.includes(p)
+    );
+
+    if (!allPlatformsAreTextOnly) {
+      return false; // Can't have a text-only post with a media-required platform.
+    }
+
+    // At this point, all selected platforms are text-only.
+    // Now, we just need to make sure the text fields are filled correctly.
+
+    if (selectedPlatforms.includes("x") && xText.trim() === "") {
+      return false;
+    }
+
+    if (
+      (selectedPlatforms.includes("facebook") ||
+        selectedPlatforms.includes("linkedin")) &&
+      postText.trim() === ""
+    ) {
+      return false;
+    }
+
+    // If we've gotten this far, it means all selected platforms are text-only,
+    // and their respective text fields are filled.
+    return true;
+  })();
 
   const canSchedule = isFormValid && publishOption === "schedule" && date;
   const canPostNow = isFormValid && publishOption === "now";
@@ -228,14 +271,8 @@ export const CPDialog = ({
     setIsPosting(true);
     setError(null);
     try {
-      if (
-        postText.trim() &&
-        selectedImages.length === 0 &&
-        (!isFacebookOrXOnly || selectedPlatforms.length === 0)
-      ) {
-        throw new Error(
-          "Text-only posts are only allowed on Facebook. Please add an image or video to post to other platforms."
-        );
+      if (!isFormValid) {
+        throw new Error("Invalid post data. Please check your inputs.");
       }
 
       if (selectedImages.length > 0) {
@@ -705,25 +742,27 @@ export const CPDialog = ({
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="x"><div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-                <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                  X Post
-                </h3>
-                <p className="text-xs text-stone-500 dark:text-white/60">
-                  Special text for X post
-                </p>
-                <textarea
-                  value={xText}
-                  onChange={(e) => setXText(e.target.value)}
-                  placeholder="What do you want to share on X?"
-                  className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
-                  rows={6}
-                  maxLength={280}
-                />
-                <div className="text-right text-xs text-stone-400 dark:text-white/50">
-                  {xText.length}/280
+              <TabsContent value="x">
+                <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    X Post
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Special text for X post
+                  </p>
+                  <textarea
+                    value={xText}
+                    onChange={(e) => setXText(e.target.value)}
+                    placeholder="What do you want to share on X?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                    rows={6}
+                    maxLength={280}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {xText.length}/280
+                  </div>
                 </div>
-              </div></TabsContent>
+              </TabsContent>
             </Tabs>
           </div>
 
