@@ -3,7 +3,7 @@ import { createHmac } from "crypto";
 import OAuth from "oauth-1.0a";
 
 const consumer_key = process.env.X_API_KEY;
-const consumer_secret = process.env.X_API_KEY_SECRET;
+const consumer_secret = process.env.X_API_SECRET;
 
 
 const oauth = new OAuth({
@@ -73,38 +73,6 @@ export async function PostOnX({
       key: v1aAccessToken || "",
       secret: v1aAccessSecret || "",
     };
-
-    // If we have refresh token and expiry, check if we need to refresh
-    // if (refreshToken && tokenExpiry) {
-    //   try {
-    //     const { getValidXToken } = await import("@/utils/x-token-manager");
-    //     const tokenResult = await getValidXToken(
-    //       accessToken,
-    //       refreshToken,
-    //       tokenExpiry
-    //     );
-    //     currentAccessToken = tokenResult.accessToken;
-
-    //     // If token was refreshed, we should update the stored token
-    //     if (tokenResult.shouldUpdate && tokenResult.newTokenData) {
-    //       console.log(
-    //         "X token was refreshed, new token data available for update"
-    //       );
-    //       // Note: You might want to update the stored token in your database here
-    //     }
-    //   } catch (refreshError) {
-    //     console.error("Failed to refresh X token:", refreshError);
-    //     throw new Error(
-    //       "Failed to refresh X access token. Please reconnect your X account."
-    //     );
-    //   }
-    // } else {
-    //   // Fallback to old validation method if no refresh token
-    //   const isTokenValid = await testAccessToken(accessToken);
-    //   if (!isTokenValid) {
-    //     throw new Error("Invalid or expired access token");
-    //   }
-    // }
 
     let media_ids: string[] = [];
 
