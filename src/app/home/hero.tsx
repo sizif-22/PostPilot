@@ -4,6 +4,7 @@ import { useUser } from "@/context/UserContext";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { redirect, useRouter } from "next/navigation";
+import Link from "next/link";
 export const Hero = () => {
   const router = useRouter();
   const { user } = useUser();
@@ -28,23 +29,17 @@ export const Hero = () => {
               PostPilot's intelligent automation platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center md:justify-start">
-              {user?.email ? (
+              <Link href={user?.email ? "/collections" : "/signin"}>
                 <Button
                   className={`${
-                    user?.isVerified != true && "cursor-not-allowed"
+                    user?.email &&
+                    user?.isVerified != true &&
+                    "cursor-not-allowed"
                   }`}
-                  disabled={user?.isVerified != true}
-                  onClick={() => router.push("/collections")}>
-                  Collections
+                  disabled={user?.email != undefined && user?.isVerified != true}>
+                  {user?.email ? "Collections" : "Get Started"}
                 </Button>
-              ) : (
-                <Button
-                  onClick={async () => {
-                    redirect("/signin");
-                  }}>
-                  Get Started
-                </Button>
-              )}
+              </Link>
             </div>
           </motion.div>
           <motion.div

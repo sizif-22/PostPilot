@@ -14,6 +14,8 @@ import { UserChannel } from "@/interfaces/User";
 import Loading from "@/components/ui/Loading";
 import { Issues } from "../Issues/Issues";
 import { useRouter } from "next/navigation";
+import NotificationSection from "../Sidebar/notification";
+import NavBar from "./NavBar";
 export default function ChannelDashboard({ id }: { id: string }) {
   const router = useRouter();
   const { user } = useUser();
@@ -130,7 +132,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
     }
   }, [id, fetchImgs]);
 
-  if (isLoading || !route) {
+  if (isLoading || !route || user == null) {
     return <Loading />;
   }
 
@@ -138,33 +140,40 @@ export default function ChannelDashboard({ id }: { id: string }) {
     <>
       {userChannel !== undefined ? (
         <ChannelContextProvider userChannel={userChannel}>
-          <main className="grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-darkBackground">
-            <Sidebar Callbackfunc={Navigation} route={route} />
-            {route === "Dashboard" ? (
-              <Dashboard
-                storageLimit={500}
-                media={media}
-                storageUsed={storageUsed}
-                filesCount={media.length}
-              />
-            ) : route === "Analysis" ? (
-              <Analysis />
-            ) : route === "Team" ? (
-              <Team />
-            ) : route === "Calendar" ? (
-              <Calendar media={media} />
-            ) : route === "Media" ? (
-              <Media
-                media={media}
-                onRefresh={fetchImgs}
-                storageUsed={storageUsed}
-                isLoading={isLoading}
-              />
-            ) : route === "Issues" ? (
-              <Issues media={media} />
-            ) : (
-              <Configuration />
-            )}
+          <main className="dark:bg-darkBackground">
+            <div className="lg:hidden">
+              <NavBar user={user} Callbackfunc={Navigation} route={route} />
+            </div>
+            <div className="lg:grid gap-4 lg:p-4 lg:grid-cols-[220px,_1fr]">
+              <div className="hidden lg:block">
+                <Sidebar Callbackfunc={Navigation} route={route} />
+              </div>
+              {route === "Dashboard" ? (
+                <Dashboard
+                  storageLimit={500}
+                  media={media}
+                  storageUsed={storageUsed}
+                  filesCount={media.length}
+                />
+              ) : route === "Analysis" ? (
+                <Analysis />
+              ) : route === "Team" ? (
+                <Team />
+              ) : route === "Calendar" ? (
+                <Calendar media={media} />
+              ) : route === "Media" ? (
+                <Media
+                  media={media}
+                  onRefresh={fetchImgs}
+                  storageUsed={storageUsed}
+                  isLoading={isLoading}
+                />
+              ) : route === "Issues" ? (
+                <Issues media={media} />
+              ) : (
+                <Configuration />
+              )}
+            </div>
           </main>
         </ChannelContextProvider>
       ) : (
