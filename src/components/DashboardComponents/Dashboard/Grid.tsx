@@ -17,7 +17,7 @@ export const Grid = ({
   const { channel } = useChannel();
   return (
     <>
-      <div className="px-4 grid gap-y-[1vh] gap-x-3 grid-cols-1 lg:grid-cols-3 pb-5">
+      <div className="px-4 lg:grid gap-y-[1vh] gap-x-3 grid-cols-1 lg:grid-cols-3 pb-5">
         <Upcoming media={media} />
         <Platforms />
         {(channel?.authority == "Owner" ||
