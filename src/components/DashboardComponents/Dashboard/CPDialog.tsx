@@ -9,9 +9,8 @@ import {
   FiRefreshCcw,
   FiGlobe,
   FiUpload,
+  FiEdit2,
 } from "react-icons/fi";
-
-import { TabsList, Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { useChannel } from "@/context/ChannelContext";
@@ -37,17 +36,10 @@ import { FaPlay } from "react-icons/fa";
 import { FaTiktok, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import { useNotification } from "@/context/NotificationContext";
 import VideoThumbnailPicker from "../Media/VideoThumbnailPicker";
-import { FiEdit2 } from "react-icons/fi";
 
 export const CPDialog = ({
   open,
@@ -69,6 +61,7 @@ export const CPDialog = ({
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
+  const [activeTab, setActiveTab] = useState<"default" | "x">("default");
   const container = [useRef(null), useRef(null)];
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     return (
@@ -217,23 +210,18 @@ export const CPDialog = ({
       return false;
     }
 
-    // If there's media, the form is valid as long as a platform is selected.
     if (hasMedia) {
       return true;
     }
 
-    // If there's no media, we need to check for valid text-only posts.
     const textOnlyPlatforms = ["facebook", "linkedin", "x"];
     const allPlatformsAreTextOnly = selectedPlatforms.every((p) =>
       textOnlyPlatforms.includes(p)
     );
 
     if (!allPlatformsAreTextOnly) {
-      return false; // Can't have a text-only post with a media-required platform.
+      return false;
     }
-
-    // At this point, all selected platforms are text-only.
-    // Now, we just need to make sure the text fields are filled correctly.
 
     if (selectedPlatforms.includes("x") && xText.trim() === "") {
       return false;
@@ -247,8 +235,6 @@ export const CPDialog = ({
       return false;
     }
 
-    // If we've gotten this far, it means all selected platforms are text-only,
-    // and their respective text fields are filled.
     return true;
   })();
 
@@ -441,9 +427,11 @@ export const CPDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[80vw] max-h-[90vh] overflow-hidden dark:bg-secondDarkBackground dark:text-white">
-        <DialogHeader>
-          <DialogTitle>Create Post</DialogTitle>
+      <DialogContent className="w-full h-full max-w-none rounded-none p-0 sm:p-6 sm:rounded-lg sm:max-w-[90vw] lg:max-w-[80vw] sm:h-auto sm:max-h-[90vh] overflow-hidden dark:bg-secondDarkBackground dark:text-white">
+        <DialogHeader className="sticky top-0 backdrop-blur border-b border-stone-200 dark:border-darkBorder px-4 py-3 sm:px-6 sm:py-4">
+          <DialogTitle className="text-lg font-semibold">
+            Create Post
+          </DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -451,13 +439,13 @@ export const CPDialog = ({
             initial={{ opacity: 0, y: 20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             transition={{ duration: 0.3 }}
-            className="absolute top-4 left-1/2 z-50 w-full max-w-md mx-auto">
+            className="absolute top-16 left-1/2 z-50 w-[calc(100%-2rem)] sm:w-full max-w-md mx-auto">
             <Alert
               variant="destructive"
-              className="bg-white shadow-lg dark:bg-darkBackground select-none shadow-black/50">
+              className=" shadow-lg dark:bg-darkBackground select-none shadow-black/50">
               <AlertCircleIcon className="h-5 w-5" />
               <AlertTitle>Unable to create post</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="text-sm">{error}</AlertDescription>
               <button
                 className="absolute top-2 right-2 hover:text-red-700"
                 onClick={() => setError(null)}
@@ -468,76 +456,145 @@ export const CPDialog = ({
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          {/* Left Column */}
-          <div className="space-y-6 col-span-2 max-h-[calc(90vh-120px)] overflow-y-auto">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:gap-6 overflow-y-auto max-h-[calc(100vh-112px)] sm:max-h-[calc(90vh-120px)]">
+          {/* Main Content - Full width on mobile, 2 columns on desktop */}
+          <div className="space-y-4 lg:col-span-2 px-4 sm:px-6 lg:px-0 pb-4 sm:pb-6 lg:pb-0">
             {/* Platform Selection */}
             <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
               <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
                 Select Platforms
               </h3>
-              <div className="flex gap-2 flex-wrap">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2">
                 {channel?.socialMedia?.facebook && (
                   <button
                     onClick={() => handlePlatformToggle("facebook")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
                       selectedPlatforms.includes("facebook")
-                        ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder"
-                        : "border-stone-200 hover:border-stone-300"
+                        ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
                     }`}>
-                    <FiFacebook className="text-lg text-blue-700" />
-                    <span className="text-sm">Facebook</span>
+                    <FiFacebook className="text-lg text-blue-700 dark:text-blue-300" />
+                    <span className="text-xs sm:text-sm">Facebook</span>
                   </button>
                 )}
                 {channel?.socialMedia?.instagram && (
                   <button
                     onClick={() => handlePlatformToggle("instagram")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
                       selectedPlatforms.includes("instagram")
-                        ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder"
-                        : "border-stone-200 hover:border-stone-300"
+                        ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder dark:text-pink-300"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
                     }`}>
-                    <FiInstagram className="text-lg text-pink-700" />
-                    <span className="text-sm">Instagram</span>
+                    <FiInstagram className="text-lg text-pink-700 dark:text-pink-300" />
+                    <span className="text-xs sm:text-sm">Instagram</span>
                   </button>
                 )}
                 {channel?.socialMedia?.tiktok && (
                   <button
                     onClick={() => handlePlatformToggle("tiktok")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
                       selectedPlatforms.includes("tiktok")
-                        ? "border-black bg-black text-white dark:bg-darkBorder"
-                        : "border-stone-200 hover:border-stone-300"
+                        ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
                     }`}>
                     <FaTiktok className="text-lg" />
-                    <span className="text-sm">TikTok</span>
+                    <span className="text-xs sm:text-sm">TikTok</span>
                   </button>
                 )}
                 {channel?.socialMedia?.linkedin && (
                   <button
                     onClick={() => handlePlatformToggle("linkedin")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
                       selectedPlatforms.includes("linkedin")
-                        ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder"
-                        : "border-stone-200 hover:border-stone-300"
+                        ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
                     }`}>
-                    <FaLinkedin className="text-lg text-blue-700" />
-                    <span className="text-sm">LinkedIn</span>
+                    <FaLinkedin className="text-lg text-blue-700 dark:text-blue-300" />
+                    <span className="text-xs sm:text-sm">LinkedIn</span>
                   </button>
                 )}
                 {channel?.socialMedia?.x && (
                   <button
                     onClick={() => handlePlatformToggle("x")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors dark:border-darkBorder ${
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
                       selectedPlatforms.includes("x")
-                        ? "border-black bg-black text-white dark:bg-darkBorder"
-                        : "border-stone-200 hover:border-stone-300"
+                        ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
                     }`}>
                     <FaXTwitter className="text-lg" />
-                    <span className="text-sm">X</span>
+                    <span className="text-xs sm:text-sm">X</span>
                   </button>
                 )}
               </div>
+            </div>
+
+            {/* Post Content - Custom Tab Implementation */}
+            <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+              {/* Custom Tab Headers */}
+              <div className="flex rounded-lg bg-stone-100 dark:bg-darkBorder p-1">
+                <button
+                  onClick={() => setActiveTab("default")}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeTab === "default"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                  }`}>
+                  Default Message
+                </button>
+                <button
+                  onClick={() => setActiveTab("x")}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeTab === "x"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                  }`}>
+                  X Message
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === "default" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    Post Content
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Write your message
+                  </p>
+                  <textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder="What do you want to share?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={4}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {postText.length}/2200
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "x" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    X Post
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Special text for X post
+                  </p>
+                  <textarea
+                    value={xText}
+                    onChange={(e) => setXText(e.target.value)}
+                    placeholder="What do you want to share on X?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={4}
+                    maxLength={280}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {xText.length}/280
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Media Section */}
@@ -662,351 +719,336 @@ export const CPDialog = ({
                 )}
               </div>
             </div>
+            {/* Media Selection Dialog */}
+            <Dialog
+              open={isMediaDialogOpen}
+              onOpenChange={setIsMediaDialogOpen}>
+              <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
+                <DialogHeader>
+                  <DialogTitle>Select Media</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="h-[400px] w-full rounded-md border p-4 dark:bg-secondDarkBackground dark:border-darkBorder">
+                  <div className="grid grid-cols-4 gap-4 p-2">
+                    {media
+                      .filter((item) => !item.isVideo)
+                      .map((item) => (
+                        <div
+                          key={item.url}
+                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${
+                            selectedImages.some((img) => img.url === item.url)
+                              ? "ring-2 ring-violet-500"
+                              : ""
+                          }`}
+                          onClick={() => handleImageSelect(item)}>
+                          <Image
+                            src={item.url}
+                            alt={item.name}
+                            width={200}
+                            height={200}
+                            className="object-cover w-full aspect-square"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      ))}
+                    {media
+                      .filter((item) => item.isVideo)
+                      .map((item) => (
+                        <div
+                          key={item.url}
+                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${
+                            selectedImages.some((img) => img.url === item.url)
+                              ? "ring-2 ring-violet-500"
+                              : ""
+                          }`}
+                          onClick={() => handleImageSelect(item)}>
+                          <video
+                            className="object-cover w-full aspect-square"
+                            preload="metadata">
+                            <source src={item.url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                              <FaPlay size={24} className="text-white" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+            {/* Thumbnail Picker Dialog */}
+            <Dialog
+              open={isThumbnailPickerOpen}
+              onOpenChange={setIsThumbnailPickerOpen}>
+              <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
+                <DialogHeader>
+                  <DialogTitle>Select Thumbnail</DialogTitle>
+                </DialogHeader>
+                {selectedVideo && (
+                  <VideoThumbnailPicker
+                    video={selectedVideo}
+                    onThumbnailCreated={(thumbnailUrl) => {
+                      setSelectedImages((prev) =>
+                        prev.map((item) =>
+                          item.url === selectedVideo.url
+                            ? { ...item, thumbnailUrl }
+                            : item
+                        )
+                      );
+                      setIsThumbnailPickerOpen(false);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
 
             {/* Facebook Video Type Selection */}
             {selectedPlatforms.includes("facebook") &&
               selectedImages.length === 1 &&
               selectedImages[0].isVideo && (
                 <div className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70 mb-2">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70 mb-3">
                     Facebook Video Type
                   </h3>
                   {videoDuration !== null && (
-                    <div className="mb-2 text-xs text-stone-600 dark:text-white/60">
-                      📹 Video duration: {videoDuration.toFixed(1)} seconds
+                    <div className="mb-3 text-xs text-stone-600 dark:text-white/60 bg-stone-50 dark:bg-stone-800/50 p-2 rounded">
+                      Video duration: {videoDuration.toFixed(1)} seconds
                     </div>
                   )}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <label
-                          className={`flex items-center gap-2 ${
-                            videoValidationErrors.length > 0
-                              ? "cursor-not-allowed opacity-50"
-                              : "cursor-pointer"
-                          }`}>
-                          <Checkbox
-                            checked={facebookVideoType === "reel"}
-                            disabled={videoValidationErrors.length > 0}
-                            onCheckedChange={(checked: boolean) =>
-                              setFacebookVideoType(checked ? "reel" : "default")
-                            }
-                          />
-                          <span className="text-xs">
-                            Post as <b>Reel</b> (uncheck for Video)
-                            {videoValidationErrors.length > 0 && (
-                              <span className="text-red-500 ml-1">
-                                - Video does not meet Reel requirements
-                              </span>
-                            )}
-                          </span>
-                        </label>
-                      </TooltipTrigger>
+
+                  <label
+                    className={`flex items-center gap-3 ${
+                      videoValidationErrors.length > 0
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }`}>
+                    <Checkbox
+                      checked={facebookVideoType === "reel"}
+                      disabled={videoValidationErrors.length > 0}
+                      onCheckedChange={(checked: boolean) =>
+                        setFacebookVideoType(checked ? "reel" : "default")
+                      }
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium">
+                        Post as <strong>Reel</strong>
+                      </span>
+                      <p className="text-xs text-stone-500 dark:text-white/60 mt-1">
+                        Uncheck for regular video post
+                      </p>
                       {videoValidationErrors.length > 0 && (
-                        <TooltipContent>
-                          <ul className="text-xs text-red-500 list-disc ml-4">
-                            {videoValidationErrors.map((err, idx) => (
-                              <li key={idx}>{err}</li>
-                            ))}
-                          </ul>
-                        </TooltipContent>
+                        <div className="text-xs text-red-500 mt-1 space-y-1">
+                          {videoValidationErrors.map((error, index) => (
+                            <div key={index}>• {error}</div>
+                          ))}
+                        </div>
                       )}
-                    </Tooltip>
-                  </TooltipProvider>
+                    </div>
+                  </label>
                 </div>
               )}
-
-            {/* Post Content */}
-            <Tabs defaultValue="default">
-              <TabsList>
-                <TabsTrigger value="default">Default Message</TabsTrigger>
-                <TabsTrigger value="x">X Message</TabsTrigger>
-              </TabsList>
-              <TabsContent value="default">
-                <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                    Post Content
-                  </h3>
-                  <p className="text-xs text-stone-500 dark:text-white/60">
-                    Write your message
-                  </p>
-                  <textarea
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    placeholder="What do you want to share?"
-                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
-                    rows={6}
-                  />
-                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
-                    {postText.length}/2200
-                  </div>
-                </div>
-              </TabsContent>
-              <TabsContent value="x">
-                <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                    X Post
-                  </h3>
-                  <p className="text-xs text-stone-500 dark:text-white/60">
-                    Special text for X post
-                  </p>
-                  <textarea
-                    value={xText}
-                    onChange={(e) => setXText(e.target.value)}
-                    placeholder="What do you want to share on X?"
-                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
-                    rows={6}
-                    maxLength={280}
-                  />
-                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
-                    {xText.length}/280
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
           </div>
 
-          {/* Right Column - Publishing Options */}
-          <div className="space-y-6 max-h-[calc(90vh-120px)] overflow-y-auto">
-            <div className="space-y-4 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-              <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+          {/* Action Buttons - Bottom on mobile, Right sidebar on desktop */}
+          <div className="lg:col-span-1 px-4 sm:px-6 lg:px-0 pb-4 sm:pb-6 space-y-4">
+            {/* Scheduling Section */}
+            <div className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+              <h3 className="text-sm font-medium text-stone-700 dark:text-white/70 mb-3">
                 Publishing Options
               </h3>
-              <p className="text-xs text-stone-500 dark:text-white/60">
-                Choose when to publish your content
-              </p>
 
               {/* Publish Options */}
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 p-3 border border-stone-200 dark:border-darkBorder rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-darkBorder">
+              <div className="space-y-3 mb-4">
+                <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
                     name="publishOption"
                     value="now"
                     checked={publishOption === "now"}
-                    onChange={() => {
-                      setPublishOption("now");
-                      setDate("");
-                    }}
-                    className="w-4 h-4 text-blue-500"
+                    onChange={(e) =>
+                      setPublishOption(e.target.value as "now" | "schedule")
+                    }
+                    className="text-violet-600 focus:ring-violet-500"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Post Now</span>
-                      <FiUpload className="w-4 h-4 text-stone-400" />
-                    </div>
+                  <div>
+                    <span className="text-sm font-medium">Publish now</span>
                     <p className="text-xs text-stone-500 dark:text-white/60">
-                      Publish immediately
+                      Post immediately
                     </p>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 border border-stone-200 dark:border-darkBorder rounded-lg cursor-pointer hover:bg-stone-50 dark:hover:bg-darkBorder">
+                <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
                     name="publishOption"
                     value="schedule"
                     checked={publishOption === "schedule"}
-                    onChange={() => setPublishOption("schedule")}
-                    className="w-4 h-4 text-blue-500"
+                    onChange={(e) =>
+                      setPublishOption(e.target.value as "now" | "schedule")
+                    }
+                    className="text-violet-600 focus:ring-violet-500"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Schedule</span>
-                      <FiCalendar className="w-4 h-4 text-stone-400" />
-                    </div>
+                  <div>
+                    <span className="text-sm font-medium">
+                      Schedule for later
+                    </span>
                     <p className="text-xs text-stone-500 dark:text-white/60">
-                      Choose date & time
+                      Choose a specific date and time
                     </p>
                   </div>
                 </label>
               </div>
 
-              {/* Schedule Options */}
+              {/* Scheduling Controls */}
               {publishOption === "schedule" && (
-                <div className="space-y-4 p-3 bg-stone-50 dark:bg-darkBorder rounded-lg">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-stone-700 dark:text-white/70 mb-2">
-                        <FiCalendar className="w-4 h-4" />
-                        Date
-                      </label>
-                      <input
-                        type="datetime-local"
-                        min={getMinScheduleDateTime(selectedTimeZone)}
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="w-full px-3 py-2 border dark:bg-darkButtons dark:border-darkBorder border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                      />
+                <div className="space-y-4 p-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg">
+                  {/* Current Time Display */}
+                  <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-white/60">
+                    <FiClock className="w-4 h-4" />
+                    <span>Current time: {currentTime}</span>
+                  </div>
+
+                  {/* Timezone Selection */}
+                  {/* <div className="space-y-2">
+                    <label className="text-sm font-medium text-stone-700 dark:text-white/70">
+                      Timezone
+                    </label>
+                    <select
+                      value={selectedTimeZone}
+                      onChange={(e) => setSelectedTimeZone(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-stone-200 dark:border-darkBorder dark:bg-darkButtons dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    >
+                      {sortedTimezones.map((tz) => (
+                        <option key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div> */}
+
+                  {/* Date/Time Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-stone-700 dark:text-white/70">
+                      Schedule Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      min={getMinScheduleDateTime(selectedTimeZone)}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full px-3 py-2 border dark:bg-darkButtons dark:border-darkBorder border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {date && (
+                    <div className="text-xs text-stone-600 dark:text-white/60 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                      <strong>Scheduled for:</strong>{" "}
+                      {formatScheduledDateTime()} ({selectedTimeZone})
                     </div>
-
-                    {date && (
-                      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                        <p className="text-xs text-blue-700 dark:text-blue-300">
-                          <strong>Scheduled for:</strong>{" "}
-                          {formatScheduledDateTime()}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="text-xs text-stone-500 dark:text-white/60 space-y-1">
-                    <p>
-                      📅 Posts must be scheduled at least 3 minutes in advance
-                    </p>
-                    <p>
-                      🌍 Time shown is in <strong>{selectedTimeZone}</strong>
-                    </p>
-                  </div>
+                  )}
                 </div>
               )}
+            </div>
+            <div className="sticky top-4 space-y-4">
+              <div className="p-4 border border-stone-200 dark:border-darkBorder rounded-lg bg-stone-50 dark:bg-stone-800/50">
+                <h3 className="text-sm font-medium text-stone-700 dark:text-white/70 mb-3">
+                  Ready to publish?
+                </h3>
 
-              {/* Save Draft Button */}
-              <button
-                type="button"
-                onClick={() => PostingHandler(false, true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-stone-300 dark:border-darkBorder text-stone-700 dark:text-white/70 hover:bg-stone-50 dark:hover:bg-darkBorder rounded-lg transition-colors">
-                <FiRefreshCcw className="w-4 h-4" />
-                Save Draft
-              </button>
+                {/* Form Validation Summary */}
+                <div className="space-y-2 mb-4 text-xs">
+                  <div
+                    className={`flex items-center gap-2 ${
+                      selectedPlatforms.length > 0
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-stone-500"
+                    }`}>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        selectedPlatforms.length > 0
+                          ? "bg-green-500"
+                          : "bg-stone-300"
+                      }`}
+                    />
+                    Platform selected ({selectedPlatforms.length})
+                  </div>
 
-              {/* Main Action Button */}
-              <div className="pt-2">
-                {publishOption === "now" ? (
+                  <div
+                    className={`flex items-center gap-2 ${
+                      selectedImages.length > 0 ||
+                      postText.trim() ||
+                      xText.trim()
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-stone-500"
+                    }`}>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        selectedImages.length > 0 ||
+                        postText.trim() ||
+                        xText.trim()
+                          ? "bg-green-500"
+                          : "bg-stone-300"
+                      }`}
+                    />
+                    Content added
+                  </div>
+
+                  {publishOption === "schedule" && (
+                    <div
+                      className={`flex items-center gap-2 ${
+                        date
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-stone-500"
+                      }`}>
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          date ? "bg-green-500" : "bg-stone-300"
+                        }`}
+                      />
+                      Schedule time set
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  {publishOption === "now" ? (
+                    <button
+                      onClick={() => PostingHandler(true, false)}
+                      disabled={!canPostNow || isPosting}
+                      className="w-full px-4 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium">
+                      {isPosting ? "Publishing..." : "Publish Now"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => PostingHandler(false, false)}
+                      disabled={!canSchedule || isPosting}
+                      className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium">
+                      {isPosting ? "Scheduling..." : "Schedule Post"}
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => PostingHandler(true, false)}
-                    disabled={!canPostNow || isPosting}
-                    className="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-800 text-white font-medium py-3 px-4 rounded-lg disabled:bg-blue-300 dark:disabled:bg-secondDarkBackground dark:disabled:border dark:disabled:border-darkBorder dark:disabled:cursor-not-allowed transition-colors">
-                    {isPosting ? "Publishing..." : "Post Now"}
+                    onClick={() => PostingHandler(false, true)}
+                    disabled={!isFormValid || isPosting}
+                    className="w-full px-4 py-2.5 border border-stone-300 dark:border-darkBorder text-stone-700 dark:text-white/70 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
+                    Save as Draft
                   </button>
-                ) : (
+
                   <button
-                    onClick={() => PostingHandler(false, false)}
-                    disabled={!canSchedule || isPosting}
-                    className="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg disabled:bg-slate-300 dark:disabled:bg-secondDarkBackground dark:disabled:border dark:disabled:border-darkBorder dark:disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
-                    <FiCalendar className="w-4 h-4" />
-                    {isPosting ? "Scheduling..." : "Schedule Post"}
+                    onClick={() => setOpen(false)}
+                    className="w-full px-4 py-2.5 text-stone-500 dark:text-white/60 hover:text-stone-700 dark:hover:text-white/80 transition-colors text-sm">
+                    Cancel
                   </button>
-                )}
+                </div>
               </div>
             </div>
-
-            {/* Timezone Selection */}
-            <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
-              <div className="flex items-center gap-2">
-                <FiGlobe className="text-stone-400 flex-shrink-0" />
-                <select
-                  value={selectedTimeZone}
-                  onChange={(e) => setSelectedTimeZone(e.target.value)}
-                  className="text-sm text-stone-700 bg-white dark:bg-darkButtons outline-none dark:text-white border border-stone-200 dark:border-darkBorder rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0 flex-1">
-                  {sortedTimezones.map(({ name, offset }) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-stone-500 ml-6">
-                <FiClock className="text-stone-400" />
-                <span>Current time: {currentTime}</span>
-              </div>
-            </div>
-
-            {/* Reset Button */}
-            <button
-              onClick={resetForm}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-red-600 dark:hover:bg-red-900/20 hover:bg-red-50 rounded transition-colors text-sm border border-red-200 dark:border-red-800">
-              <FiRefreshCcw size={16} />
-              Reset Form
-            </button>
           </div>
         </div>
-
-        {/* Media Selection Dialog */}
-        <Dialog open={isMediaDialogOpen} onOpenChange={setIsMediaDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
-            <DialogHeader>
-              <DialogTitle>Select Media</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="h-[400px] w-full rounded-md border p-4 dark:bg-secondDarkBackground dark:border-darkBorder">
-              <div className="grid grid-cols-4 gap-4 p-2">
-                {media
-                  .filter((item) => !item.isVideo)
-                  .map((item) => (
-                    <div
-                      key={item.url}
-                      className={`relative group cursor-pointer rounded-lg overflow-hidden ${
-                        selectedImages.some((img) => img.url === item.url)
-                          ? "ring-2 ring-violet-500"
-                          : ""
-                      }`}
-                      onClick={() => handleImageSelect(item)}>
-                      <Image
-                        src={item.url}
-                        alt={item.name}
-                        width={200}
-                        height={200}
-                        className="object-cover w-full aspect-square"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  ))}
-                {media
-                  .filter((item) => item.isVideo)
-                  .map((item) => (
-                    <div
-                      key={item.url}
-                      className={`relative group cursor-pointer rounded-lg overflow-hidden ${
-                        selectedImages.some((img) => img.url === item.url)
-                          ? "ring-2 ring-violet-500"
-                          : ""
-                      }`}
-                      onClick={() => handleImageSelect(item)}>
-                      <video
-                        className="object-cover w-full aspect-square"
-                        preload="metadata">
-                        <source src={item.url} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute inset-0 bg-black/20 hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                          <FaPlay size={24} className="text-white" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
-
-        {/* Thumbnail Picker Dialog */}
-        <Dialog
-          open={isThumbnailPickerOpen}
-          onOpenChange={setIsThumbnailPickerOpen}>
-          <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
-            <DialogHeader>
-              <DialogTitle>Select Thumbnail</DialogTitle>
-            </DialogHeader>
-            {selectedVideo && (
-              <VideoThumbnailPicker
-                video={selectedVideo}
-                onThumbnailCreated={(thumbnailUrl) => {
-                  setSelectedImages((prev) =>
-                    prev.map((item) =>
-                      item.url === selectedVideo.url
-                        ? { ...item, thumbnailUrl }
-                        : item
-                    )
-                  );
-                  setIsThumbnailPickerOpen(false);
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </DialogContent>
     </Dialog>
   );
