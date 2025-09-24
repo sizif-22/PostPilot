@@ -12,7 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@radix-ui/react-dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import router from "next/router";
 import React, { Suspense, useRef, useState } from "react";
 import { FiFolder, FiSun, FiMoon, FiLogOut, FiPlus } from "react-icons/fi";
@@ -48,7 +48,7 @@ export default function NavBar({
   return (
     <main className="dark:bg-darkBackground mb-2">
       {/* Header */}
-      <div className="dark:bg-secondDarkBackground px-4 py-3 flex items-center justify-between shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] sticky top-0 z-50">
+      <div className="dark:bg-secondDarkBackground px-4 py-3 flex items-center justify-between shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] sticky top-0">
         <div className="flex gap-2 items-center justify-center">
           <Sheet>
             <SheetTrigger className="lg:hidden">
@@ -80,7 +80,7 @@ export default function NavBar({
             {/* Notification Dropdown */}
             <div
               ref={notificationRef}
-              className={`absolute right-0 top-12 lg:z-[51] w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#1a1a1a] border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl transition-all duration-300 ${
+              className={`absolute right-0 top-12 z-[51] w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#1a1a1a] border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl transition-all duration-300 ${
                 !notificationBar && "hidden"
               }`}>
               <div className="p-3 border-b border-stone-200 dark:border-stone-700">
@@ -153,98 +153,103 @@ export default function NavBar({
 
           {/* User Menu */}
           <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className="rounded-full border-2 border-violet-200 dark:border-violet-800 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center hover:border-violet-400 dark:hover:border-violet-600 transition-colors">
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={"outline"}
+                className="rounded-full border-2 border-violet-200 dark:border-violet-800 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center hover:border-violet-400 dark:hover:border-violet-600 transition-colors">
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  className="size-8 rounded-full shrink-0 bg-violet-500 shadow object-cover"
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 mr-4" align="end">
+              {/* User Info Section */}
+              <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
+                <div className="flex items-center gap-3">
                   <img
                     src={user.avatar}
                     alt="avatar"
-                    className="size-8 rounded-full shrink-0 bg-violet-500 shadow object-cover"
+                    className="w-10 h-10 rounded-full bg-violet-500 shadow object-cover"
                   />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 bg-black dark:text-white mr-4" align="end">
-                {/* User Info Section */}
-                <div className="px-3 py-2 border-b  border-stone-200 dark:border-stone-700">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={user.avatar}
-                      alt="avatar"
-                      className="w-10 h-10 rounded-full bg-violet-500 shadow object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {user.email}
-                      </p>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                {/* Account Stats */}
-                <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Collections</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {user.channels.length}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-gray-600 dark:text-gray-400">Status</span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      user.isVerified 
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
-                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+              {/* Account Stats */}
+              <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Collections
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {user.channels.length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Status
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      user.isVerified
+                        ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
                     }`}>
-                      {user.isVerified ? 'Verified' : 'Pending'}
-                    </span>
-                  </div>
+                    {user.isVerified ? "Verified" : "Pending"}
+                  </span>
                 </div>
+              </div>
 
-                {/* Navigation */}
-                {user?.isVerified && (
-                  <DropdownMenuItem
-                    onClick={() => router.push("/collections")}
-                    className="px-3 py-2 cursor-pointer">
-                    <FiFolder className="w-4 h-4 mr-3" />
-                    <span>My Collections</span>
-                  </DropdownMenuItem>
-                )}
-                
-                {/* Theme Toggle */}
+              {/* Navigation */}
+              {user?.isVerified && (
                 <DropdownMenuItem
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  onClick={() => router.push("/collections")}
                   className="px-3 py-2 cursor-pointer">
-                  {theme === 'dark' ? (
-                    <>
-                      <FiSun className="w-4 h-4 mr-3" />
-                      <span>Light Mode</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiMoon className="w-4 h-4 mr-3" />
-                      <span>Dark Mode</span>
-                    </>
-                  )}
+                  <FiFolder className="w-4 h-4 mr-3" />
+                  <span>My Collections</span>
                 </DropdownMenuItem>
+              )}
 
-                <DropdownMenuSeparator />
+              {/* Theme Toggle */}
+              <DropdownMenuItem
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="px-3 py-2 cursor-pointer">
+                {theme === "dark" ? (
+                  <>
+                    <FiSun className="w-4 h-4 mr-3" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <FiMoon className="w-4 h-4 mr-3" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </DropdownMenuItem>
 
-                {/* Logout */}
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await logOut();
-                    window.location.reload();
-                  }}
-                  className="px-3 py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
-                  <FiLogOut className="w-4 h-4 mr-3" />
-                  <span>Sign Out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenuSeparator />
+
+              {/* Logout */}
+              <DropdownMenuItem
+                onClick={async () => {
+                  await logOut();
+                  window.location.reload();
+                }}
+                className="px-3 py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                <FiLogOut className="w-4 h-4 mr-3" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </main>

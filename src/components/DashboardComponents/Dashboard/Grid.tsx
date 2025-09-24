@@ -17,19 +17,24 @@ export const Grid = ({
   const { channel } = useChannel();
   return (
     <>
-      <div className="px-4 lg:grid gap-y-[1vh] gap-x-3 grid-cols-1 lg:grid-cols-3 pb-5">
+      <div className="px-4 lg:grid space-y-[1vh] gap-x-3 grid-cols-1 lg:grid-cols-3 pb-5">
+        <div className="lg:hidden">
+          <Platforms />
+        </div>
         <Upcoming media={media} />
         <div className="flex flex-col gap-2 h-full">
-        <Platforms />
-        {(channel?.authority == "Owner" ||
-          channel?.authority == "Contributor") && (
+          <div className="lg:block hidden">
+            <Platforms />
+          </div>
+          {(channel?.authority == "Owner" ||
+            channel?.authority == "Contributor") && (
             <Storage
-            storageLimit={storageLimit}
-            storageUsed={storageUsed}
-            filesCount={filesCount}
+              storageLimit={storageLimit}
+              storageUsed={storageUsed}
+              filesCount={filesCount}
             />
           )}
-          </div>
+        </div>
       </div>
     </>
   );

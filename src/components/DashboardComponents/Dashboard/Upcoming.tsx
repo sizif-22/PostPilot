@@ -93,7 +93,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
   );
 
   return (
-    <div className="col-span-2 row-span-3 border dark:border-darkBorder  shadow-sm dark:shadow-lg rounded-lg h-[81vh] bg-white dark:bg-transparent">
+    <div className="col-span-2 row-span-3 border dark:border-darkBorder  shadow-sm dark:shadow-lg rounded-lg lg:min-h-[81vh] min-h-[30vh] bg-white dark:bg-transparent">
       <div className="flex sticky z-10 top-0 items-center rounded-t-lg bg-white dark:bg-transparent justify-between px-6 py-4 border-b dark:border-darkBorder">
         <div className="flex items-center gap-2">
           <FiCalendar className="w-5 h-5 text-violet-500" />

@@ -259,7 +259,7 @@ export const Media = ({
               : cols === 3
               ? "grid-cols-3"
               : "grid-cols-4"
-          } px-8 py-4 gap-4 h-full`}>
+          } lg:px-8 px-2 py-4 gap-4 h-full`}>
           {[...Array(cols)].map((_, colIndex) => (
             <div key={colIndex} className="w-full h-fit pb-16 rounded-lg">
               {getColumnMediaItems(colIndex).map((item, index) => {
