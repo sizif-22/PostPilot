@@ -100,7 +100,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
           <h1 className="text-xl font-bold dark:text-white">Upcoming</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+          <div className="md:flex hidden items-center gap-2">
             <FiGlobe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <select
               value={selectedTimeZone}

@@ -141,7 +141,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
       {userChannel !== undefined ? (
         <ChannelContextProvider userChannel={userChannel}>
           <main className="dark:bg-darkBackground">
-            <div className="lg:hidden">
+            <div className="lg:hidden sticky top-0 z-[100]">
               <NavBar user={user} Callbackfunc={Navigation} route={route} />
             </div>
             <div className="lg:grid gap-4 lg:p-4 lg:grid-cols-[220px,_1fr]">
@@ -149,12 +149,13 @@ export default function ChannelDashboard({ id }: { id: string }) {
                 <Sidebar Callbackfunc={Navigation} route={route} />
               </div>
               {route === "Dashboard" ? (
-                <Dashboard
-                  storageLimit={500}
-                  media={media}
-                  storageUsed={storageUsed}
-                  filesCount={media.length}
-                />
+                // <Dashboard
+                //   storageLimit={500}
+                //   media={media}
+                //   storageUsed={storageUsed}
+                //   filesCount={media.length}
+                // />
+                <div></div>
               ) : route === "Analysis" ? (
                 <Analysis />
               ) : route === "Team" ? (

@@ -9,7 +9,7 @@ export const TopBar = ({ media }: { media: MediaItem[] }) => {
   const { channel } = useChannel();
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b dark:border-darkBorder px-4 py-3 h-16 mb-4 border-stone-200 sticky top-0 z-50 bg-white  dark:bg-secondDarkBackground transition-colors duration-300">
+    <div className="border-b dark:border-darkBorder px-4 py-3 h-16 mb-4 border-stone-200 sticky top-0 z-20 bg-white dark:bg-secondDarkBackground transition-colors duration-300">
       <div className="flex items-center justify-between py-0.5">
         <div>
           <span className="text-sm font-bold block text-gray-900 dark:text-gray-100 transition-colors">

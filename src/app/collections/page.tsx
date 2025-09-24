@@ -356,7 +356,7 @@ const Page = () => {
                 {/* Navigation */}
                 {user?.isVerified && (
                   <DropdownMenuItem
-                    onClick={() => router.push("/folders")}
+                    onClick={() => router.push("/collections")}
                     className="px-3 py-2 cursor-pointer">
                     <FiFolder className="w-4 h-4 mr-3" />
                     <span>My Collections</span>
