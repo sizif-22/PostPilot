@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { db } from "@/firebase/config";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Loading from "@/components/ui/Loading";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 import { encrypt } from "@/utils/encryption";
 import axios from "axios";
 import { refreshXFunc } from "./server-action";
+import { Channel } from "@/interfaces/Channel";
 
 interface XUserProfile {
   id: string;
@@ -105,7 +106,7 @@ export default function XCallbackPage() {
         refreshToken: encryptedRefreshToken,
         expiresIn: expiresIn,
         tokenExpiry: expiresIn
-          ? new Date(Date.now() + expiresIn * 1000).toISOString()
+          ? new Date(Date.now() + expiresIn * 1000)
           : null,
         userId: userProfile.id,
         isPersonal: true,
@@ -114,7 +115,15 @@ export default function XCallbackPage() {
       await updateDoc(doc(db, "Channels", channelId as string), {
         "socialMedia.x": socialMediaX,
       });
-      await refreshXFunc(channelId as string);
+
+      const channel = (await getDoc(doc(db, "Channels", channelId as string))).data() as Channel;
+
+      if (channel.socialMedia?.Tox !== true) {
+        await refreshXFunc(channelId as string);
+        await updateDoc(doc(db, "Channels", channelId as string), {
+          "socialMedia.Tox": true,
+        });
+      }
       router.push(`/connection/x/connect-v1`);
     } catch (error: any) {
       console.error("Error saving X profile:", error);

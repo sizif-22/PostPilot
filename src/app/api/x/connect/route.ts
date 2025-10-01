@@ -125,7 +125,7 @@ export async function GET(request: Request) {
       expires_in: tokenData.expires_in, // 7200 seconds (2 hours)
       token_type: tokenData.token_type,
       scope: tokenData.scope,
-      organizations: [], // X doesn't have organizations like LinkedIn
+      organizations: [], 
       user: {
         id: userData.data.id,
         name: userData.data.name,

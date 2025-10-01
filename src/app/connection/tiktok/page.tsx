@@ -2,10 +2,12 @@
 import { useEffect } from "react";
 import Loading from "@/components/ui/Loading";
 import { db } from "@/firebase/config";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { encrypt } from "@/utils/encryption";
+import { refreshXFunc } from "@/app/connection/x/server-action";
+import { Channel } from "@/interfaces/Channel";
 
 const TiktokPage = () => {
   const router = useRouter();
@@ -54,7 +56,9 @@ const TiktokPage = () => {
         if (!tokenResponse.ok) {
           const errorBody = await tokenResponse.text();
           console.error("Token exchange failed:", errorBody);
-          throw new Error(`Failed to get access token: ${tokenResponse.status}`);
+          throw new Error(
+            `Failed to get access token: ${tokenResponse.status}`
+          );
         }
 
         const tokenData = await tokenResponse.json();
@@ -81,7 +85,7 @@ const TiktokPage = () => {
         if (!userInfoResponse.ok) {
           const errorBody = await userInfoResponse.text();
           console.error("User info error:", errorBody);
-          
+
           // If user info fails, still save the connection with available data
           await updateDoc(doc(db, "Channels", id as string), {
             "socialMedia.tiktok": {
@@ -94,7 +98,7 @@ const TiktokPage = () => {
               scope: scope,
             },
           });
-          
+
           console.log("TikTok connected successfully (without user info)");
           return;
         }
@@ -120,12 +124,21 @@ const TiktokPage = () => {
             scope: scope,
           },
         });
+        const channel = (
+          await getDoc(doc(db, "Channels", id as string))
+        ).data() as Channel;
+
+        if (channel.socialMedia?.Tox !== true) {
+          await refreshXFunc(id as string);
+          await updateDoc(doc(db, "Channels", id as string), {
+            "socialMedia.Tox": true,
+          });
+        }
 
         console.log("TikTok connected successfully");
 
         // Clean up cookies
         Cookies.remove("csrfState");
-
       } catch (error: any) {
         console.error("TikTok authentication error:", error);
         // Even on error, redirect back to channels page

@@ -39,6 +39,7 @@ export interface tiktok {
   username: string;
   openId: string;
   tokenExpiry?: string;
+  refreshToken?: string;
   remainingTime?: number;
 }
 export interface LinkedinChannel {
@@ -67,6 +68,7 @@ export interface xChannel {
 }
 export interface Channel extends ChannelBrief {
   socialMedia?: {
+    Tox?: boolean;
     facebook?: facebookChannel;
     instagram?: instagramChannel;
     tiktok?: tiktok;
