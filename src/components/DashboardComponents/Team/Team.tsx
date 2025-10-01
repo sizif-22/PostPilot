@@ -5,7 +5,6 @@ import {
   FiMail,
   FiUserPlus,
   FiClock,
-  FiRefreshCw,
   FiAlertCircle,
 } from "react-icons/fi";
 import { Command } from "cmdk";
@@ -30,10 +29,10 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { IoSearch } from "react-icons/io5";
 import { Input } from "@/components/ui/input";
-import { FaLessThanEqual } from "react-icons/fa6";
 import { isEmail } from "validator";
 import Image from "next/image";
 import axios from "axios";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface MemberDialogProps {
   open: boolean;
@@ -179,7 +178,7 @@ const MemberDialog = ({
                     </span>
                   )}
                   <form
-                    className="grid grid-cols-5 gap-2"
+                    className="flex flex-col sm:flex-row gap-2"
                     onSubmit={async (e) => {
                       e.preventDefault();
                       setShowResult(false);
@@ -207,7 +206,7 @@ const MemberDialog = ({
                         setSearchQuery(e.target.value.toLowerCase());
                         setShowResult(false);
                       }}
-                      className="col-span-4 p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
+                      className="w-full p-2 border border-gray-300 dark:border-darkBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-secondDarkBackground dark:text-white"
                       placeholder="Search by email"
                     />
                     <Button type="submit" className="h-full p-2">
@@ -305,7 +304,7 @@ const MemberDialog = ({
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-stone-50 dark:bg-secondDarkBackground border-t border-stone-200 dark:border-darkBorder flex justify-end gap-2">
+        <div className="px-6 py-4 bg-stone-50 dark:bg-secondDarkBackground border-t border-stone-200 dark:border-darkBorder flex flex-col sm:flex-row justify-end gap-2">
           <button
             onClick={() => {
               setEmailFormatError(false);
@@ -315,12 +314,12 @@ const MemberDialog = ({
               setSearchQuery("");
               onOpenChange(false);
             }}
-            className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-darkBorder rounded-lg transition-colors">
+            className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-gray-400 hover:bg-stone-200 dark:hover:bg-darkBorder rounded-lg transition-colors w-full sm:w-auto">
             Cancel
           </button>
           <button
             onClick={() => handleSubmit(action)}
-            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700 rounded-lg transition-colors">
+            className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700 rounded-lg transition-colors w-full sm:w-auto">
             {member ? "Update Role" : "Send Invitation"}
           </button>
         </div>
@@ -337,6 +336,8 @@ export const Team = () => {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeletingMember, setIsDeletingMember] = useState(false);
   const { user } = useUser();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const handleDeleteMember = async () => {
     setIsDeletingMember(true);
     if (channel) {
@@ -401,6 +402,77 @@ export const Team = () => {
     return `${diffInDays}d ago`;
   };
 
+  const MemberCard = ({ member }: { member: TeamMember }) => (
+    <div className="bg-white dark:bg-darkButtons rounded-lg p-4 flex flex-col gap-4 border border-stone-200 dark:border-stone-800">
+      <div className="flex items-center gap-3">
+        <div className="w-10 bg-violet-500 h-10 rounded-full overflow-hidden flex-shrink-0">
+          <img
+            src={
+              member.avatar ||
+              `https://api.dicebear.com/9.x/notionists/svg?seed=${member.email}`
+            }
+            width={40}
+            height={40}
+            className="object-cover w-full h-full"
+            alt="avatar"
+          />
+        </div>
+        <div>
+          <span
+            className={`font-semibold ${
+              member.status === "pending"
+                ? "text-stone-500 dark:text-gray-400"
+                : "dark:text-white"
+            }`}>
+            {member.name}
+          </span>
+          <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-gray-400">
+            <FiMail className="w-4 h-4" />
+            <span>{member.email}</span>
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <span className="text-sm text-stone-500 dark:text-gray-400">
+            Role
+          </span>
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
+              member.role
+            )}`}>
+            {member.role}
+          </div>
+        </div>
+        <div>
+          <span className="text-sm text-stone-500 dark:text-gray-400">
+            Status
+          </span>
+          <div>{getStatusBadge(member.status)}</div>
+        </div>
+      </div>
+      {channel?.authority === "Owner" && member.role !== "Owner" && (
+        <div className="flex items-center justify-end gap-2 border-t border-stone-200 dark:border-stone-700 pt-4">
+          <button
+            onClick={() => setEditingMember(member)}
+            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-md flex items-center gap-2">
+            <FiEdit2 className="w-4 h-4" />
+            <span>Edit</span>
+          </button>
+          <button
+            onClick={() => {
+              setMemberOnDelete(member);
+              setShowDeleteConfirm(true);
+            }}
+            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded-md flex items-center gap-2">
+            <FiTrash2 className="w-4 h-4" />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-white dark:bg-secondDarkBackground h-[calc(100vh-2rem)] overflow-y-auto relative rounded-lg pb-4 shadow-lg dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)] border border-stone-200 dark:border-darkBorder transition-colors duration-300">
       <div className="flex p-4 h-16 justify-between items-center border-b border-stone-200 dark:border-darkBorder">
@@ -412,121 +484,131 @@ export const Team = () => {
             onClick={() => setIsAddingMember(true)}
             className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:hover:bg-darkBorder transition-colors hover:bg-violet-100 dark:hover:bg-violet-950 hover:text-violet-700 dark:hover:text-violet-300 px-3 py-1.5 rounded">
             <FiUserPlus className="text-violet-500" />
-            <span className="dark:text-white">Add Member</span>
+            <span className="dark:text-white hidden sm:inline">Add Member</span>
           </button>
         )}
       </div>
 
-      <div className="py-6 px-16">
-        <div className="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-stone-50 dark:bg-darkButtons border-b border-stone-200 dark:border-stone-800">
-              <tr>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-                  Name
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-                  Email
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-                  Role
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-                  Status
-                </th>
-                {channel?.authority == "Owner" && (
-                  <th className="text-right py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-                    Actions
+      <div className="py-6 px-4 sm:px-6 md:px-8 lg:px-16">
+        {isMobile ? (
+          <div className="grid grid-cols-1 gap-4">
+            {channel?.TeamMembers.map((member) => (
+              <MemberCard key={member.email} member={member} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-stone-50 dark:bg-darkButtons border-b border-stone-200 dark:border-stone-800">
+                <tr>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
+                    Name
                   </th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {channel?.TeamMembers.map((member) => (
-                <tr
-                  key={member.email}
-                  className="border-b border-stone-200 dark:border-stone-800">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-5">
-                      <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                        <span className="flex items-center justify-center rounded-full border-2 border-violet-900">
-                          <img
+                  <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
+                    Email
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
+                    Role
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
+                    Status
+                  </th>
+                  {channel?.authority == "Owner" && (
+                    <th className="text-right py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">
+                      Actions
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {channel?.TeamMembers.map((member) => (
+                  <tr
+                    key={member.email}
+                    className="border-b border-stone-200 dark:border-stone-800">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                          <Image
                             src={
                               member.avatar ||
                               "https://api.dicebear.com/9.x/notionists/svg?seed=5"
                             }
-                            className="size-10 rounded-full shrink-0 bg-violet-500 shadow"
+                            width={32}
+                            height={32}
+                            className="object-cover w-full h-full"
                             alt="avatar"
                           />
+                        </div>
+                        <span
+                          className={
+                            member.status === "pending"
+                              ? "text-stone-500 dark:text-gray-400"
+                              : "dark:text-white"
+                          }>
+                          {member.name}
                         </span>
                       </div>
-                      <span
-                        className={
-                          member.status === "pending"
-                            ? "text-stone-500 dark:text-gray-400"
-                            : "dark:text-white"
-                        }>
-                        {member.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <FiMail className="w-4 h-4 text-stone-400 dark:text-gray-400" />
-                      <span
-                        className={
-                          member.status === "pending"
-                            ? "text-stone-500 dark:text-gray-400"
-                            : "dark:text-white"
-                        }>
-                        {member.email}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
-                        member.role
-                      )}`}>
-                      {member.role}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">{getStatusBadge(member.status)}</td>
-                  {channel.authority == "Owner" && (
-                    <td className="py-3 px-4 text-right">
-                      {member.role !== "Owner" && (
-                        <div className="flex items-center justify-end gap-2">
-                          {
-                            <>
-                              <button
-                                onClick={() => setEditingMember(member)}
-                                className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded">
-                                <FiEdit2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setMemberOnDelete(member);
-                                  setShowDeleteConfirm(true);
-                                }}
-                                className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded">
-                                <FiTrash2 className="w-4 h-4" />
-                              </button>
-                            </>
-                          }
-                        </div>
-                      )}
                     </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <FiMail className="w-4 h-4 text-stone-400 dark:text-gray-400" />
+                        <span
+                          className={
+                            member.status === "pending"
+                              ? "text-stone-500 dark:text-gray-400"
+                              : "dark:text-white"
+                          }>
+                          {member.email}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                          member.role
+                        )}`}>
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      {getStatusBadge(member.status)}
+                    </td>
+                    {channel.authority == "Owner" && (
+                      <td className="py-3 px-4 text-right">
+                        {member.role !== "Owner" && (
+                          <div className="flex items-center justify-end gap-2">
+                            {
+                              <>
+                                <button
+                                  onClick={() => setEditingMember(member)}
+                                  className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded">
+                                  <FiEdit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setMemberOnDelete(member);
+                                    setShowDeleteConfirm(true);
+                                  }}
+                                  className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded">
+                                  <FiTrash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            }
+                          </div>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center">
+        <div className="fixed inset-0 bg-stone-950/50 dark:bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-secondDarkBackground rounded-lg p-6 max-w-md w-full mx-4 shadow-xl dark:shadow-[0_4px_32px_0_rgba(0,0,0,0.45)]">
             <div className="flex items-start gap-4">
               <FiAlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
