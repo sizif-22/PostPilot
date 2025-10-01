@@ -1,4 +1,3 @@
-
 import { Channel } from "@/interfaces/Channel";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase/config";
@@ -55,13 +54,24 @@ export const checkTokenExpiration = async (channel: Channel) => {
 
   for (const platformName in socialMedia) {
     const platform = socialMedia[platformName as keyof typeof socialMedia];
-    if (platform && 'tokenExpiry' in platform && platform.tokenExpiry) {
+    if (
+      platform &&
+      typeof platform === "object" &&
+      "tokenExpiry" in platform &&
+      platform.tokenExpiry
+    ) {
       const tokenExpiry = new Date(platform.tokenExpiry).getTime();
       if (tokenExpiry < now) {
         await sendExpirationEmail(user.email, platformName);
-        delete updatedSocialMedia[platformName as keyof typeof updatedSocialMedia];
+        delete updatedSocialMedia[
+          platformName as keyof typeof updatedSocialMedia
+        ];
       } else {
-        (updatedSocialMedia[platformName as keyof typeof updatedSocialMedia] as any).remainingTime = tokenExpiry - now;
+        (
+          updatedSocialMedia[
+            platformName as keyof typeof updatedSocialMedia
+          ] as any
+        ).remainingTime = tokenExpiry - now;
       }
     }
   }
@@ -75,4 +85,3 @@ export const checkTokenExpiration = async (channel: Channel) => {
     socialMedia: updatedSocialMedia,
   };
 };
-
