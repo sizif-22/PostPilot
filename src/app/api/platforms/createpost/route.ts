@@ -8,6 +8,7 @@ import { PostOnX } from "../functions/x";
 import { PostOnLinkedIn } from "../functions/linkedin";
 import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
+import { PostOnYouTube } from "../functions/youtube";
 import { transporter } from "../../../../utils/smtp.config";
 
 export async function POST(request: Request) {
@@ -287,6 +288,73 @@ export async function POST(request: Request) {
                 console.error("Error posting to X:", error);
                 return {
                   platform: "x",
+                  success: false,
+                  message:
+                    error instanceof Error ? error.message : "Error occurred",
+                };
+              }
+            }
+            case "youtube": {
+              try {
+                if (!channel.socialMedia?.youtube?.accessToken)
+                  throw new Error("YouTube access_token not found");
+                
+                // We need to handle the case where the token might be expired
+                let accessToken = await decrypt(channel.socialMedia.youtube.accessToken);
+                
+                // Check if we have refresh token and if access token is expired
+                if (channel.socialMedia.youtube.refreshToken && channel.socialMedia.youtube.tokenExpiry) {
+                  const expiryDate = new Date(channel.socialMedia.youtube.tokenExpiry);
+                  const now = new Date();
+                  
+                  if (now >= expiryDate) {
+                    // Token is expired, refresh it
+                    const refreshResponse = await fetch("/api/youtube/refresh", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        refreshToken: await decrypt(channel.socialMedia.youtube.refreshToken),
+                      }),
+                    });
+                    
+                    if (refreshResponse.ok) {
+                      const newTokenData = await refreshResponse.json();
+                      accessToken = newTokenData.accessToken;
+                      
+                      // Update the channel with new tokens
+                      await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
+                        "socialMedia.youtube.accessToken": await encrypt(newTokenData.accessToken),
+                        "socialMedia.youtube.tokenExpiry": newTokenData.tokenExpiry,
+                      });
+                    } else {
+                      console.error("Failed to refresh YouTube token");
+                      throw new Error("YouTube token refresh failed");
+                    }
+                  }
+                }
+
+                const result = await PostOnYouTube({
+                  accessToken: accessToken,
+                  title: post.title || "Untitled Video",
+                  description: post.message || "No description",
+                  privacy: "public", // Default to public, could be configurable
+                  media: post.media || [],
+                  scheduleTime: post.isScheduled && post.date 
+                    ? new Date(post.date.toDate()).toISOString() 
+                    : undefined,
+                });
+
+                return {
+                  platform: "youtube",
+                  success: true,
+                  result,
+                };
+              } catch (error) {
+                console.error("Error posting to YouTube:", error);
+                return {
+                  platform: "youtube",
                   success: false,
                   message:
                     error instanceof Error ? error.message : "Error occurred",

@@ -63,6 +63,8 @@ function deduplicatePages(
   return allPages;
 }
 
+// This page is specifically for Facebook connection - we'll create a general connection selector page
+// For now, we'll redirect to the main connection page which should handle multiple platforms
 const Connection = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);

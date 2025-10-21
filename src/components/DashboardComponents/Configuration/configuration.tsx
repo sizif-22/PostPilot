@@ -22,6 +22,7 @@ export const Configuration = () => {
   const isTikTokConnected = channel?.socialMedia?.tiktok;
   const isLinkedInConnected = channel?.socialMedia?.linkedin;
   const isXConnected = channel?.socialMedia?.x;
+  const isYouTubeConnected = channel?.socialMedia?.youtube;
   const [nameInput, setNameInput] = useState<string | undefined>(channel?.name);
   const { addNotification } = useNotification();
   const [descInput, setDescInput] = useState<string | undefined>(
@@ -131,6 +132,24 @@ export const Configuration = () => {
     window.location.href = authUrl;
   };
 
+  const handleYouTubeConnect = () => {
+    Cookies.set("currentChannel", id as string);
+    const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const REDIRECT_URI = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL;
+    // Required scopes for YouTube upload and management
+    const SCOPE = [
+      "https://www.googleapis.com/auth/youtube.upload",
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtubepartner"
+    ].join(" ");
+    
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI!
+    )}&scope=${encodeURIComponent(SCOPE)}&access_type=offline&prompt=consent`;
+    
+    window.location.href = authUrl;
+  };
+
   const confirmDelete = async () => {
     if (channel?.TeamMembers && channel.id) {
       addNotification({
@@ -215,6 +234,16 @@ export const Configuration = () => {
       isConnected: isXConnected,
       connectedInfo: isXConnected
         ? `Connected to: ${isXConnected?.name}`
+        : null,
+    },
+    {
+      name: "YouTube",
+      html: <span>YouTube</span>,
+      description: "Connect your YouTube account to enable video posting and scheduling",
+      connect: handleYouTubeConnect,
+      isConnected: isYouTubeConnected,
+      connectedInfo: isYouTubeConnected
+        ? `Connected to: ${isYouTubeConnected?.name}`
         : null,
     },
   ];

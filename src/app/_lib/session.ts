@@ -5,12 +5,12 @@ import { serverApp } from "@/firebase-admin/config";
 
 export async function login(idToken: string) {
   try {
-    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    const expiresIn = 60 * 60 * 1000; // 1 hour in milliseconds
     const sessionCookie = await getAuth(serverApp).createSessionCookie(
       idToken,
       {
         expiresIn,
-      }
+      },
     );
     console.log("Session cookie created successfully");
 

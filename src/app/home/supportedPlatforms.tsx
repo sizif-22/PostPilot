@@ -5,6 +5,7 @@ import {
   BsLinkedin,
   BsInstagram,
   BsTiktok,
+  BsYoutube,
 } from "react-icons/bs";
 export const SupportedPlatforms = () => {
   const platforms = [
@@ -13,6 +14,7 @@ export const SupportedPlatforms = () => {
     { name: "Facebook", logo: <BsFacebook size={22} /> },
     { name: "LinkedIn", logo: <BsLinkedin size={22} /> },
     { name: "TikTok", logo: <BsTiktok size={22} /> },
+    { name: "YouTube", logo: <BsYoutube size={22} /> },
   ];
   return (
     <section className="py-16 sm:py-24 px-6">

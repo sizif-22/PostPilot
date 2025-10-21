@@ -19,15 +19,15 @@ export async function POST(request: Request) {
     if (channel == undefined) {
       return NextResponse.json(
         { message: "Channel not found" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (channel.socialMedia?.x) {
-      await refreshX(channel);
+      await refreshX(channel, channelId);
     }
     if (channel.socialMedia?.tiktok) {
-      await refreshTiktok(channel);
+      // await refreshTiktok(channel);
     }
 
     return NextResponse.json({ message: "Token refreshed" });
@@ -35,17 +35,17 @@ export async function POST(request: Request) {
     console.error("Error refreshing token:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-const refreshX = async (channel: Channel) => {
+const refreshX = async (channel: Channel, channelIdParam?: string) => {
   const encryptedRefreshToken = channel.socialMedia?.x?.refreshToken;
   if (!encryptedRefreshToken) {
     return NextResponse.json(
       { error: "Refresh token is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -54,7 +54,7 @@ const refreshX = async (channel: Channel) => {
   if (!refreshToken) {
     return NextResponse.json(
       { error: "Refresh token is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -65,12 +65,12 @@ const refreshX = async (channel: Channel) => {
     client_id: CLIENT_ID,
   });
 
-  const refreshRes = await fetch("https://api.twitter.com/2/oauth2/token", {
+  const refreshRes = await fetch("https://api.x.com/2/oauth2/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${Buffer.from(
-        `${CLIENT_ID}:${CLIENT_SECRET}`
+        `${CLIENT_ID}:${CLIENT_SECRET}`,
       ).toString("base64")}`,
     },
     body: refreshParams,
@@ -87,7 +87,7 @@ const refreshX = async (channel: Channel) => {
           refreshData.error ||
           "Failed to refresh access token",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -96,14 +96,14 @@ const refreshX = async (channel: Channel) => {
   if (!currentX) {
     return NextResponse.json(
       { error: "X profile not found in channel" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // Encrypt new tokens
   const encryptedAccessToken: string = await encrypt(refreshData.access_token);
   const encryptedRefreshTokenValue: string = await encrypt(
-    refreshData.refresh_token
+    refreshData.refresh_token,
   );
 
   // Prepare updated socialMedia.x object
@@ -113,12 +113,13 @@ const refreshX = async (channel: Channel) => {
     refreshToken: encryptedRefreshTokenValue,
     expiresIn: refreshData.expires_in,
     tokenExpiry: refreshData.expires_in
-      ? new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
+      ? new Date(Date.now() + refreshData.expires_in * 1000)
       : null,
   };
 
   // Update Firestore with new tokens
-  await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
+  const targetId = channelIdParam ?? channel.id;
+  await fs.updateDoc(fs.doc(db, "Channels", targetId), {
     "socialMedia.x": updatedSocialMediaX,
   });
   return NextResponse.json({ message: "X token refreshed" });
@@ -129,14 +130,14 @@ const refreshTiktok = async (channel: Channel) => {
   if (!encryptedRefreshToken) {
     return NextResponse.json(
       { error: "Refresh token is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const refreshToken: string = await decrypt(encryptedRefreshToken);
   if (!refreshToken) {
     return NextResponse.json(
       { error: "Refresh token is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY!;
@@ -155,7 +156,7 @@ const refreshTiktok = async (channel: Channel) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-    }
+    },
   );
 
   const refreshData = refreshRes.data;
@@ -169,14 +170,14 @@ const refreshTiktok = async (channel: Channel) => {
           refreshData.error ||
           "Failed to refresh access token",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // Encrypt new tokens
   const encryptedAccessToken: string = await encrypt(refreshData.access_token);
   const encryptedRefreshTokenValue: string = await encrypt(
-    refreshData.refresh_token
+    refreshData.refresh_token,
   );
 
   // Prepare updated socialMedia.x object

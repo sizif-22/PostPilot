@@ -66,6 +66,18 @@ export interface xChannel {
   v1aAccessToken?: string;
   v1aAccessSecret?: string;
 }
+export interface youtubeChannel {
+  name: string;
+  id: string;
+  accessToken: string;
+  refreshToken?: string;
+  tokenExpiry?: string;
+  username?: string;
+  channelUrl?: string;
+  tokenType?: string;
+  scope?: string;
+  remainingTime?: number;
+}
 export interface Channel extends ChannelBrief {
   socialMedia?: {
     Tox?: boolean;
@@ -74,6 +86,7 @@ export interface Channel extends ChannelBrief {
     tiktok?: tiktok;
     linkedin?: LinkedinChannel;
     x?: xChannel;
+    youtube?: youtubeChannel;
   };
   posts: { [postId: string]: Post };
   TeamMembers: TeamMember[];
