@@ -6,7 +6,7 @@ import { PostOnInstagram } from "../functions/instagram";
 import { PostOnFacebook } from "../functions/facebook";
 import { PostOnX } from "../functions/x";
 import { PostOnLinkedIn } from "../functions/linkedin";
-import { decrypt, isValidEncryptedFormat } from "@/utils/encryption";
+import { decrypt, isValidEncryptedFormat, encrypt } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
 import { PostOnYouTube } from "../functions/youtube";
 import { transporter } from "../../../../utils/smtp.config";
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     if (!channel) {
       return NextResponse.json(
         { message: "Channel not found" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     if (!post) {
       return NextResponse.json(
         { message: "Post Not found or has been deleted" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { message: "No platforms specified for this post" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       console.error("Invalid media:", post.media);
       return NextResponse.json(
         { message: "Invalid image URLs in post" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
                   throw new Error("Facebook access_token not found");
                 await PostOnFacebook({
                   accessToken: await decrypt(
-                    channel.socialMedia?.facebook?.accessToken
+                    channel.socialMedia?.facebook?.accessToken,
                   ),
                   pageId: channel.socialMedia?.facebook?.id,
                   media: post.media,
@@ -118,14 +118,14 @@ export async function POST(request: Request) {
                   channel.socialMedia?.instagram?.pageAccessToken;
                 if (!instagramAccessToken || !post.media) {
                   throw new Error(
-                    "Instagram access token or image URLs missing"
+                    "Instagram access token or image URLs missing",
                   );
                 }
                 if (!channel.socialMedia?.instagram?.instagramId)
                   throw new Error("Instagram access_token not found.");
                 const result = await PostOnInstagram({
                   accessToken: await decrypt(
-                    channel.socialMedia.instagram.pageAccessToken
+                    channel.socialMedia.instagram.pageAccessToken,
                   ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
                   message: post.message,
@@ -155,12 +155,12 @@ export async function POST(request: Request) {
                   !channel.socialMedia.tiktok.openId
                 ) {
                   throw new Error(
-                    "Tiktok access token, image or openId URLs missing"
+                    "Tiktok access token, image or openId URLs missing",
                   );
                 }
                 const result = await PostOnTiktok({
                   accessToken: await decrypt(
-                    channel.socialMedia.tiktok.accessToken
+                    channel.socialMedia.tiktok.accessToken,
                   ),
                   openId: channel.socialMedia.tiktok.openId,
                   message: post.message,
@@ -197,13 +197,13 @@ export async function POST(request: Request) {
                 if (isValidEncryptedFormat(linkedinToken)) {
                   // Token is properly encrypted, decrypt it
                   console.log(
-                    "LinkedIn token is in encrypted format, decrypting..."
+                    "LinkedIn token is in encrypted format, decrypting...",
                   );
                   decryptedAccessToken = await decrypt(linkedinToken);
                 } else {
                   // Token is not in the expected format - treat as plain token
                   console.log(
-                    "LinkedIn token is not in expected encrypted format, treating as plain token"
+                    "LinkedIn token is not in expected encrypted format, treating as plain token",
                   );
 
                   // Check if it looks like a valid LinkedIn access token
@@ -213,11 +213,11 @@ export async function POST(request: Request) {
                   ) {
                     decryptedAccessToken = linkedinToken;
                     console.log(
-                      "Using LinkedIn token as-is (appears to be plain access token)"
+                      "Using LinkedIn token as-is (appears to be plain access token)",
                     );
                   } else {
                     throw new Error(
-                      "LinkedIn access token format is not recognized - please reconnect your LinkedIn account"
+                      "LinkedIn access token format is not recognized - please reconnect your LinkedIn account",
                     );
                   }
                 }
@@ -252,18 +252,32 @@ export async function POST(request: Request) {
             case "x": {
               try {
                 const xSocialMedia = channel.socialMedia?.x;
-                if (!xSocialMedia?.accessToken || !xSocialMedia.refreshToken || !xSocialMedia.tokenExpiry) {
-                  throw new Error("X credentials (accessToken, refreshToken, tokenExpiry) are missing.");
+                if (
+                  !xSocialMedia?.accessToken ||
+                  !xSocialMedia.refreshToken ||
+                  !xSocialMedia.tokenExpiry
+                ) {
+                  throw new Error(
+                    "X credentials (accessToken, refreshToken, tokenExpiry) are missing.",
+                  );
                 }
 
                 if (!isValidEncryptedFormat(xSocialMedia.accessToken)) {
-                  throw new Error("X access token is not in a valid encrypted format.");
+                  throw new Error(
+                    "X access token is not in a valid encrypted format.",
+                  );
                 }
-                
-                const decryptedAccessToken = await decrypt(xSocialMedia.accessToken);
 
-                const decryptedV1aAccessToken = xSocialMedia.v1aAccessToken ? await decrypt(xSocialMedia.v1aAccessToken) : undefined;
-                const decryptedV1aAccessSecret = xSocialMedia.v1aAccessSecret ? await decrypt(xSocialMedia.v1aAccessSecret) : undefined;
+                const decryptedAccessToken = await decrypt(
+                  xSocialMedia.accessToken,
+                );
+
+                const decryptedV1aAccessToken = xSocialMedia.v1aAccessToken
+                  ? await decrypt(xSocialMedia.v1aAccessToken)
+                  : undefined;
+                const decryptedV1aAccessSecret = xSocialMedia.v1aAccessSecret
+                  ? await decrypt(xSocialMedia.v1aAccessSecret)
+                  : undefined;
 
                 const result = await PostOnX({
                   accessToken: decryptedAccessToken,
@@ -298,35 +312,50 @@ export async function POST(request: Request) {
               try {
                 if (!channel.socialMedia?.youtube?.accessToken)
                   throw new Error("YouTube access_token not found");
-                
+
                 // We need to handle the case where the token might be expired
-                let accessToken = await decrypt(channel.socialMedia.youtube.accessToken);
-                
+                let accessToken = await decrypt(
+                  channel.socialMedia.youtube.accessToken,
+                );
+
                 // Check if we have refresh token and if access token is expired
-                if (channel.socialMedia.youtube.refreshToken && channel.socialMedia.youtube.tokenExpiry) {
-                  const expiryDate = new Date(channel.socialMedia.youtube.tokenExpiry);
+                if (
+                  channel.socialMedia.youtube.refreshToken &&
+                  channel.socialMedia.youtube.tokenExpiry
+                ) {
+                  const expiryDate = new Date(
+                    channel.socialMedia.youtube.tokenExpiry,
+                  );
                   const now = new Date();
-                  
+
                   if (now >= expiryDate) {
                     // Token is expired, refresh it
-                    const refreshResponse = await fetch("/api/youtube/refresh", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
+                    const refreshResponse = await fetch(
+                      "/api/youtube/refresh",
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          refreshToken: await decrypt(
+                            channel.socialMedia.youtube.refreshToken,
+                          ),
+                        }),
                       },
-                      body: JSON.stringify({
-                        refreshToken: await decrypt(channel.socialMedia.youtube.refreshToken),
-                      }),
-                    });
-                    
+                    );
+
                     if (refreshResponse.ok) {
                       const newTokenData = await refreshResponse.json();
                       accessToken = newTokenData.accessToken;
-                      
+
                       // Update the channel with new tokens
                       await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
-                        "socialMedia.youtube.accessToken": await encrypt(newTokenData.accessToken),
-                        "socialMedia.youtube.tokenExpiry": newTokenData.tokenExpiry,
+                        "socialMedia.youtube.accessToken": await encrypt(
+                          newTokenData.accessToken,
+                        ),
+                        "socialMedia.youtube.tokenExpiry":
+                          newTokenData.tokenExpiry,
                       });
                     } else {
                       console.error("Failed to refresh YouTube token");
@@ -341,9 +370,10 @@ export async function POST(request: Request) {
                   description: post.message || "No description",
                   privacy: "public", // Default to public, could be configurable
                   media: post.media || [],
-                  scheduleTime: post.isScheduled && post.date 
-                    ? new Date(post.date.toDate()).toISOString() 
-                    : undefined,
+                  scheduleTime:
+                    post.isScheduled && post.date
+                      ? new Date(post.date.toDate()).toISOString()
+                      : undefined,
                 });
 
                 return {
@@ -367,7 +397,7 @@ export async function POST(request: Request) {
         } catch (platformError) {
           console.error(
             `Error processing platform ${platform}:`,
-            platformError
+            platformError,
           );
           return {
             platform,
@@ -384,7 +414,7 @@ export async function POST(request: Request) {
     console.log(
       "Starting Promise.all with",
       platformPromises.length,
-      "promises"
+      "promises",
     );
 
     const results = await Promise.all(platformPromises);
@@ -397,7 +427,7 @@ export async function POST(request: Request) {
         result &&
         typeof result === "object" &&
         "platform" in result &&
-        "success" in result
+        "success" in result,
     );
 
     const successfulPlatforms = validResults
@@ -407,7 +437,7 @@ export async function POST(request: Request) {
           typeof r === "object" &&
           "success" in r &&
           r.success === true &&
-          "platform" in r
+          "platform" in r,
       )
       .map((r) => r.platform);
 
@@ -463,7 +493,7 @@ export async function POST(request: Request) {
         results: validResults,
         successfulPlatforms,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error publishing posts:", error);
@@ -472,7 +502,7 @@ export async function POST(request: Request) {
         message: "Error publishing posts",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

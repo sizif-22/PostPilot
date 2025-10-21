@@ -1,7 +1,7 @@
 "use client";
 import { useChannel } from "@/context/ChannelContext";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 // import { updateDoc, doc, arrayRemove } from "firebase/firestore";
 // import { db } from "@/firebase/config";
@@ -20,7 +20,8 @@ export const Platforms = () => {
     channel?.socialMedia?.instagram ||
     channel?.socialMedia?.tiktok ||
     channel?.socialMedia?.linkedin ||
-    channel?.socialMedia?.x;
+    channel?.socialMedia?.x ||
+    channel?.socialMedia?.youtube;
 
   // const platforms = [
   //   {
@@ -55,8 +56,12 @@ export const Platforms = () => {
   //   },
   // ];
   return (
-
-    <Accordion type="single" className="dark:text-white" defaultValue="item-1" collapsible>
+    <Accordion
+      type="single"
+      className="dark:text-white"
+      defaultValue="item-1"
+      collapsible
+    >
       <AccordionItem value="item-1">
         <AccordionTrigger>
           <h3 className="text-lg font-semibold dark:text-white">
@@ -76,7 +81,8 @@ export const Platforms = () => {
                     <Link
                       href={`https://facebook.com/profile.php?id=${channel.socialMedia.facebook.id}`}
                       target="_blank"
-                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                    >
                       <FaFacebook className="text-blue-600 text-xl" />
                       <div>
                         <p className="font-medium dark:text-gray-100">
@@ -85,12 +91,30 @@ export const Platforms = () => {
                       </div>
                     </Link>
                   )}
+                {channel?.socialMedia?.youtube && (
+                  <Link
+                    href={
+                      channel.socialMedia.youtube.channelUrl ||
+                      `https://www.youtube.com/channel/${channel.socialMedia.youtube.id}`
+                    }
+                    target="_blank"
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                  >
+                    <FaYoutube className="text-red-600 text-xl" />
+                    <div>
+                      <p className="font-medium dark:text-gray-100">
+                        {channel.socialMedia.youtube.name || "YouTube Channel"}
+                      </p>
+                    </div>
+                  </Link>
+                )}
                 {channel?.socialMedia?.["instagram"] &&
                   channel.socialMedia.instagram.instagramUsername && (
                     <Link
                       href={`https://instagram.com/${channel.socialMedia.instagram.instagramUsername}`}
                       target="_blank"
-                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                    >
                       <FaInstagram className="text-pink-600 text-xl" />
                       <div>
                         <p className="font-medium dark:text-gray-100">
@@ -103,7 +127,8 @@ export const Platforms = () => {
                   <Link
                     href={`https://tiktok.com/@${channel.socialMedia.tiktok.username}`}
                     target="_blank"
-                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                  >
                     <FaTiktok className="text-black dark:text-white text-xl" />
                     <div>
                       <p className="font-medium dark:text-gray-100">
@@ -116,7 +141,8 @@ export const Platforms = () => {
                   <Link
                     href={`https://x.com/${channel.socialMedia.x.username}`}
                     target="_blank"
-                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                  >
                     <FaXTwitter className="dark:text-white text-xl" />
                     <div>
                       <p className="font-medium dark:text-gray-100">
@@ -129,7 +155,8 @@ export const Platforms = () => {
                   <Link
                     href={channel.socialMedia.linkedin.url}
                     target="_blank"
-                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200">
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkButtons rounded-lg cursor-pointer hover:dark:bg-darkBorder transition-all hover:bg-gray-200"
+                  >
                     <FaLinkedin className="text-blue-700 text-xl" />
                     <div>
                       <p className="font-medium dark:text-gray-100">

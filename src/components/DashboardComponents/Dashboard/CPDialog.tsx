@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaYoutube } from "react-icons/fa";
 import { FaTiktok, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
@@ -76,7 +76,7 @@ export const CPDialog = ({
   >("default");
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [videoValidationErrors, setVideoValidationErrors] = useState<string[]>(
-    []
+    [],
   );
   const { addNotification } = useNotification();
 
@@ -158,7 +158,7 @@ export const CPDialog = ({
           "height:",
           height,
           "errors:",
-          errors
+          errors,
         );
       }
     });
@@ -168,7 +168,7 @@ export const CPDialog = ({
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
         ? prev.filter((id) => id !== platformId)
-        : [...prev, platformId]
+        : [...prev, platformId],
     );
   };
 
@@ -216,7 +216,7 @@ export const CPDialog = ({
 
     const textOnlyPlatforms = ["facebook", "linkedin", "x"];
     const allPlatformsAreTextOnly = selectedPlatforms.every((p) =>
-      textOnlyPlatforms.includes(p)
+      textOnlyPlatforms.includes(p),
     );
 
     if (!allPlatformsAreTextOnly) {
@@ -268,13 +268,13 @@ export const CPDialog = ({
 
         if (hasVideos && hasImages) {
           throw new Error(
-            "Cannot mix videos and images in the same post. Please select either all videos or all images."
+            "Cannot mix videos and images in the same post. Please select either all videos or all images.",
           );
         }
 
         if (videoCount > 1) {
           throw new Error(
-            "Cannot post multiple videos at once. Please select only one video."
+            "Cannot post multiple videos at once. Please select only one video.",
           );
         }
 
@@ -283,7 +283,7 @@ export const CPDialog = ({
             for (const img of selectedImages) {
               if (typeof img.size === "number" && img.size > 30 * 1024 * 1024) {
                 throw new Error(
-                  "X: Each image must be less than 30MB. Please select a smaller image."
+                  "X: Each image must be less than 30MB. Please select a smaller image.",
                 );
               }
             }
@@ -291,7 +291,7 @@ export const CPDialog = ({
           if (hasVideos) {
             if (videoDuration !== null && videoDuration > 140) {
               throw new Error(
-                "X: Video must be less than 2 minutes and 20 seconds (140 seconds)."
+                "X: Video must be less than 2 minutes and 20 seconds (140 seconds).",
               );
             }
             for (const vid of selectedImages) {
@@ -300,7 +300,7 @@ export const CPDialog = ({
                 vid.size > 512 * 1024 * 1024
               ) {
                 throw new Error(
-                  "X: Video must be less than 512MB. Please select a smaller video."
+                  "X: Video must be less than 512MB. Please select a smaller video.",
                 );
               }
             }
@@ -314,7 +314,7 @@ export const CPDialog = ({
         ) {
           if (videoDuration < 3) {
             throw new Error(
-              "Videos must be at least 3 seconds long to be published as a Reel. Please select 'Default Video' instead."
+              "Videos must be at least 3 seconds long to be published as a Reel. Please select 'Default Video' instead.",
             );
           }
         }
@@ -326,7 +326,7 @@ export const CPDialog = ({
           videoDuration < 3
         ) {
           throw new Error(
-            "Instagram videos must be at least 3 seconds long. Please select a longer video."
+            "Instagram videos must be at least 3 seconds long. Please select a longer video.",
           );
         }
       }
@@ -336,7 +336,7 @@ export const CPDialog = ({
         const dateTimeString = date;
         scheduledTimestamp = convertLocalDateTimeToUnixTimestamp(
           dateTimeString,
-          selectedTimeZone
+          selectedTimeZone,
         );
 
         const now = Math.floor(Date.now() / 1000);
@@ -439,17 +439,20 @@ export const CPDialog = ({
             initial={{ opacity: 0, y: 20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             transition={{ duration: 0.3 }}
-            className="absolute top-16 left-1/2 z-50 w-[calc(100%-2rem)] sm:w-full max-w-md mx-auto">
+            className="absolute top-16 left-1/2 z-50 w-[calc(100%-2rem)] sm:w-full max-w-md mx-auto"
+          >
             <Alert
               variant="destructive"
-              className=" shadow-lg dark:bg-darkBackground select-none shadow-black/50">
+              className=" shadow-lg dark:bg-darkBackground select-none shadow-black/50"
+            >
               <AlertCircleIcon className="h-5 w-5" />
               <AlertTitle>Unable to create post</AlertTitle>
               <AlertDescription className="text-sm">{error}</AlertDescription>
               <button
                 className="absolute top-2 right-2 hover:text-red-700"
                 onClick={() => setError(null)}
-                aria-label="Dismiss error">
+                aria-label="Dismiss error"
+              >
                 <FiX />
               </button>
             </Alert>
@@ -472,7 +475,8 @@ export const CPDialog = ({
                       selectedPlatforms.includes("facebook")
                         ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
                         : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}>
+                    }`}
+                  >
                     <FiFacebook className="text-lg text-blue-700 dark:text-blue-300" />
                     <span className="text-xs sm:text-sm">Facebook</span>
                   </button>
@@ -484,7 +488,8 @@ export const CPDialog = ({
                       selectedPlatforms.includes("instagram")
                         ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder dark:text-pink-300"
                         : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}>
+                    }`}
+                  >
                     <FiInstagram className="text-lg text-pink-700 dark:text-pink-300" />
                     <span className="text-xs sm:text-sm">Instagram</span>
                   </button>
@@ -496,9 +501,23 @@ export const CPDialog = ({
                       selectedPlatforms.includes("tiktok")
                         ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
                         : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}>
+                    }`}
+                  >
                     <FaTiktok className="text-lg" />
                     <span className="text-xs sm:text-sm">TikTok</span>
+                  </button>
+                )}
+                {channel?.socialMedia?.youtube && (
+                  <button
+                    onClick={() => handlePlatformToggle("youtube")}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
+                      selectedPlatforms.includes("youtube")
+                        ? "border-red-600 bg-red-50 text-red-700 dark:bg-darkBorder dark:text-red-300"
+                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                    }`}
+                  >
+                    <FaYoutube className="text-lg text-red-600" />
+                    <span className="text-xs sm:text-sm">YouTube</span>
                   </button>
                 )}
                 {channel?.socialMedia?.linkedin && (
@@ -508,7 +527,8 @@ export const CPDialog = ({
                       selectedPlatforms.includes("linkedin")
                         ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
                         : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}>
+                    }`}
+                  >
                     <FaLinkedin className="text-lg text-blue-700 dark:text-blue-300" />
                     <span className="text-xs sm:text-sm">LinkedIn</span>
                   </button>
@@ -520,7 +540,8 @@ export const CPDialog = ({
                       selectedPlatforms.includes("x")
                         ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
                         : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}>
+                    }`}
+                  >
                     <FaXTwitter className="text-lg" />
                     <span className="text-xs sm:text-sm">X</span>
                   </button>
@@ -538,7 +559,8 @@ export const CPDialog = ({
                     activeTab === "default"
                       ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
                       : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                  }`}>
+                  }`}
+                >
                   Default Message
                 </button>
                 <button
@@ -547,7 +569,8 @@ export const CPDialog = ({
                     activeTab === "x"
                       ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
                       : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                  }`}>
+                  }`}
+                >
                   X Message
                 </button>
               </div>
@@ -633,11 +656,13 @@ export const CPDialog = ({
                     setIsMediaDialogOpen(true);
                   }
                 }}
-                className="border-2 border-dashed border-stone-300 dark:border-darkBorder rounded-lg p-8 text-center cursor-pointer hover:border-stone-400 transition-colors">
+                className="border-2 border-dashed border-stone-300 dark:border-darkBorder rounded-lg p-8 text-center cursor-pointer hover:border-stone-400 transition-colors"
+              >
                 {selectedImages.length > 0 ? (
                   <div
                     className="grid grid-cols-4 gap-2 mt-4"
-                    ref={container[1]}>
+                    ref={container[1]}
+                  >
                     {selectedImages.map((item) => (
                       <div key={item.url} className="relative group">
                         <div className="w-full aspect-square rounded-lg overflow-hidden">
@@ -663,7 +688,8 @@ export const CPDialog = ({
                                 <>
                                   <video
                                     className="object-cover w-full h-full"
-                                    preload="metadata">
+                                    preload="metadata"
+                                  >
                                     <source src={item.url} type="video/mp4" />
                                     Your browser does not support the video tag.
                                   </video>
@@ -681,7 +707,8 @@ export const CPDialog = ({
                               setSelectedVideo(item);
                               setIsThumbnailPickerOpen(true);
                             }}
-                            className="absolute bottom-1 left-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center text-xs hover:bg-black">
+                            className="absolute bottom-1 left-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center text-xs hover:bg-black"
+                          >
                             <FiEdit2 className="w-3 h-3" />
                           </button>
                         )}
@@ -689,7 +716,8 @@ export const CPDialog = ({
                           onClick={(e) => {
                             handleImageSelect(item);
                           }}
-                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                        >
                           ×
                         </button>
                       </div>
@@ -722,7 +750,8 @@ export const CPDialog = ({
             {/* Media Selection Dialog */}
             <Dialog
               open={isMediaDialogOpen}
-              onOpenChange={setIsMediaDialogOpen}>
+              onOpenChange={setIsMediaDialogOpen}
+            >
               <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
                 <DialogHeader>
                   <DialogTitle>Select Media</DialogTitle>
@@ -739,7 +768,8 @@ export const CPDialog = ({
                               ? "ring-2 ring-violet-500"
                               : ""
                           }`}
-                          onClick={() => handleImageSelect(item)}>
+                          onClick={() => handleImageSelect(item)}
+                        >
                           <Image
                             src={item.url}
                             alt={item.name}
@@ -760,10 +790,12 @@ export const CPDialog = ({
                               ? "ring-2 ring-violet-500"
                               : ""
                           }`}
-                          onClick={() => handleImageSelect(item)}>
+                          onClick={() => handleImageSelect(item)}
+                        >
                           <video
                             className="object-cover w-full aspect-square"
-                            preload="metadata">
+                            preload="metadata"
+                          >
                             <source src={item.url} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
@@ -782,7 +814,8 @@ export const CPDialog = ({
             {/* Thumbnail Picker Dialog */}
             <Dialog
               open={isThumbnailPickerOpen}
-              onOpenChange={setIsThumbnailPickerOpen}>
+              onOpenChange={setIsThumbnailPickerOpen}
+            >
               <DialogContent className="sm:max-w-[800px] dark:text-white dark:bg-darkBackground">
                 <DialogHeader>
                   <DialogTitle>Select Thumbnail</DialogTitle>
@@ -795,8 +828,8 @@ export const CPDialog = ({
                         prev.map((item) =>
                           item.url === selectedVideo.url
                             ? { ...item, thumbnailUrl }
-                            : item
-                        )
+                            : item,
+                        ),
                       );
                       setIsThumbnailPickerOpen(false);
                     }}
@@ -824,7 +857,8 @@ export const CPDialog = ({
                       videoValidationErrors.length > 0
                         ? "cursor-not-allowed opacity-50"
                         : "cursor-pointer"
-                    }`}>
+                    }`}
+                  >
                     <Checkbox
                       checked={facebookVideoType === "reel"}
                       disabled={videoValidationErrors.length > 0}
@@ -966,7 +1000,8 @@ export const CPDialog = ({
                       selectedPlatforms.length > 0
                         ? "text-green-600 dark:text-green-400"
                         : "text-stone-500"
-                    }`}>
+                    }`}
+                  >
                     <div
                       className={`w-2 h-2 rounded-full ${
                         selectedPlatforms.length > 0
@@ -984,7 +1019,8 @@ export const CPDialog = ({
                       xText.trim()
                         ? "text-green-600 dark:text-green-400"
                         : "text-stone-500"
-                    }`}>
+                    }`}
+                  >
                     <div
                       className={`w-2 h-2 rounded-full ${
                         selectedImages.length > 0 ||
@@ -1003,7 +1039,8 @@ export const CPDialog = ({
                         date
                           ? "text-green-600 dark:text-green-400"
                           : "text-stone-500"
-                      }`}>
+                      }`}
+                    >
                       <div
                         className={`w-2 h-2 rounded-full ${
                           date ? "bg-green-500" : "bg-stone-300"
@@ -1020,14 +1057,16 @@ export const CPDialog = ({
                     <button
                       onClick={() => PostingHandler(true, false)}
                       disabled={!canPostNow || isPosting}
-                      className="w-full px-4 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium">
+                      className="w-full px-4 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
                       {isPosting ? "Publishing..." : "Publish Now"}
                     </button>
                   ) : (
                     <button
                       onClick={() => PostingHandler(false, false)}
                       disabled={!canSchedule || isPosting}
-                      className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium">
+                      className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-stone-300 dark:disabled:bg-stone-600 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
                       {isPosting ? "Scheduling..." : "Schedule Post"}
                     </button>
                   )}
@@ -1035,13 +1074,15 @@ export const CPDialog = ({
                   <button
                     onClick={() => PostingHandler(false, true)}
                     disabled={!isFormValid || isPosting}
-                    className="w-full px-4 py-2.5 border border-stone-300 dark:border-darkBorder text-stone-700 dark:text-white/70 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
+                    className="w-full px-4 py-2.5 border border-stone-300 dark:border-darkBorder text-stone-700 dark:text-white/70 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  >
                     Save as Draft
                   </button>
 
                   <button
                     onClick={() => setOpen(false)}
-                    className="w-full px-4 py-2.5 text-stone-500 dark:text-white/60 hover:text-stone-700 dark:hover:text-white/80 transition-colors text-sm">
+                    className="w-full px-4 py-2.5 text-stone-500 dark:text-white/60 hover:text-stone-700 dark:hover:text-white/80 transition-colors text-sm"
+                  >
                     Cancel
                   </button>
                 </div>
