@@ -1,13 +1,12 @@
 import { Moon, Sun } from 'lucide-react';
 import { Button } from './ui/button';
-import { useTheme } from './theme-provider';
+import { useTheme } from 'next-themes';
 
 export function DarkModeToggle() {
-  const { toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
-  const handleToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const { clientX: x, clientY: y } = event;
-    toggleTheme({ x, y });
+  const handleToggle = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (

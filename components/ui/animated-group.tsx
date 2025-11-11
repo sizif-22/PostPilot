@@ -115,14 +115,35 @@ function AnimatedGroup({
   const containerVariants = variants?.container || selectedVariants.container;
   const itemVariants = variants?.item || selectedVariants.item;
 
-  const MotionComponent = React.useMemo(
-    () => motion.create(as as keyof JSX.IntrinsicElements),
-    [as]
-  );
-  const MotionChild = React.useMemo(
-    () => motion.create(asChild as keyof JSX.IntrinsicElements),
-    [asChild]
-  );
+  // Helper to get MotionComponent type properly 
+  const getMotionComponent = (element: string) => {
+    switch(element) {
+      case 'div': return motion.div;
+      case 'span': return motion.span;
+      case 'section': return motion.section;
+      case 'article': return motion.article;
+      case 'header': return motion.header;
+      case 'footer': return motion.footer;
+      case 'main': return motion.main;
+      case 'nav': return motion.nav;
+      case 'aside': return motion.aside;
+      case 'svg': return motion.svg;
+      case 'ul': return motion.ul;
+      case 'ol': return motion.ol;
+      case 'li': return motion.li;
+      case 'p': return motion.p;
+      case 'h1': return motion.h1;
+      case 'h2': return motion.h2;
+      case 'h3': return motion.h3;
+      case 'h4': return motion.h4;
+      case 'h5': return motion.h5;
+      case 'h6': return motion.h6;
+      default: return motion.div;
+    }
+  };
+
+  const MotionComponent = getMotionComponent(as as string);
+  const MotionChildElement = getMotionComponent(asChild as string);
 
   return (
     <MotionComponent
@@ -132,9 +153,9 @@ function AnimatedGroup({
       className={className}
     >
       {React.Children.map(children, (child, index) => (
-        <MotionChild key={index} variants={itemVariants}>
+        <MotionChildElement key={index} variants={itemVariants}>
           {child}
-        </MotionChild>
+        </MotionChildElement>
       ))}
     </MotionComponent>
   );

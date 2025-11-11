@@ -6,10 +6,8 @@ import { withAuth } from '@workos-inc/authkit-nextjs';
 export default async function ServerPage() {
   const { accessToken } = await withAuth();
   const preloaded = await preloadQuery(
-    api.myFunctions.listNumbers,
-    {
-      count: 3,
-    },
+    api.numbers.listNumbers,
+    {},
     { token: accessToken },
   );
 

@@ -12,6 +12,7 @@ export default defineSchema({
   collection: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
+    updatedAt: v.string(), // ISO date string for updated time
     facebook: v.optional(
       v.object({
         id: v.string(),
@@ -89,5 +90,8 @@ export default defineSchema({
     collectionId: v.id('collection'),
     userId: v.string(),
     role: v.string(),
-  }),
+    updatedAt: v.optional(v.string()), // For sorting purposes
+  })
+    .index('by_user_and_updated', ['userId', 'updatedAt'])
+    .index('by_collectionId', ['collectionId']),
 });
