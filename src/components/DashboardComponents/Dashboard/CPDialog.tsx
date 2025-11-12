@@ -54,6 +54,8 @@ export const CPDialog = ({
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [postText, setPostText] = useState("");
   const [xText, setXText] = useState("");
+  const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubeDisc, setYoutubeDisc] = useState("");
   const [selectedImages, setSelectedImages] = useState<MediaItem[]>([]);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [isThumbnailPickerOpen, setIsThumbnailPickerOpen] = useState(false);
@@ -61,7 +63,9 @@ export const CPDialog = ({
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
-  const [activeTab, setActiveTab] = useState<"default" | "x">("default");
+  const [activeTab, setActiveTab] = useState<"default" | "x" | "youtube">(
+    "default",
+  );
   const container = [useRef(null), useRef(null)];
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     return (
@@ -356,8 +360,10 @@ export const CPDialog = ({
 
       const newPost: Post = {
         id: postId,
-        message: postText,
         platforms: selectedPlatforms,
+        message: postText,
+        youtubeTitle,
+        youtubeDisc,
         media: selectedImages,
         facebookVideoType,
         draft,
@@ -573,6 +579,18 @@ export const CPDialog = ({
                 >
                   X Message
                 </button>
+                {selectedPlatforms.includes("youtube") && (
+                  <button
+                    onClick={() => setActiveTab("youtube")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      activeTab === "youtube"
+                        ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                        : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                    }`}
+                  >
+                    YouTube
+                  </button>
+                )}
               </div>
 
               {/* Tab Content */}
@@ -616,6 +634,35 @@ export const CPDialog = ({
                   <div className="text-right text-xs text-stone-400 dark:text-white/50">
                     {xText.length}/280
                   </div>
+                </div>
+              )}
+              {activeTab === "youtube" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    Youtube Post
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Title:
+                  </p>
+                  <textarea
+                    value={youtubeTitle}
+                    onChange={(e) => setYoutubeTitle(e.target.value)}
+                    placeholder="your Title?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={1}
+                    maxLength={280}
+                  />
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Discription:
+                  </p>
+                  <textarea
+                    value={youtubeDisc}
+                    onChange={(e) => setYoutubeDisc(e.target.value)}
+                    placeholder="Discription?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={4}
+                    maxLength={280}
+                  />
                 </div>
               )}
             </div>

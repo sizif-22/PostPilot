@@ -81,7 +81,8 @@ export const Route = ({
         title == route
           ? "bg-white text-stone-950 shadow dark:bg-darkBorder dark:text-white"
           : "hover:bg-stone-200 dark:hover:bg-darkButtons bg-transparent text-stone-500 dark:text-stone-400 shadow-none"
-      }`}>
+      }`}
+    >
       <Icon className={title == route ? "text-violet-500" : ""} />
       <span>{title}</span>
     </button>

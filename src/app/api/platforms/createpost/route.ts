@@ -366,8 +366,8 @@ export async function POST(request: Request) {
 
                 const result = await PostOnYouTube({
                   accessToken: accessToken,
-                  title: post.title || "Untitled Video",
-                  description: post.message || "No description",
+                  title: post.youtubeTitle || "Untitled Video",
+                  description: post.youtubeDisc || ".",
                   privacy: "public", // Default to public, could be configurable
                   media: post.media || [],
                   scheduleTime:

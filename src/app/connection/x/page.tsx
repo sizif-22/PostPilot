@@ -9,7 +9,7 @@ import Loading from "@/components/ui/Loading";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 import { encrypt } from "@/utils/encryption";
-import axios from "axios";
+// import axios from "axios";
 import { refreshXFunc } from "./server-action";
 import { Channel } from "@/interfaces/Channel";
 
@@ -57,7 +57,7 @@ export default function XCallbackPage() {
 
       try {
         const response = await fetch(
-          `/api/x/connect?code=${code}&state=${state}`
+          `/api/x/connect?code=${code}&state=${state}`,
         );
         const data = await response.json();
 
@@ -105,9 +105,7 @@ export default function XCallbackPage() {
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         expiresIn: expiresIn,
-        tokenExpiry: expiresIn
-          ? new Date(Date.now() + expiresIn * 1000)
-          : null,
+        tokenExpiry: expiresIn ? new Date(Date.now() + expiresIn * 1000) : null,
         userId: userProfile.id,
         isPersonal: true,
       };
@@ -116,7 +114,9 @@ export default function XCallbackPage() {
         "socialMedia.x": socialMediaX,
       });
 
-      const channel = (await getDoc(doc(db, "Channels", channelId as string))).data() as Channel;
+      const channel = (
+        await getDoc(doc(db, "Channels", channelId as string))
+      ).data() as Channel;
 
       if (channel.socialMedia?.Tox !== true) {
         await refreshXFunc(channelId as string);
@@ -151,7 +151,8 @@ export default function XCallbackPage() {
             onClick={() =>
               router.push(`/collections/${Cookies.get("currentChannel")}`)
             }
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
             Back to Channel
           </button>
         </div>
@@ -197,13 +198,15 @@ export default function XCallbackPage() {
             onClick={() =>
               router.push(`/collections/${Cookies.get("currentChannel")}`)
             }
-            className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors">
+            className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-lg transition-colors"
+          >
             Cancel
           </button>
           <button
             onClick={handleConnect}
             disabled={!userProfile}
-            className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed">
+            className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
+          >
             Connect Account
           </button>
         </div>

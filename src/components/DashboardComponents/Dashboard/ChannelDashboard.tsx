@@ -30,7 +30,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
   }, []);
 
   const userChannel = user?.channels.find(
-    (channel: UserChannel) => channel.id === id
+    (channel: UserChannel) => channel.id === id,
   );
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
         } catch (err) {
           console.error(
             `Error getting metadata for ${imageRef.fullPath}:`,
-            err
+            err,
           );
           return 0;
         }
@@ -109,7 +109,7 @@ export default function ChannelDashboard({ id }: { id: string }) {
         } catch (err) {
           console.error(
             `Error getting URL or metadata for ${itemRef.fullPath}:`,
-            err
+            err,
           );
           return null;
         }

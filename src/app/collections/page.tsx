@@ -25,7 +25,14 @@ import {
 import router from "next/router";
 import { logOut } from "../signin/action";
 import { NewFolderResponsive } from "@/components/ChannelComponents/NewFolderResponsive";
-import { FiPlus, FiUser, FiFolder, FiMoon, FiSun, FiLogOut } from "react-icons/fi";
+import {
+  FiPlus,
+  FiUser,
+  FiFolder,
+  FiMoon,
+  FiSun,
+  FiLogOut,
+} from "react-icons/fi";
 import { useTheme } from "next-themes";
 
 const ChannelsComponent = ({
@@ -36,7 +43,7 @@ const ChannelsComponent = ({
   const [channelBriefs, setChannelBriefs] = useState<ChannelBrief[]>([]);
   useEffect(() => {
     const fetchChannels = async () => {
-      if (channels.length > 0) {
+      if (channels) {
         const briefs = await getChannelBriefs(channels);
         const sortedBriefs = (Object.values(briefs) as ChannelBrief[]).sort(
           (a, b) => {
@@ -47,25 +54,29 @@ const ChannelsComponent = ({
               ? b.createdAt.toDate()
               : new Date(b.createdAt.seconds * 1000);
             return dateB.getTime() - dateA.getTime();
-          }
+          },
         );
         setChannelBriefs(sortedBriefs);
       }
     };
     fetchChannels();
   }, [channels]);
-  
+
   return (
     <>
       {channelBriefs.length > 0 ? (
         channelBriefs.map((channel: ChannelBrief) => (
           <div
             key={channel.name}
-            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-xl p-4 my-3 border border-stone-200 dark:border-darkBorder hover:border-stone-300 dark:hover:border-stone-600 shadow-sm hover:shadow-md dark:shadow-lg">
+            className="group bg-white dark:bg-darkButtons grid grid-cols-1 justify-items-center hover:bg-stone-50 dark:hover:bg-darkBorder transition-colors rounded-xl p-4 my-3 border border-stone-200 dark:border-darkBorder hover:border-stone-300 dark:hover:border-stone-600 shadow-sm hover:shadow-md dark:shadow-lg"
+          >
             <div className="flex justify-between flex-col w-full items-start">
               <div className="space-y-3 w-full">
                 <div className="flex items-start w-full gap-3 justify-between flex-wrap">
-                  <Link href={`/collections/${channel.id}`} className="flex-1 min-w-0">
+                  <Link
+                    href={`/collections/${channel.id}`}
+                    className="flex-1 min-w-0"
+                  >
                     <h3 className="font-bold text-lg lg:text-xl hover:text-violet-700 dark:text-white dark:hover:text-violet-400 transition-colors truncate">
                       {channel.name}
                     </h3>
@@ -90,7 +101,8 @@ const ChannelsComponent = ({
                 <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-500">
                   <span className="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
                   <span className="truncate">
-                    Created: {new Date(channel.createdAt.toDate()).toLocaleDateString()}
+                    Created:{" "}
+                    {new Date(channel.createdAt.toDate()).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -120,7 +132,7 @@ const Page = () => {
   const [notificationBar, openNotificationBar] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [lastNotifCount, setLastNotifCount] = useState<number>(
-    user?.notifications?.length || 0
+    user?.notifications?.length || 0,
   );
   const [newNotif, setNewNotif] = useState<UserNotification | null>(null);
   const [showNewAlert, setShowNewAlert] = useState(false);
@@ -156,7 +168,7 @@ const Page = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  
+
   useEffect(() => {
     if (user?.isVerified == false) {
       setNotifications([
@@ -172,14 +184,14 @@ const Page = () => {
       ]);
     }
   }, [user]);
-  
+
   if (!user) {
     return <Loading />;
   }
 
   return (
     <>
-    <NewFolderResponsive open={open} setOpen={setOpen} />
+      <NewFolderResponsive open={open} setOpen={setOpen} />
       {/* Desktop View */}
       <main className="hidden lg:grid gap-4 p-4 grid-cols-[220px,_1fr] dark:bg-darkBackground">
         <Sidebar />
@@ -189,7 +201,8 @@ const Page = () => {
             <h2 className="font-bold dark:text-white">Collections</h2>
             <button
               onClick={() => setOpen(true)}
-              className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
+              className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded"
+            >
               <FiPlus className="text-violet-500" />
               <span>New Collection</span>
             </button>
@@ -203,7 +216,7 @@ const Page = () => {
           </div>
         </div>
       </main>
-      
+
       {/* Mobile & Tablet View */}
       <main className="h-screen dark:bg-darkBackground lg:hidden flex flex-col">
         {/* Header */}
@@ -219,21 +232,25 @@ const Page = () => {
                 onClick={() => {
                   openNotificationBar(!notificationBar);
                 }}
-                className="p-2 transition-all hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl relative">
+                className="p-2 transition-all hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl relative"
+              >
                 <IoIosNotificationsOutline className="w-6 h-6 dark:text-white" />
                 {notifications && notifications.length > 0 && (
                   <div className="w-2 h-2 absolute top-1.5 rounded-full right-1.5 bg-red-500 animate-pulse"></div>
                 )}
               </button>
-              
+
               {/* Notification Dropdown */}
               <div
                 ref={notificationRef}
                 className={`absolute right-0 top-12 z-[51] w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#1a1a1a] border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl transition-all duration-300 ${
                   !notificationBar && "hidden"
-                }`}>
+                }`}
+              >
                 <div className="p-3 border-b border-stone-200 dark:border-stone-700">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Notifications
+                  </h3>
                 </div>
                 {notifications == undefined || notifications.length == 0 ? (
                   <div className="flex flex-col justify-center items-center py-8 text-gray-500 dark:text-gray-400 text-sm">
@@ -246,7 +263,8 @@ const Page = () => {
                       (notification: UserNotification, index: number) => (
                         <div
                           key={index}
-                          className="p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-all duration-200 border-b border-stone-100 dark:border-stone-800 last:border-b-0">
+                          className="p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-all duration-200 border-b border-stone-100 dark:border-stone-800 last:border-b-0"
+                        >
                           <div className="flex flex-col gap-2">
                             <div className="flex flex-col items-start gap-1">
                               {notification.Type == "Ask" && (
@@ -255,7 +273,8 @@ const Page = () => {
                                 </span>
                               )}
                               <span className="text-gray-600 dark:text-gray-300 text-sm">
-                                {notification.Type == "Ask" && "invited you to join"}{" "}
+                                {notification.Type == "Ask" &&
+                                  "invited you to join"}{" "}
                                 <span className="font-medium text-violet-600 dark:text-violet-400">
                                   {notification.channelName}
                                 </span>
@@ -270,42 +289,42 @@ const Page = () => {
                                   onClick={() =>
                                     rejectJoiningToAChannel(
                                       notification,
-                                      user.email
+                                      user.email,
                                     )
                                   }
                                   variant={"ghost"}
                                   size="sm"
-                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950">
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                >
                                   Reject
                                 </Button>
                                 <Button
                                   onClick={() =>
-                                    acceptJoiningToAChannel(
-                                      notification,
-                                      user
-                                    )
+                                    acceptJoiningToAChannel(notification, user)
                                   }
                                   size="sm"
-                                  className="bg-violet-600 hover:bg-violet-700 text-white">
+                                  className="bg-violet-600 hover:bg-violet-700 text-white"
+                                >
                                   Accept
                                 </Button>
                               </div>
                             )}
                           </div>
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 )}
               </div>
             </div>
-            
+
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant={"outline"}
-                  className="rounded-full border-2 border-violet-200 dark:border-violet-800 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center hover:border-violet-400 dark:hover:border-violet-600 transition-colors">
+                  className="rounded-full border-2 border-violet-200 dark:border-violet-800 w-10 h-10 overflow-hidden p-0.5 flex items-center justify-center hover:border-violet-400 dark:hover:border-violet-600 transition-colors"
+                >
                   <img
                     src={user.avatar}
                     alt="avatar"
@@ -336,19 +355,25 @@ const Page = () => {
                 {/* Account Stats */}
                 <div className="px-3 py-2 border-b border-stone-200 dark:border-stone-700">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Collections</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Collections
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {user.channels.length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-gray-600 dark:text-gray-400">Status</span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      user.isVerified 
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
-                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-                    }`}>
-                      {user.isVerified ? 'Verified' : 'Pending'}
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Status
+                    </span>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        user.isVerified
+                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+                      }`}
+                    >
+                      {user.isVerified ? "Verified" : "Pending"}
                     </span>
                   </div>
                 </div>
@@ -357,17 +382,19 @@ const Page = () => {
                 {user?.isVerified && (
                   <DropdownMenuItem
                     onClick={() => router.push("/collections")}
-                    className="px-3 py-2 cursor-pointer">
+                    className="px-3 py-2 cursor-pointer"
+                  >
                     <FiFolder className="w-4 h-4 mr-3" />
                     <span>My Collections</span>
                   </DropdownMenuItem>
                 )}
-                
+
                 {/* Theme Toggle */}
                 <DropdownMenuItem
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="px-3 py-2 cursor-pointer">
-                  {theme === 'dark' ? (
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="px-3 py-2 cursor-pointer"
+                >
+                  {theme === "dark" ? (
                     <>
                       <FiSun className="w-4 h-4 mr-3" />
                       <span>Light Mode</span>
@@ -388,7 +415,8 @@ const Page = () => {
                     await logOut();
                     window.location.reload();
                   }}
-                  className="px-3 py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                  className="px-3 py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                >
                   <FiLogOut className="w-4 h-4 mr-3" />
                   <span>Sign Out</span>
                 </DropdownMenuItem>
@@ -396,7 +424,7 @@ const Page = () => {
             </DropdownMenu>
           </div>
         </div>
-        
+
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="p-4">
@@ -411,14 +439,15 @@ const Page = () => {
           {/* <Button
             onClick={() => setOpen(true)}
             className="bg-violet-600 hover:bg-violet-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">
-            <span><FiPlus className="w-6 h-6"/></span> 
+            <span><FiPlus className="w-6 h-6"/></span>
           </Button> */}
           <button
-              onClick={() => setOpen(true)}
-              className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded">
-              <FiPlus className="text-violet-500" />
-              <span>New Collection</span>
-            </button>
+            onClick={() => setOpen(true)}
+            className="flex text-sm items-center gap-2 bg-stone-100 dark:bg-darkButtons dark:text-white transition-colors hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900 dark:hover:text-violet-300 px-3 py-1.5 rounded"
+          >
+            <FiPlus className="text-violet-500" />
+            <span>New Collection</span>
+          </button>
         </div>
       </main>
     </>

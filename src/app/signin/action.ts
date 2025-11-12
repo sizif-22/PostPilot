@@ -9,7 +9,7 @@ import {
   where,
   getDoc,
   doc,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
 import { login, logout } from "../_lib/session";
 
@@ -25,30 +25,32 @@ export async function signInServer(idToken: string, formDate: FormDate) {
 
     const userQuery = query(
       collection(db, "Users"),
-      where("email", "==", formDate.email)
+      where("email", "==", formDate.email),
     );
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) {
-    let notifications: Notification[] | undefined = undefined;
-    const invitationDoc = await getDoc(doc(db, "Invitations", formDate.email));
-    if (invitationDoc.exists()) {
-      const data = invitationDoc.data();
-      notifications = data?.notifications;
-    }
+      let notifications: Notification[] | undefined = undefined;
+      const invitationDoc = await getDoc(
+        doc(db, "Invitations", formDate.email),
+      );
+      if (invitationDoc.exists()) {
+        const data = invitationDoc.data();
+        notifications = data?.notifications;
+      }
       const userData: Partial<User> = {
         uid: "",
         name: formDate.name || "",
         email: formDate.email || "",
+        channels: [],
+        notifications: [],
         avatar:
           formDate.avatar ||
           "https://api.dicebear.com/9.x/notionists/svg?seed=5",
-        channels: [],
-        notifications,
       };
       await addUser(userData);
       if (invitationDoc.exists()) {
-      await deleteDoc(doc(db, "Invitations", formDate.email));
-    }
+        await deleteDoc(doc(db, "Invitations", formDate.email));
+      }
       console.log("New user added to Firestore.");
     }
   } catch (error) {
@@ -57,7 +59,5 @@ export async function signInServer(idToken: string, formDate: FormDate) {
 }
 
 export async function logOut() {
-await logout();
+  await logout();
 }
-
-

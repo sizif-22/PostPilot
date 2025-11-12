@@ -114,6 +114,8 @@ export type Post = {
   issues?: { [issueId: string]: Issue };
   comments?: Comment[];
   message?: string;
+  youtubeTitle?: string;
+  youtubeDisc?: string;
   platforms?: string[];
   media?: MediaItem[];
   videoUrls?: any[];

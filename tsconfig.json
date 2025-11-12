@@ -33,8 +33,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/channels",
-    "src/app/channels/[id]"
+    "src/app/collections",
+    "src/app/collections/[id]"
 , "src/app/instagram/oldpage", "src/components/DashboardComponents/Calendar/ContinuousCalendar.tsxo", "src/components/DashboardComponents/Calendar/DetailsDialog.tsxo", "src/app/subLayout"  ],
   "exclude": [
     "node_modules"
