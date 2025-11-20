@@ -9,6 +9,7 @@
  */
 
 import type * as collectionFuncs from "../collectionFuncs.js";
+import type * as connectCollection from "../connectCollection.js";
 import type * as numbers from "../numbers.js";
 
 import type {
@@ -27,6 +28,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   collectionFuncs: typeof collectionFuncs;
+  connectCollection: typeof connectCollection;
   numbers: typeof numbers;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

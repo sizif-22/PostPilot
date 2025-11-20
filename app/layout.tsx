@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from '@/components/ConvexClientProvider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NotificationsProvider } from '@/components/NotificationsProvider';
 import img from '../public/bgImage.webp';
 import { Toaster } from '@/components/ui/sonner';
+import SecondLayer from './secondLayer';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -43,7 +45,11 @@ export default function RootLayout({
         <div className="absolute inset-0 dark:bg-black/90 bg-white/90 -z-10 backdrop-blur-lg"></div>
 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <ConvexClientProvider>
+            <NotificationsProvider>
+              <SecondLayer>{children}</SecondLayer>
+            </NotificationsProvider>
+          </ConvexClientProvider>
         </ThemeProvider>
         <Toaster />
       </body>
