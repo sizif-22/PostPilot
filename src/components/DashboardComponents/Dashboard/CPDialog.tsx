@@ -48,6 +48,7 @@ import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import { useNotification } from "@/context/NotificationContext";
 import VideoThumbnailPicker from "../Media/VideoThumbnailPicker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formatDuration = (seconds?: number) => {
   if (!seconds) return "00:00";
@@ -85,6 +86,9 @@ export const CPDialog = ({
   const { channel } = useChannel();
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [postText, setPostText] = useState("");
+  const [facebookText, setFacebookText] = useState("");
+  const [instagramText, setInstagramText] = useState("");
+  const [linkedinText, setLinkedinText] = useState("");
   const [xText, setXText] = useState("");
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubeDisc, setYoutubeDisc] = useState("");
@@ -95,9 +99,7 @@ export const CPDialog = ({
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
-  const [activeTab, setActiveTab] = useState<"default" | "x" | "youtube" | "tiktok">(
-    "default",
-  );
+  const [activeTab, setActiveTab] = useState<"facebook" | "instagram" | "linkedin" | "x" | "youtube" | "tiktok" | null>(null);
   const container = [useRef(null), useRef(null)];
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>(() => {
     return (
@@ -119,6 +121,7 @@ export const CPDialog = ({
   // TikTok State
   const [tiktokCreatorInfo, setTiktokCreatorInfo] = useState<any>(null);
   const [tiktokTitle, setTiktokTitle] = useState("");
+  const [tiktokDescription, setTiktokDescription] = useState("");
   const [tiktokPrivacy, setTiktokPrivacy] = useState<string>("");
   const [tiktokAllowComment, setTiktokAllowComment] = useState(false);
   const [tiktokAllowDuet, setTiktokAllowDuet] = useState(false);
@@ -238,15 +241,32 @@ export const CPDialog = ({
   }, [selectedPlatforms, channel?.id]);
 
   const handlePlatformToggle = (platformId: string) => {
-    setSelectedPlatforms((prev) =>
-      prev.includes(platformId)
+    setSelectedPlatforms((prev) => {
+      const newPlatforms = prev.includes(platformId)
         ? prev.filter((id) => id !== platformId)
-        : [...prev, platformId],
-    );
+        : [...prev, platformId];
+
+      // Update active tab logic
+      if (newPlatforms.length === 0) {
+        setActiveTab(null);
+      } else if (!prev.includes(platformId)) {
+        // If adding a platform, switch to it
+        setActiveTab(platformId as any);
+      } else if (activeTab === platformId) {
+        // If removing the active platform, switch to another selected one or null
+        const remaining = newPlatforms[0];
+        setActiveTab(remaining ? (remaining as any) : null);
+      }
+
+      return newPlatforms;
+    });
   };
 
   const resetForm = () => {
     setXText("");
+    setFacebookText("");
+    setInstagramText("");
+    setLinkedinText("");
     setPostText("");
     setSelectedImages([]);
     setSelectedPlatforms([]);
@@ -256,6 +276,7 @@ export const CPDialog = ({
     setVideoDuration(null);
     setError(null);
     setTiktokTitle("");
+    setTiktokDescription("");
     setTiktokPrivacy("");
     setTiktokAllowComment(false);
     setTiktokAllowDuet(false);
@@ -318,11 +339,15 @@ export const CPDialog = ({
       return false;
     }
 
-    if (
-      (selectedPlatforms.includes("facebook") ||
-        selectedPlatforms.includes("linkedin")) &&
-      postText.trim() === ""
-    ) {
+    if (selectedPlatforms.includes("facebook") && facebookText.trim() === "") {
+      return false;
+    }
+
+    if (selectedPlatforms.includes("instagram") && instagramText.trim() === "") {
+      return false;
+    }
+
+    if (selectedPlatforms.includes("linkedin") && linkedinText.trim() === "") {
       return false;
     }
 
@@ -465,7 +490,10 @@ export const CPDialog = ({
       const newPost: Post = {
         id: postId,
         platforms: selectedPlatforms,
-        message: postText,
+        message: postText, // Keep for backward compatibility or default
+        facebookText,
+        instagramText,
+        linkedinText,
         youtubeTitle,
         youtubeDisc,
         media: selectedImages,
@@ -478,6 +506,7 @@ export const CPDialog = ({
         isScheduled: !postImmediately,
         xText,
         title: tiktokTitle,
+        tiktokDescription,
         tiktokPrivacy,
         tiktokAllowComment,
         tiktokAllowDuet,
@@ -664,29 +693,60 @@ export const CPDialog = ({
             {/* Post Content - Custom Tab Implementation */}
             <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
               {/* Custom Tab Headers */}
-              <div className="flex rounded-lg bg-stone-100 dark:bg-darkBorder p-1">
-                <button
-                  onClick={() => setActiveTab("default")}
-                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "default"
-                    ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
-                    : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                    }`}
-                >
-                  Default Message
-                </button>
-                <button
-                  onClick={() => setActiveTab("x")}
-                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "x"
-                    ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
-                    : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                    }`}
-                >
-                  X Message
-                </button>
+              <div className="flex rounded-lg bg-stone-100 dark:bg-darkBorder p-1 overflow-x-auto">
+                {selectedPlatforms.length === 0 && (
+                  <div className="flex-1 px-3 py-2 text-sm font-medium text-stone-400 text-center">
+                    Select a platform to start
+                  </div>
+                )}
+                {selectedPlatforms.includes("facebook") && (
+                  <button
+                    onClick={() => setActiveTab("facebook")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "facebook"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
+                  >
+                    Facebook
+                  </button>
+                )}
+                {selectedPlatforms.includes("instagram") && (
+                  <button
+                    onClick={() => setActiveTab("instagram")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "instagram"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
+                  >
+                    Instagram
+                  </button>
+                )}
+                {selectedPlatforms.includes("linkedin") && (
+                  <button
+                    onClick={() => setActiveTab("linkedin")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "linkedin"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
+                  >
+                    LinkedIn
+                  </button>
+                )}
+                {selectedPlatforms.includes("x") && (
+                  <button
+                    onClick={() => setActiveTab("x")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "x"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
+                  >
+                    X Message
+                  </button>
+                )}
                 {selectedPlatforms.includes("youtube") && (
                   <button
                     onClick={() => setActiveTab("youtube")}
-                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "youtube"
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "youtube"
                       ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
                       : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
                       }`}
@@ -697,7 +757,7 @@ export const CPDialog = ({
                 {selectedPlatforms.includes("tiktok") && (
                   <button
                     onClick={() => setActiveTab("tiktok")}
-                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "tiktok"
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === "tiktok"
                       ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
                       : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
                       }`}
@@ -708,23 +768,80 @@ export const CPDialog = ({
               </div>
 
               {/* Tab Content */}
-              {activeTab === "default" && (
+              {!activeTab && (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[100px]" />
+                    <Skeleton className="h-[120px] w-full" />
+                    <div className="flex justify-end">
+                      <Skeleton className="h-4 w-[60px]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "facebook" && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                    Post Content
+                    Facebook Post
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-white/60">
-                    Write your message
+                    Write your message for Facebook
                   </p>
                   <textarea
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    placeholder="What do you want to share?"
+                    value={facebookText}
+                    onChange={(e) => setFacebookText(e.target.value)}
+                    placeholder="What do you want to share on Facebook?"
                     className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
                     rows={4}
+                    maxLength={2200}
                   />
                   <div className="text-right text-xs text-stone-400 dark:text-white/50">
-                    {postText.length}/2200
+                    {facebookText.length}/2200
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "instagram" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    Instagram Caption
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Write your caption for Instagram
+                  </p>
+                  <textarea
+                    value={instagramText}
+                    onChange={(e) => setInstagramText(e.target.value)}
+                    placeholder="Write a caption..."
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={4}
+                    maxLength={2200}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {instagramText.length}/2200
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "linkedin" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                    LinkedIn Post
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-white/60">
+                    Write your message for LinkedIn
+                  </p>
+                  <textarea
+                    value={linkedinText}
+                    onChange={(e) => setLinkedinText(e.target.value)}
+                    placeholder="What do you want to share on LinkedIn?"
+                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                    rows={4}
+                    maxLength={3000}
+                  />
+                  <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                    {linkedinText.length}/3000
                   </div>
                 </div>
               )}
@@ -803,8 +920,21 @@ export const CPDialog = ({
                       onChange={(e) => setTiktokTitle(e.target.value)}
                       placeholder="Enter video title..."
                       className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
-                      rows={2}
+                      rows={1}
                       maxLength={150}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Description (Optional)</Label>
+                    <textarea
+                      value={tiktokDescription}
+                      onChange={(e) => setTiktokDescription(e.target.value)}
+                      placeholder="Enter video description..."
+                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                      rows={3}
+                      maxLength={2200}
                     />
                   </div>
 

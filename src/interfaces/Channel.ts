@@ -128,8 +128,12 @@ export type Post = {
   facebookVideoType?: string;
   title?: string;
   clientTimeZone?: string;
+  facebookText?: string;
+  instagramText?: string;
+  linkedinText?: string;
   xText?: string;
   tiktokPrivacy?: string;
+  tiktokDescription?: string;
   tiktokAllowComment?: boolean;
   tiktokAllowDuet?: boolean;
   tiktokAllowStitch?: boolean;

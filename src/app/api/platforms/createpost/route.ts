@@ -91,7 +91,7 @@ export async function POST(request: Request) {
                   ),
                   pageId: channel.socialMedia?.facebook?.id,
                   media: post.media,
-                  message: post.message,
+                  message: post.facebookText || post.message,
                   facebookVideoType: post.facebookVideoType as
                     | "default"
                     | "reel"
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
                     channel.socialMedia.instagram.pageAccessToken,
                   ),
                   pageId: channel.socialMedia?.instagram?.instagramId,
-                  message: post.message,
+                  message: post.instagramText || post.message,
                   media: post.media,
                 });
 
@@ -166,6 +166,7 @@ export async function POST(request: Request) {
                   message: post.message,
                   media: post.media,
                   title: post.title,
+                  description: post.tiktokDescription,
                   privacy_level: post.tiktokPrivacy,
                   disable_comment: !post.tiktokAllowComment, // API expects disable_*, UI has Allow *
                   disable_duet: !post.tiktokAllowDuet,
@@ -233,7 +234,7 @@ export async function POST(request: Request) {
                 const result = await PostOnLinkedIn({
                   accessToken: decryptedAccessToken,
                   author: channel.socialMedia.linkedin.accountId,
-                  message: post.message as string,
+                  message: (post.linkedinText || post.message) as string,
                   media: post.media || [],
                   accountType: channel.socialMedia.linkedin
                     .accountType as string, // Pass account type
@@ -411,8 +412,8 @@ export async function POST(request: Request) {
             platform,
             success: false,
             message: `Error processing platform: ${platformError instanceof Error
-                ? platformError.message
-                : "Unknown error"
+              ? platformError.message
+              : "Unknown error"
               }`,
           };
         }

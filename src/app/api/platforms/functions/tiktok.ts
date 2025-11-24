@@ -7,6 +7,7 @@ export async function PostOnTiktok({
   message,
   media,
   title,
+  description,
   privacy_level,
   disable_duet,
   disable_comment,
@@ -20,6 +21,7 @@ export async function PostOnTiktok({
   message?: string;
   media: MediaItem[];
   title?: string;
+  description?: string;
   privacy_level?: string;
   disable_duet?: boolean;
   disable_comment?: boolean;
@@ -117,7 +119,7 @@ export async function PostOnTiktok({
 
     // Prepare post info for direct publishing
     const postInfo: any = {
-      title: title || message || "", // Use title if provided, else message
+      title: description || title || message || "", // Use description first, then title, then message
       privacy_level: privacy_level || "PUBLIC_TO_EVERYONE",
       disable_duet: disable_duet || false,
       disable_comment: disable_comment || false,
