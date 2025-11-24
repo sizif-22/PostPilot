@@ -129,4 +129,11 @@ export type Post = {
   title?: string;
   clientTimeZone?: string;
   xText?: string;
+  tiktokPrivacy?: string;
+  tiktokAllowComment?: boolean;
+  tiktokAllowDuet?: boolean;
+  tiktokAllowStitch?: boolean;
+  tiktokCommercialContent?: boolean;
+  tiktokBrandOrganic?: boolean;
+  tiktokBrandedContent?: boolean;
 };

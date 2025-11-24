@@ -9,6 +9,7 @@ export interface MediaItem {
   contentType?: string;
   thumbnailUrl?: string;
   size?: number; // size in bytes (optional)
+  duration?: number; // duration in seconds (optional)
 }
 export interface ImagePopupProps {
   isOpen: boolean;

@@ -30,6 +30,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { FaPlay, FaYoutube } from "react-icons/fa";
@@ -40,6 +48,30 @@ import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import { useNotification } from "@/context/NotificationContext";
 import VideoThumbnailPicker from "../Media/VideoThumbnailPicker";
+
+const formatDuration = (seconds?: number) => {
+  if (!seconds) return "00:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+};
+
+const formatSize = (bytes?: number) => {
+  if (!bytes) return "";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${mb.toFixed(1)} MB`;
+};
+
+const getVideoDuration = (url: string): Promise<number> => {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.src = url;
+    video.onloadedmetadata = () => resolve(video.duration);
+    video.onerror = () => resolve(0);
+  });
+};
 
 export const CPDialog = ({
   open,
@@ -63,7 +95,7 @@ export const CPDialog = ({
   const [isPosting, setIsPosting] = useState(false);
   const [date, setDate] = useState("");
   const [publishOption, setPublishOption] = useState<"now" | "schedule">("now");
-  const [activeTab, setActiveTab] = useState<"default" | "x" | "youtube">(
+  const [activeTab, setActiveTab] = useState<"default" | "x" | "youtube" | "tiktok">(
     "default",
   );
   const container = [useRef(null), useRef(null)];
@@ -83,6 +115,18 @@ export const CPDialog = ({
     [],
   );
   const { addNotification } = useNotification();
+
+  // TikTok State
+  const [tiktokCreatorInfo, setTiktokCreatorInfo] = useState<any>(null);
+  const [tiktokTitle, setTiktokTitle] = useState("");
+  const [tiktokPrivacy, setTiktokPrivacy] = useState<string>("");
+  const [tiktokAllowComment, setTiktokAllowComment] = useState(false);
+  const [tiktokAllowDuet, setTiktokAllowDuet] = useState(false);
+  const [tiktokAllowStitch, setTiktokAllowStitch] = useState(false);
+  const [tiktokCommercialContent, setTiktokCommercialContent] = useState(false);
+  const [tiktokBrandOrganic, setTiktokBrandOrganic] = useState(false);
+  const [tiktokBrandedContent, setTiktokBrandedContent] = useState(false);
+  const [tiktokLoading, setTiktokLoading] = useState(false);
 
   // Get sorted timezones for better UX
   const sortedTimezones = getSortedTimezones();
@@ -168,6 +212,31 @@ export const CPDialog = ({
     });
   }, [selectedImages]);
 
+  // Fetch TikTok Creator Info
+  useEffect(() => {
+    if (selectedPlatforms.includes("tiktok") && channel?.id) {
+      const fetchCreatorInfo = async () => {
+        setTiktokLoading(true);
+        try {
+          const response = await fetch("/api/tiktok/creator_info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ channelId: channel.id }),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setTiktokCreatorInfo(data.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch TikTok creator info", error);
+        } finally {
+          setTiktokLoading(false);
+        }
+      };
+      fetchCreatorInfo();
+    }
+  }, [selectedPlatforms, channel?.id]);
+
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
@@ -186,15 +255,33 @@ export const CPDialog = ({
     setFacebookVideoType("default");
     setVideoDuration(null);
     setError(null);
+    setTiktokTitle("");
+    setTiktokPrivacy("");
+    setTiktokAllowComment(false);
+    setTiktokAllowDuet(false);
+    setTiktokAllowStitch(false);
+    setTiktokCommercialContent(false);
+    setTiktokBrandOrganic(false);
+    setTiktokBrandedContent(false);
   };
 
-  const handleImageSelect = (image: MediaItem) => {
-    setSelectedImages((prev) => {
-      if (prev.some((img) => img.url === image.url)) {
-        return prev.filter((img) => img.url !== image.url);
+  const handleImageSelect = async (image: MediaItem) => {
+    const isSelected = selectedImages.some((img) => img.url === image.url);
+
+    if (isSelected) {
+      setSelectedImages((prev) => prev.filter((img) => img.url !== image.url));
+    } else {
+      let imageToAdd = { ...image };
+      if (image.isVideo && !image.duration) {
+        try {
+          const duration = await getVideoDuration(image.url);
+          imageToAdd.duration = duration;
+        } catch (error) {
+          console.error("Failed to get video duration", error);
+        }
       }
-      return [...prev, image];
-    });
+      setSelectedImages((prev) => [...prev, imageToAdd]);
+    }
   };
 
   const isFormValid = (() => {
@@ -237,6 +324,11 @@ export const CPDialog = ({
       postText.trim() === ""
     ) {
       return false;
+    }
+
+    if (selectedPlatforms.includes("tiktok")) {
+      if (!tiktokPrivacy) return false;
+      if (tiktokCommercialContent && !tiktokBrandOrganic && !tiktokBrandedContent) return false;
     }
 
     return true;
@@ -333,6 +425,18 @@ export const CPDialog = ({
             "Instagram videos must be at least 3 seconds long. Please select a longer video.",
           );
         }
+
+        if (
+          hasVideos &&
+          selectedPlatforms.includes("tiktok") &&
+          videoDuration !== null
+        ) {
+          if (tiktokCreatorInfo?.max_video_post_duration_sec && videoDuration > tiktokCreatorInfo.max_video_post_duration_sec) {
+            throw new Error(
+              `TikTok video duration exceeds the limit of ${tiktokCreatorInfo.max_video_post_duration_sec} seconds.`,
+            );
+          }
+        }
       }
 
       let scheduledTimestamp: number | undefined;
@@ -373,6 +477,14 @@ export const CPDialog = ({
           : Timestamp.fromDate(timeStampDate),
         isScheduled: !postImmediately,
         xText,
+        title: tiktokTitle,
+        tiktokPrivacy,
+        tiktokAllowComment,
+        tiktokAllowDuet,
+        tiktokAllowStitch,
+        tiktokCommercialContent,
+        tiktokBrandOrganic,
+        tiktokBrandedContent,
       };
 
       if (channel?.id) {
@@ -477,11 +589,10 @@ export const CPDialog = ({
                 {channel?.socialMedia?.facebook && (
                   <button
                     onClick={() => handlePlatformToggle("facebook")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("facebook")
-                        ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("facebook")
+                      ? "border-blue-300 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FiFacebook className="text-lg text-blue-700 dark:text-blue-300" />
                     <span className="text-xs sm:text-sm">Facebook</span>
@@ -490,11 +601,10 @@ export const CPDialog = ({
                 {channel?.socialMedia?.instagram && (
                   <button
                     onClick={() => handlePlatformToggle("instagram")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("instagram")
-                        ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder dark:text-pink-300"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("instagram")
+                      ? "border-pink-300 bg-pink-50 text-pink-700 dark:bg-darkBorder dark:text-pink-300"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FiInstagram className="text-lg text-pink-700 dark:text-pink-300" />
                     <span className="text-xs sm:text-sm">Instagram</span>
@@ -503,24 +613,22 @@ export const CPDialog = ({
                 {channel?.socialMedia?.tiktok && (
                   <button
                     onClick={() => handlePlatformToggle("tiktok")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("tiktok")
-                        ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("tiktok")
+                      ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FaTiktok className="text-lg" />
-                    <span className="text-xs sm:text-sm">TikTok</span>
+                    <span className="text-xs sm:text-sm">{channel?.socialMedia?.tiktok.username}</span>
                   </button>
                 )}
                 {channel?.socialMedia?.youtube && (
                   <button
                     onClick={() => handlePlatformToggle("youtube")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("youtube")
-                        ? "border-red-600 bg-red-50 text-red-700 dark:bg-darkBorder dark:text-red-300"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("youtube")
+                      ? "border-red-600 bg-red-50 text-red-700 dark:bg-darkBorder dark:text-red-300"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FaYoutube className="text-lg text-red-600" />
                     <span className="text-xs sm:text-sm">YouTube</span>
@@ -529,11 +637,10 @@ export const CPDialog = ({
                 {channel?.socialMedia?.linkedin && (
                   <button
                     onClick={() => handlePlatformToggle("linkedin")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("linkedin")
-                        ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("linkedin")
+                      ? "border-blue-700 bg-blue-50 text-blue-700 dark:bg-darkBorder dark:text-blue-300"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FaLinkedin className="text-lg text-blue-700 dark:text-blue-300" />
                     <span className="text-xs sm:text-sm">LinkedIn</span>
@@ -542,11 +649,10 @@ export const CPDialog = ({
                 {channel?.socialMedia?.x && (
                   <button
                     onClick={() => handlePlatformToggle("x")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${
-                      selectedPlatforms.includes("x")
-                        ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
-                        : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:py-2 rounded-lg border transition-colors text-sm dark:border-darkBorder ${selectedPlatforms.includes("x")
+                      ? "border-stone-800 bg-stone-800 text-white dark:bg-stone-700"
+                      : "border-stone-200 hover:border-stone-300 dark:hover:border-stone-600"
+                      }`}
                   >
                     <FaXTwitter className="text-lg" />
                     <span className="text-xs sm:text-sm">X</span>
@@ -561,34 +667,42 @@ export const CPDialog = ({
               <div className="flex rounded-lg bg-stone-100 dark:bg-darkBorder p-1">
                 <button
                   onClick={() => setActiveTab("default")}
-                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === "default"
-                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
-                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                  }`}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "default"
+                    ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                    : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                    }`}
                 >
                   Default Message
                 </button>
                 <button
                   onClick={() => setActiveTab("x")}
-                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === "x"
-                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
-                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                  }`}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "x"
+                    ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                    : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                    }`}
                 >
                   X Message
                 </button>
                 {selectedPlatforms.includes("youtube") && (
                   <button
                     onClick={() => setActiveTab("youtube")}
-                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                      activeTab === "youtube"
-                        ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
-                        : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
-                    }`}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "youtube"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
                   >
                     YouTube
+                  </button>
+                )}
+                {selectedPlatforms.includes("tiktok") && (
+                  <button
+                    onClick={() => setActiveTab("tiktok")}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "tiktok"
+                      ? "bg-white dark:bg-darkButtons shadow-sm text-stone-900 dark:text-white"
+                      : "text-stone-600 dark:text-white/70 hover:text-stone-900 dark:hover:text-white"
+                      }`}
+                  >
+                    TikTok
                   </button>
                 )}
               </div>
@@ -663,6 +777,195 @@ export const CPDialog = ({
                     rows={4}
                     maxLength={280}
                   />
+                </div>
+              )}
+              {activeTab === "tiktok" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                      TikTok Post Details
+                    </h3>
+                    {tiktokLoading && (
+                      <span className="text-xs text-stone-500">Loading info...</span>
+                    )}
+                    {!tiktokLoading && tiktokCreatorInfo && (
+                      <span className="text-xs text-stone-500">
+                        Posting as: <span className="font-semibold">{tiktokCreatorInfo.creator_nickname || "Unknown"}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Title (Optional)</Label>
+                    <textarea
+                      value={tiktokTitle}
+                      onChange={(e) => setTiktokTitle(e.target.value)}
+                      placeholder="Enter video title..."
+                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                      rows={2}
+                      maxLength={150}
+                    />
+                  </div>
+
+                  {/* Privacy */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Privacy Status <span className="text-red-500">*</span></Label>
+                    <Select value={tiktokPrivacy} onValueChange={setTiktokPrivacy}>
+                      <SelectTrigger className="w-full dark:bg-darkButtons dark:border-darkBorder">
+                        <SelectValue placeholder="Select privacy level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tiktokCreatorInfo?.privacy_level_options?.map((option: string) => (
+                          <SelectItem key={option} value={option}>
+                            {option.replace(/_/g, " ")}
+                          </SelectItem>
+                        )) || (
+                            <>
+                              <SelectItem value="PUBLIC_TO_EVERYONE">Public to Everyone</SelectItem>
+                              <SelectItem value="MUTUAL_FOLLOW_FRIENDS">Mutual Follow Friends</SelectItem>
+                              <SelectItem value="SELF_ONLY" disabled={tiktokBrandedContent}>Self Only {tiktokBrandedContent && "(Disabled for Branded Content)"}</SelectItem>
+                              <SelectItem value="FOLLOWER_OF_CREATOR">Follower of Creator</SelectItem>
+                            </>
+                          )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Interactions */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Allow Interactions</Label>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="allow-comment"
+                          checked={tiktokAllowComment}
+                          onCheckedChange={(checked) => setTiktokAllowComment(checked as boolean)}
+                          disabled={tiktokCreatorInfo?.comment_disabled}
+                        />
+                        <label
+                          htmlFor="allow-comment"
+                          className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${tiktokCreatorInfo?.comment_disabled ? "opacity-50" : ""}`}
+                        >
+                          Comment
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="allow-duet"
+                          checked={tiktokAllowDuet}
+                          onCheckedChange={(checked) => setTiktokAllowDuet(checked as boolean)}
+                          disabled={tiktokCreatorInfo?.duet_disabled || (selectedImages.length > 0 && !selectedImages[0].isVideo)}
+                        />
+                        <label
+                          htmlFor="allow-duet"
+                          className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${tiktokCreatorInfo?.duet_disabled || (selectedImages.length > 0 && !selectedImages[0].isVideo) ? "opacity-50" : ""}`}
+                        >
+                          Duet
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="allow-stitch"
+                          checked={tiktokAllowStitch}
+                          onCheckedChange={(checked) => setTiktokAllowStitch(checked as boolean)}
+                          disabled={tiktokCreatorInfo?.stitch_disabled || (selectedImages.length > 0 && !selectedImages[0].isVideo)}
+                        />
+                        <label
+                          htmlFor="allow-stitch"
+                          className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${tiktokCreatorInfo?.stitch_disabled || (selectedImages.length > 0 && !selectedImages[0].isVideo) ? "opacity-50" : ""}`}
+                        >
+                          Stitch
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Commercial Content */}
+                  <div className="space-y-3 pt-2 border-t border-stone-200 dark:border-darkBorder">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="commercial-content"
+                        checked={tiktokCommercialContent}
+                        onCheckedChange={(checked) => {
+                          setTiktokCommercialContent(checked as boolean);
+                          if (!checked) {
+                            setTiktokBrandOrganic(false);
+                            setTiktokBrandedContent(false);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="commercial-content"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Disclose Commercial Content
+                      </label>
+                    </div>
+
+                    {tiktokCommercialContent && (
+                      <div className="pl-6 space-y-3">
+                        <p className="text-xs text-stone-500 dark:text-white/60">
+                          You need to indicate if your content promotes yourself, a third party, or both.
+                        </p>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="your-brand"
+                              checked={tiktokBrandOrganic}
+                              onCheckedChange={(checked) => setTiktokBrandOrganic(checked as boolean)}
+                            />
+                            <label htmlFor="your-brand" className="text-sm">Your Brand</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="branded-content"
+                              checked={tiktokBrandedContent}
+                              onCheckedChange={(checked) => {
+                                const isChecked = checked as boolean;
+                                setTiktokBrandedContent(isChecked);
+                                if (isChecked && tiktokPrivacy === "SELF_ONLY") {
+                                  setTiktokPrivacy("PUBLIC_TO_EVERYONE"); // Auto-switch or just warn
+                                }
+                              }}
+                            />
+                            <label htmlFor="branded-content" className="text-sm">Branded Content</label>
+                          </div>
+                        </div>
+
+                        {/* Labels Preview */}
+                        {(tiktokBrandOrganic || tiktokBrandedContent) && (
+                          <div className="text-xs bg-stone-100 dark:bg-darkButtons p-2 rounded">
+                            <span className="font-semibold">Label Preview: </span>
+                            {tiktokBrandOrganic && !tiktokBrandedContent && "Promotional content"}
+                            {!tiktokBrandOrganic && tiktokBrandedContent && "Paid partnership"}
+                            {tiktokBrandOrganic && tiktokBrandedContent && "Paid partnership"}
+                          </div>
+                        )}
+
+                        {/* Privacy Warning */}
+                        {tiktokBrandedContent && (
+                          <p className="text-xs text-orange-500">
+                            Branded content visibility cannot be set to private.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Compliance Declaration */}
+                  <div className="text-xs text-stone-500 dark:text-white/50 italic">
+                    {tiktokCommercialContent ? (
+                      tiktokBrandedContent ? (
+                        "By posting, you agree to TikTok's Branded Content Policy and Music Usage Confirmation."
+                      ) : (
+                        "By posting, you agree to TikTok's Music Usage Confirmation."
+                      )
+                    ) : (
+                      "By posting, you agree to TikTok's Music Usage Confirmation"
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -749,15 +1052,21 @@ export const CPDialog = ({
                           )}
                         </div>
                         {item.isVideo && (
-                          <button
-                            onClick={() => {
-                              setSelectedVideo(item);
-                              setIsThumbnailPickerOpen(true);
-                            }}
-                            className="absolute bottom-1 left-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center text-xs hover:bg-black"
-                          >
-                            <FiEdit2 className="w-3 h-3" />
-                          </button>
+                          <>
+                            <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none z-10">
+                              {formatDuration(item.duration)}
+                              {item.size ? ` • ${formatSize(item.size)}` : ""}
+                            </div>
+                            <button
+                              onClick={() => {
+                                setSelectedVideo(item);
+                                setIsThumbnailPickerOpen(true);
+                              }}
+                              className="absolute bottom-1 left-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center text-xs hover:bg-black z-10"
+                            >
+                              <FiEdit2 className="w-3 h-3" />
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={(e) => {
@@ -810,11 +1119,10 @@ export const CPDialog = ({
                       .map((item) => (
                         <div
                           key={item.url}
-                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${
-                            selectedImages.some((img) => img.url === item.url)
-                              ? "ring-2 ring-violet-500"
-                              : ""
-                          }`}
+                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${selectedImages.some((img) => img.url === item.url)
+                            ? "ring-2 ring-violet-500"
+                            : ""
+                            }`}
                           onClick={() => handleImageSelect(item)}
                         >
                           <Image
@@ -832,11 +1140,10 @@ export const CPDialog = ({
                       .map((item) => (
                         <div
                           key={item.url}
-                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${
-                            selectedImages.some((img) => img.url === item.url)
-                              ? "ring-2 ring-violet-500"
-                              : ""
-                          }`}
+                          className={`relative group cursor-pointer rounded-lg overflow-hidden ${selectedImages.some((img) => img.url === item.url)
+                            ? "ring-2 ring-violet-500"
+                            : ""
+                            }`}
                           onClick={() => handleImageSelect(item)}
                         >
                           <video
@@ -900,11 +1207,10 @@ export const CPDialog = ({
                   )}
 
                   <label
-                    className={`flex items-center gap-3 ${
-                      videoValidationErrors.length > 0
-                        ? "cursor-not-allowed opacity-50"
-                        : "cursor-pointer"
-                    }`}
+                    className={`flex items-center gap-3 ${videoValidationErrors.length > 0
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
+                      }`}
                   >
                     <Checkbox
                       checked={facebookVideoType === "reel"}
@@ -1043,55 +1349,49 @@ export const CPDialog = ({
                 {/* Form Validation Summary */}
                 <div className="space-y-2 mb-4 text-xs">
                   <div
-                    className={`flex items-center gap-2 ${
-                      selectedPlatforms.length > 0
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-stone-500"
-                    }`}
+                    className={`flex items-center gap-2 ${selectedPlatforms.length > 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-stone-500"
+                      }`}
                   >
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        selectedPlatforms.length > 0
-                          ? "bg-green-500"
-                          : "bg-stone-300"
-                      }`}
+                      className={`w-2 h-2 rounded-full ${selectedPlatforms.length > 0
+                        ? "bg-green-500"
+                        : "bg-stone-300"
+                        }`}
                     />
                     Platform selected ({selectedPlatforms.length})
                   </div>
 
                   <div
-                    className={`flex items-center gap-2 ${
-                      selectedImages.length > 0 ||
+                    className={`flex items-center gap-2 ${selectedImages.length > 0 ||
                       postText.trim() ||
                       xText.trim()
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-stone-500"
-                    }`}
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-stone-500"
+                      }`}
                   >
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        selectedImages.length > 0 ||
+                      className={`w-2 h-2 rounded-full ${selectedImages.length > 0 ||
                         postText.trim() ||
                         xText.trim()
-                          ? "bg-green-500"
-                          : "bg-stone-300"
-                      }`}
+                        ? "bg-green-500"
+                        : "bg-stone-300"
+                        }`}
                     />
                     Content added
                   </div>
 
                   {publishOption === "schedule" && (
                     <div
-                      className={`flex items-center gap-2 ${
-                        date
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-stone-500"
-                      }`}
+                      className={`flex items-center gap-2 ${date
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-stone-500"
+                        }`}
                     >
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          date ? "bg-green-500" : "bg-stone-300"
-                        }`}
+                        className={`w-2 h-2 rounded-full ${date ? "bg-green-500" : "bg-stone-300"
+                          }`}
                       />
                       Schedule time set
                     </div>

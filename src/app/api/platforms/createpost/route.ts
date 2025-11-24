@@ -165,6 +165,14 @@ export async function POST(request: Request) {
                   openId: channel.socialMedia.tiktok.openId,
                   message: post.message,
                   media: post.media,
+                  title: post.title,
+                  privacy_level: post.tiktokPrivacy,
+                  disable_comment: !post.tiktokAllowComment, // API expects disable_*, UI has Allow *
+                  disable_duet: !post.tiktokAllowDuet,
+                  disable_stitch: !post.tiktokAllowStitch,
+                  brand_content_toggle: post.tiktokCommercialContent,
+                  brand_organic_toggle: post.tiktokBrandOrganic,
+                  branded_content_toggle: post.tiktokBrandedContent,
                   // channelId: channel.id,
                 });
 
@@ -402,11 +410,10 @@ export async function POST(request: Request) {
           return {
             platform,
             success: false,
-            message: `Error processing platform: ${
-              platformError instanceof Error
+            message: `Error processing platform: ${platformError instanceof Error
                 ? platformError.message
                 : "Unknown error"
-            }`,
+              }`,
           };
         }
       });

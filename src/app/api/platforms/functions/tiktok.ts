@@ -6,11 +6,27 @@ export async function PostOnTiktok({
   openId,
   message,
   media,
+  title,
+  privacy_level,
+  disable_duet,
+  disable_comment,
+  disable_stitch,
+  brand_content_toggle,
+  brand_organic_toggle,
+  branded_content_toggle,
 }: {
   accessToken: string;
   openId: string;
   message?: string;
   media: MediaItem[];
+  title?: string;
+  privacy_level?: string;
+  disable_duet?: boolean;
+  disable_comment?: boolean;
+  disable_stitch?: boolean;
+  brand_content_toggle?: boolean;
+  brand_organic_toggle?: boolean;
+  branded_content_toggle?: boolean;
 }) {
   try {
     if (!accessToken || !openId || !media) {
@@ -101,13 +117,13 @@ export async function PostOnTiktok({
 
     // Prepare post info for direct publishing
     const postInfo: any = {
-      title: message || "",
-      privacy_level: "PUBLIC_TO_EVERYONE",
-      disable_duet: false,
-      disable_comment: false,
-      disable_stitch: false,
-      brand_content_toggle: false,
-      brand_organic_toggle: false,
+      title: title || message || "", // Use title if provided, else message
+      privacy_level: privacy_level || "PUBLIC_TO_EVERYONE",
+      disable_duet: disable_duet || false,
+      disable_comment: disable_comment || false,
+      disable_stitch: disable_stitch || false,
+      brand_content_toggle: brand_content_toggle || false,
+      brand_organic_toggle: brand_organic_toggle || false,
     };
 
     // Add cover image URL if thumbnail is available
@@ -159,7 +175,7 @@ export async function PostOnTiktok({
       console.error("TikTok API Error:", errorData);
       throw new Error(
         errorData.error?.message ||
-          `HTTP ${initResponse.status}: ${initResponse.statusText}`,
+        `HTTP ${initResponse.status}: ${initResponse.statusText}`,
       );
     }
 
@@ -254,6 +270,31 @@ export async function PostOnTiktok({
     };
   } catch (error) {
     console.error("PostOnTiktok error:", error);
+    throw error;
+  }
+}
+
+export async function getCreatorInfo(accessToken: string) {
+  try {
+    const response = await fetch(
+      "https://open.tiktokapis.com/v2/post/publish/creator_info/query/",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch creator info: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching creator info:", error);
     throw error;
   }
 }
