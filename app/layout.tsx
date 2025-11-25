@@ -35,23 +35,15 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
         <div className="fixed inset-0 bg-cover bg-center -z-20" style={{ backgroundImage: `url('${img.src}')` }}></div>
-        {/*<Image
-          src={img}
-          alt="Background Image"
-          layout="fill"
-          objectFit="cover"
-          className="fixed top-0 max-h-screen inset-0 h-full object-cover"
-        />*/}
         <div className="absolute inset-0 dark:bg-black/90 bg-white/90 -z-10 backdrop-blur-lg"></div>
-
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ConvexClientProvider>
             <NotificationsProvider>
               <SecondLayer>{children}</SecondLayer>
             </NotificationsProvider>
           </ConvexClientProvider>
+          <Toaster />
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   );

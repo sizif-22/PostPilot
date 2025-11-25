@@ -31,7 +31,14 @@ function useAuthFromAuthKit() {
       }
 
       try {
+        // When a force refresh is requested, prefer returning an existing token if present
+        // to avoid triggering navigation/redirect logic some auth libraries perform during refresh.
+        // Only fall back to `refresh()` if no token is available.
         if (forceRefreshToken) {
+          const current = await getAccessToken();
+          if (current) {
+            return current;
+          }
           return (await refresh()) ?? null;
         }
 

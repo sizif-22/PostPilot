@@ -1,22 +1,11 @@
 'use client';
 import * as React from 'react';
 import { useState } from 'react';
-import { Moon, Sun, Plus, Folder } from 'lucide-react';
+import { Plus, Folder } from 'lucide-react';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useTheme } from 'next-themes';
 import { CreateCollectionDialog } from '@/components/create-Collection';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
 import { IconFolderCode } from '@tabler/icons-react';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Button } from '@/components/ui/button';
@@ -34,8 +23,8 @@ import {
 } from '@/components/ui/pagination';
 import Link from 'next/link';
 import { useMobile } from '@/hooks/use-mobile';
-import { LogoutButton } from '@/components/logout-button';
-import NotificationBar from '@/components/NotificationBar';
+import { FilterDropdown } from './filter';
+import { Nav } from './nav';
 
 const CollectionSkeleton = () => (
   <div className="p-4">
@@ -49,14 +38,13 @@ const CollectionSkeleton = () => (
     </div>
   </div>
 );
-
 const CollectionPage = () => {
   const isMobile = useMobile();
   const { user, loading: userLoading } = useAuth();
   const [pagination, setPagination] = useState<{ page: number; pageSize: number; cursors: (string | null)[] }>({
     page: 1,
     pageSize: 5,
-    cursors: [null], // Store cursors for each page
+    cursors: [null],
   });
   const { page, pageSize, cursors } = pagination;
 
@@ -73,15 +61,6 @@ const CollectionPage = () => {
       : 'skip',
   );
   const collectionsLoading = collectionsData === undefined;
-
-  // Since Convex doesn't provide a refetch function for this specific query pattern,
-  // we'll define a placeholder or implement a manual refetch if needed
-  // const refetch = () => {
-  //   // In Convex, mutations automatically invalidate queries,
-  //   // so manual refetching may not be needed in most cases
-  //   // We'll implement a simple placeholder
-  //   console.log('Refetching collections...');
-  // };
 
   // Add state for role filtering
   const [selectedRole, setSelectedRole] = React.useState<string>('');
@@ -355,129 +334,3 @@ const CollectionPage = () => {
 };
 
 export default CollectionPage;
-
-const Nav = () => {
-  const { user, loading: userLoading } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const handleToggle = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-  return (
-    <nav className="flex justify-between items-center py-4">
-      <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-lg">P</span>
-        </div>
-        <span className="text-xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          PostPilot
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <NotificationBar />
-        <DropdownMenu>
-          {userLoading ? (
-            <Skeleton className="h-9 w-9 rounded-lg" />
-          ) : (
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-10 w-10 rounded-lg cursor-pointer">
-                <AvatarFallback className="rounded-lg bg-muted">
-                  {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-          )}
-          <DropdownMenuContent className="w-64 rounded-xl" side={'bottom'} align="end" sideOffset={8}>
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-3 px-3 py-4 text-left">
-                {userLoading ? (
-                  <>
-                    <Skeleton className="h-10 w-10 rounded-lg" />
-                    <div className="grid flex-1 text-left text-sm leading-tight space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Avatar className="h-10 w-10 rounded-lg">
-                      <AvatarFallback className="rounded-lg bg-muted">
-                        {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{user?.firstName + ' ' + user?.lastName}</span>
-                      <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={handleToggle}>
-                {theme === 'light' ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
-                <span>Toggle Theme</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogoutButton />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </nav>
-  );
-};
-
-type CollectionType = {
-  label: string;
-  value: string;
-  role: string;
-};
-
-const FilterDropdown = ({
-  collections,
-  selectedRole,
-  onRoleChange,
-}: {
-  collections: CollectionType[];
-  selectedRole: string;
-  onRoleChange: (role: string) => void;
-}) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="h-12">
-          {/*<span className="mr-2">Filter</span>*/}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-          </svg>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 p-4" align="end">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium mb-2">Search</h3>
-            <ComboboxDemo frameworks={collections.map((c) => ({ label: c.label, value: c.value, role: c.role }))} />
-          </div>
-          <div>
-            <h3 className="text-sm font-medium mb-2">Role</h3>
-            <RoleFilter selectedRole={selectedRole} onRoleChange={onRoleChange} />
-          </div>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};

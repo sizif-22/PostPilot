@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import { ChevronsUpDown, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -15,13 +14,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { LogoutButton } from './logout-button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LogOut } from 'lucide-react';
 
 export function NavUser() {
   const { user, loading: userLoading } = useAuth();
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
   const handleToggle = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
@@ -35,14 +35,6 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {/*<Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>*/}
               {userLoading ? (
                 <>
                   <Skeleton className="h-10 w-10 rounded-lg" />
@@ -75,14 +67,6 @@ export function NavUser() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                {/*<Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
-                </div>*/}
                 {userLoading ? (
                   <>
                     <Skeleton className="h-10 w-10 rounded-lg" />
@@ -115,10 +99,9 @@ export function NavUser() {
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              {/*<LogOut />
-              Log out*/}
-              <LogoutButton />
+            <DropdownMenuItem onClick={() => signOut({ returnTo: 'http://localhost:3000' })}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
