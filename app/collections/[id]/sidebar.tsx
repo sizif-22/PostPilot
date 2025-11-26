@@ -21,7 +21,7 @@ export default function CollectionSidebar({
       }
     >
       <AppSidebar variant="inset" collectionId={collectionId as Id<'collection'>} />
-      <SidebarInset>
+      <SidebarInset className='relative'>
         <SiteHeader />
         {children}
       </SidebarInset>

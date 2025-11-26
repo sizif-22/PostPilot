@@ -73,7 +73,7 @@ export function AppSidebar({
                   asChild
                   className={route === section.title ? 'dark:bg-white/20 bg-black text-white' : ''}
                   onClick={() => {
-                    router.push(`./${section.title}`);
+                    router.replace(`./${section.title}`);
                   }}
                 >
                   <div className="flex items-center gap-2">

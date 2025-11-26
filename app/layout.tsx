@@ -7,6 +7,7 @@ import { NotificationsProvider } from '@/components/NotificationsProvider';
 import img from '../public/bgImage.webp';
 import { Toaster } from '@/components/ui/sonner';
 import SecondLayer from './secondLayer';
+import { UploadProvider } from '@/components/UploadProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,7 +38,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ConvexClientProvider>
             <NotificationsProvider>
-              <SecondLayer>{children}</SecondLayer>
+              <UploadProvider>
+                <SecondLayer>{children}</SecondLayer>
+              </UploadProvider>
             </NotificationsProvider>
           </ConvexClientProvider>
           <Toaster />
