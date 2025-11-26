@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from 'next-themes';
 import { LogOut } from 'lucide-react';
 import {
@@ -42,6 +42,7 @@ export const Nav = () => {
           ) : (
             <DropdownMenuTrigger asChild>
               <Avatar className="h-10 w-10 rounded-lg cursor-pointer">
+                <AvatarImage src={user?.profilePictureUrl ?? ""} />
                 <AvatarFallback className="rounded-lg bg-muted">
                   {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
                 </AvatarFallback>
@@ -62,6 +63,7 @@ export const Nav = () => {
                 ) : (
                   <>
                     <Avatar className="h-10 w-10 rounded-lg">
+                      <AvatarImage src={user?.profilePictureUrl ?? ""} />
                       <AvatarFallback className="rounded-lg bg-muted">
                         {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
                       </AvatarFallback>

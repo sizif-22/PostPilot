@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { ChevronsUpDown, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,8 +46,9 @@ export function NavUser() {
               ) : (
                 <>
                   <Avatar className="rounded-lg">
+                    <AvatarImage src={user?.profilePictureUrl ?? ""} />
                     <AvatarFallback className="rounded-lg bg-muted flex items-center justify-center">
-                      {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
+                      {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}{ }
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -78,6 +79,7 @@ export function NavUser() {
                 ) : (
                   <>
                     <Avatar className="h-10 w-10 rounded-lg">
+                      <AvatarImage src={user?.profilePictureUrl ?? ""} />
                       <AvatarFallback className="rounded-lg bg-muted data-[state=open]:size-10">
                         {user?.firstName?.slice(0, 2)?.toUpperCase() || 'U'}
                       </AvatarFallback>

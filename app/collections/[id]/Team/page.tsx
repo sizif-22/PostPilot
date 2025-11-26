@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { InviteDialog } from "@/components/InviteDialog";
 import { CreateSessionButton } from "@/components/CreateSessionButton";
 import { SessionsTable } from "@/components/SessionsTable";

@@ -1,12 +1,10 @@
 'use client';
-
 import { ReactNode, useEffect } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Spinner } from '@/components/ui/spinner';
 import { useSidebar } from '@/app/secondLayer';
-
 export default function CollectionLayout({ children }: { children: ReactNode }) {
     const { setSidebarOpen } = useSidebar();
     const params = useParams();
@@ -15,7 +13,6 @@ export default function CollectionLayout({ children }: { children: ReactNode }) 
         collectionId,
     });
     const router = useRouter();
-
     useEffect(() => {
         if (membership === null) {
             setSidebarOpen(false);
