@@ -2,6 +2,7 @@ import { v } from 'convex/values';
 import { query, mutation } from './_generated/server';
 import { paginationOptsValidator } from 'convex/server';
 import { Id } from './_generated/dataModel';
+
 // Notification-related functions
 
 export const getNotifications = query({
@@ -26,54 +27,54 @@ export const getNotifications = query({
   },
 });
 
-export const createNotification = mutation({
-  args: {
-    userId: v.string(),
-    type: v.union(
-      v.object({
-        name: v.literal('invitation'),
-        senderName: v.string(),
-        senderEmail: v.string(),
-        collectionId: v.id('collection'),
-        collectionName: v.string(),
-        role: v.string(),
-      }),
-      v.object({
-        name: v.literal('announcement'),
-        title: v.string(),
-        message: v.string(),
-      }),
-    ),
-  },
-  handler: async (ctx, args) => {
-    let notificationData: any = {
-      userId: args.userId,
-      type: args.type.name,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    };
+// export const createNotification = mutation({
+//   args: {
+//     userId: v.string(),
+//     type: v.union(
+//       v.object({
+//         name: v.literal('invitation'),
+//         senderName: v.string(),
+//         senderEmail: v.string(),
+//         collectionId: v.id('collection'),
+//         collectionName: v.string(),
+//         role: v.string(),
+//       }),
+//       v.object({
+//         name: v.literal('announcement'),
+//         title: v.string(),
+//         message: v.string(),
+//       }),
+//     ),
+//   },
+//   handler: async (ctx, args) => {
+//     let notificationData: any = {
+//       userId: args.userId,
+//       type: args.type.name,
+//       isRead: false,
+//       createdAt: new Date().toISOString(),
+//     };
 
-    if (args.type.name === 'invitation') {
-      notificationData = {
-        ...notificationData,
-        senderName: args.type.senderName,
-        senderEmail: args.type.senderEmail,
-        collectionId: args.type.collectionId,
-        collectionName: args.type.collectionName,
-        role: args.type.role,
-      };
-    } else if (args.type.name === 'announcement') {
-      notificationData = {
-        ...notificationData,
-        title: args.type.title,
-        message: args.type.message,
-      };
-    }
+//     if (args.type.name === 'invitation') {
+//       notificationData = {
+//         ...notificationData,
+//         senderName: args.type.senderName,
+//         senderEmail: args.type.senderEmail,
+//         collectionId: args.type.collectionId,
+//         collectionName: args.type.collectionName,
+//         role: args.type.role,
+//       };
+//     } else if (args.type.name === 'announcement') {
+//       notificationData = {
+//         ...notificationData,
+//         title: args.type.title,
+//         message: args.type.message,
+//       };
+//     }
 
-    const notificationId = await ctx.db.insert('notifications', notificationData);
-    return notificationId;
-  },
-});
+//     // const notificationId = await ctx.db.insert('notifications', notificationData);
+//     // return notificationId;
+//   },
+// });
 
 export const updateNotification = mutation({
   args: {
@@ -234,33 +235,6 @@ export const updateCollection = mutation({
     }
   },
 });
-
-// Function to invite a user to a collection (creates an invitation notification)
-export const inviteUserToCollection = mutation({
-  args: {
-    collectionId: v.id('collection'),
-    collectionName: v.string(),
-    invitedUserId: v.string(), // The user being invited
-    inviterName: v.string(), // The name of the person doing the inviting
-    inviterEmail: v.string(), // The email of the person doing the inviting
-    role: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // Create an invitation notification for the invited user
-    await ctx.db.insert('notifications', {
-      userId: args.invitedUserId,
-      type: 'invitation',
-      senderName: args.inviterName,
-      senderEmail: args.inviterEmail,
-      collectionId: args.collectionId,
-      collectionName: args.collectionName,
-      role: args.role,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    });
-  },
-});
-
 // Function to accept a collection invitation
 export const acceptCollectionInvitation = mutation({
   args: {
@@ -297,26 +271,26 @@ export const acceptCollectionInvitation = mutation({
 });
 
 // Function to reject a collection invitation
-export const rejectCollectionInvitation = mutation({
-  args: {
-    notificationId: v.id('notifications'),
-    userId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // Get the notification
-    const notification = await ctx.db.get(args.notificationId);
-    if (!notification || notification.userId !== args.userId) {
-      throw new Error('Notification not found or unauthorized');
-    }
+// export const rejectCollectionInvitation = mutation({
+//   args: {
+//     notificationId: v.id('notifications'),
+//     userId: v.string(),
+//   },
+//   handler: async (ctx, args) => {
+//     // Get the notification
+//     const notification = await ctx.db.get(args.notificationId);
+//     if (!notification || notification.userId !== args.userId) {
+//       throw new Error('Notification not found or unauthorized');
+//     }
 
-    if (notification.type !== 'invitation') {
-      throw new Error('Cannot reject non-invitation notification');
-    }
+//     if (notification.type !== 'invitation') {
+//       throw new Error('Cannot reject non-invitation notification');
+//     }
 
-    // Mark the notification as read (or delete it)
-    await ctx.db.patch(args.notificationId, { isRead: true });
-  },
-});
+//     // Mark the notification as read (or delete it)
+//     await ctx.db.patch(args.notificationId, { isRead: true });
+//   },
+// });
 
 // Function to get a collection by its ID
 
@@ -371,6 +345,110 @@ export const deleteCollection = mutation({
     collectionId: v.id('collection'),
   },
   handler: async (ctx, args) => {
-    // await ctx.db.delete(args.collectionId);
+    const userCollections = await ctx.db
+      .query('user_collection')
+      .withIndex('by_collectionId', (q) => q.eq('collectionId', args.collectionId))
+      .collect();
+
+    for (const uc of userCollections) {
+      await ctx.db.delete(uc._id);
+    }
+
+    await ctx.db.delete(args.collectionId);
+  },
+});
+
+export const getTeamMembers = query({
+  args: {
+    collectionId: v.id('collection'),
+  },
+  handler: async (ctx, args) => {
+    const userCollections = await ctx.db
+      .query('user_collection')
+      .withIndex('by_collectionId', (q) => q.eq('collectionId', args.collectionId))
+      .collect();
+
+    const teamMembers = await Promise.all(
+      userCollections.map(async (uc) => {
+        const user = await ctx.db
+          .query('users')
+          .withIndex('by_userId', (q) => q.eq('userId', uc.userId))
+          .first();
+        return {
+          ...uc,
+          user,
+        };
+      }),
+    );
+
+    return teamMembers;
+  },
+});
+
+export const updateMemberRole = mutation({
+  args: {
+    collectionId: v.id('collection'),
+    userId: v.string(),
+    role: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userCol = await ctx.db
+      .query('user_collection')
+      .withIndex('by_collectionId', (q) => q.eq('collectionId', args.collectionId))
+      .filter((q) => q.eq(q.field('userId'), args.userId))
+      .first();
+
+    if (!userCol) {
+      throw new Error('User not found in collection');
+    }
+
+    await ctx.db.patch(userCol._id, { role: args.role });
+  },
+});
+
+export const removeMember = mutation({
+  args: {
+    collectionId: v.id('collection'),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userCol = await ctx.db
+      .query('user_collection')
+      .withIndex('by_collectionId', (q) => q.eq('collectionId', args.collectionId))
+      .filter((q) => q.eq(q.field('userId'), args.userId))
+      .first();
+
+    if (!userCol) {
+      throw new Error('User not found in collection');
+    }
+
+    await ctx.db.delete(userCol._id);
+  },
+});
+
+export const getMyMembership = query({
+  args: {
+    collectionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const collectionId = ctx.db.normalizeId('collection', args.collectionId);
+    if (!collectionId) {
+      return null;
+    }
+
+    const userId = identity.subject;
+
+    const userCol = await ctx.db
+      .query('user_collection')
+      .withIndex('by_collectionId', (q) => q.eq('collectionId', collectionId))
+      .filter((q) => q.eq(q.field('userId'), userId))
+      .first();
+
+    return userCol;
   },
 });

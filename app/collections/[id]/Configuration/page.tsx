@@ -144,7 +144,6 @@ const Configuration = () => {
                   variant="destructive"
                   onClick={async () => {
                     await deleteCollection({ collectionId });
-                    router.push('/collections');
                   }}
                 >
                   Delete

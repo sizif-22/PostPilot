@@ -33,9 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
-        <div className="fixed inset-0 bg-cover bg-center -z-20" style={{ backgroundImage: `url('${img.src}')` }}></div>
-        <div className="absolute inset-0 dark:bg-black/90 bg-white/90 -z-10 backdrop-blur-lg"></div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ConvexClientProvider>
             <NotificationsProvider>

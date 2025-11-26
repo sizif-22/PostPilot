@@ -86,6 +86,29 @@ export default defineSchema({
       }),
     ),
   }),
+  users: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    email: v.string(),
+    image: v.optional(v.string()),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_email', ['email']),
+  sessions: defineTable({
+    collectionId: v.id('collection'),
+    createdAt: v.string(),
+    expiresAt: v.string(),
+    actionCount: v.number(),
+    status: v.string(), // 'active', 'expired', 'terminated'
+  }).index('by_collectionId', ['collectionId']),
+  invitations: defineTable({
+    email: v.string(),
+    collectionId: v.id('collection'),
+    role: v.string(),
+    status: v.string(), // 'pending', 'accepted'
+    invitedBy: v.string(), // userId
+    createdAt: v.string(),
+  }).index('by_collectionId', ['collectionId']),
   user_collection: defineTable({
     collectionId: v.id('collection'),
     userId: v.string(),

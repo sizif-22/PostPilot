@@ -13,8 +13,8 @@ interface NotificationsContextType {
   removeNotification: (id: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
-  acceptInvitation: (notificationId: string) => void;
-  rejectInvitation: (notificationId: string) => void;
+  // acceptInvitation: (notificationId: string) => void;
+  // rejectInvitation: (notificationId: string) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
@@ -41,6 +41,11 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
     paginationOpts: { numItems: 50, cursor: null } // Get up to 50 notifications
   });
 
+  // Fetch invitations from the backend
+  const myInvitations = useQuery(api.invitations.getMyInvitations,
+    user?.email ? { email: user.email } : "skip"
+  );
+
   // Define types for the backend data
   type BackendNotification = {
     _id: string;
@@ -59,6 +64,9 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
 
   // Convert the backend data to our frontend format
   useEffect(() => {
+    let mergedNotifications: Notification[] = [];
+
+    // Process regular notifications
     if (allNotifications && user?.id) {
       const convertedNotifications = allNotifications.page.map((notification: BackendNotification) => {
         if (notification.type === 'invitation') {
@@ -85,16 +93,40 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
         }
         return null;
       }).filter(Boolean) as Notification[];
-      
-      setNotifications(convertedNotifications);
+      mergedNotifications = [...mergedNotifications, ...convertedNotifications];
     }
-  }, [allNotifications, user?.id]);
+
+    // Process invitations (treat as notifications)
+    if (myInvitations) {
+      const invitationNotifications = myInvitations.map((inv) => ({
+        id: inv._id,
+        type: 'invitation' as const,
+        senderName: inv.senderName,
+        senderEmail: inv.senderEmail,
+        collectionId: inv.collectionId,
+        collectionName: inv.collectionName,
+        role: inv.role,
+        createdAt: new Date(inv.createdAt),
+        isRead: false, // Invitations are always unread until acted upon
+      }));
+      // Prepend invitations
+      mergedNotifications = [...invitationNotifications, ...mergedNotifications];
+    }
+
+    // Deduplicate by ID (in case an invitation is also in notifications table)
+    const uniqueNotifications = Array.from(new Map(mergedNotifications.map(item => [item.id, item])).values());
+
+    // Sort by date desc
+    uniqueNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    setNotifications(uniqueNotifications);
+  }, [allNotifications, myInvitations, user?.id]);
 
   const updateNotification = useMutation(api.collectionFuncs.updateNotification);
   const deleteNotification = useMutation(api.collectionFuncs.deleteNotification);
   const markAllAsReadMutation = useMutation(api.collectionFuncs.markAllNotificationsAsRead);
-  const acceptCollectionInvitation = useMutation(api.collectionFuncs.acceptCollectionInvitation);
-  const rejectCollectionInvitation = useMutation(api.collectionFuncs.rejectCollectionInvitation);
+  const acceptInvitation = useMutation(api.invitations.acceptInvitation);
+  const rejectInvitation = useMutation(api.invitations.rejectInvitation);
 
   const addNotification = (notification: Notification) => {
     setNotifications(prev => [notification, ...prev]);
@@ -102,22 +134,33 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
-    // Also remove from backend
-    deleteNotification({ notificationId: id as Id<"notifications"> });
+
+    // Only delete from backend if it's a notification ID (not an invitation ID)
+    // We can guess based on the ID format or by checking our local list
+    // But since we don't have the type here easily, we'll try-catch or check if it exists in myInvitations
+
+    const isInvitation = myInvitations?.some(inv => inv._id === id);
+
+    if (!isInvitation) {
+      deleteNotification({ notificationId: id as Id<"notifications"> }).catch(() => { });
+    }
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
+    setNotifications(prev =>
+      prev.map(notification =>
         notification.id === id ? { ...notification, isRead: true } : notification
       )
     );
-    // Also update on backend
-    updateNotification({ notificationId: id as Id<"notifications">, isRead: true });
+
+    const isInvitation = myInvitations?.some(inv => inv._id === id);
+    if (!isInvitation) {
+      updateNotification({ notificationId: id as Id<"notifications">, isRead: true }).catch(() => { });
+    }
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(notification => ({ ...notification, isRead: true }))
     );
     // Also update on backend
@@ -126,27 +169,27 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
     }
   };
 
-  const acceptInvitation = async (notificationId: string) => {
-    if (!user?.id) return;
-    try {
-      await acceptCollectionInvitation({ notificationId: notificationId as Id<"notifications">, userId: user.id });
-      // Remove the notification after accepting
-      removeNotification(notificationId);
-    } catch (error) {
-      console.error('Error accepting invitation:', error);
-    }
-  };
+  // const acceptInvitation = async (notificationId: string) => {
+  //   if (!user?.id) return;
+  //   try {
+  //     await acceptInvitationMutation({ invitationId: notificationId as Id<"invitations"> | Id<"notifications">, userId: user.id });
+  //     // Remove the notification after accepting
+  //     removeNotification(notificationId);
+  //   } catch (error) {
+  //     console.error('Error accepting invitation:', error);
+  //   }
+  // };
 
-  const rejectInvitation = async (notificationId: string) => {
-    if (!user?.id) return;
-    try {
-      await rejectCollectionInvitation({ notificationId: notificationId as Id<"notifications">, userId: user.id });
-      // Remove the notification after rejecting
-      removeNotification(notificationId);
-    } catch (error) {
-      console.error('Error rejecting invitation:', error);
-    }
-  };
+  // const rejectInvitation = async (notificationId: string) => {
+  //   if (!user?.id) return;
+  //   try {
+  //     await rejectInvitationMutation({ invitationId: notificationId as Id<"invitations"> | Id<"notifications">, userId: user.id });
+  //     // Remove the notification after rejecting
+  //     removeNotification(notificationId);
+  //   } catch (error) {
+  //     console.error('Error rejecting invitation:', error);
+  //   }
+  // };
 
   return (
     <NotificationsContext.Provider
@@ -156,8 +199,8 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
         removeNotification,
         markAsRead,
         markAllAsRead,
-        acceptInvitation,
-        rejectInvitation,
+        // acceptInvitation,
+        // rejectInvitation,
       }}
     >
       {children}

@@ -9,8 +9,15 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/blocks/customers/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'workoscdn.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
 
 export default nextConfig;
+

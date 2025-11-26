@@ -1,12 +1,15 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNotifications } from '@/components/NotificationsProvider';
 import { Notification } from '@/types/notifications';
 import { Bell, X } from 'lucide-react';
-
+import { toast } from 'sonner';
+import { api } from '@/convex/_generated/api';
+import { useMutation } from 'convex/react';
+import { Id } from '@/convex/_generated/dataModel';
+import { useAuth } from '@workos-inc/authkit-nextjs/components';
 interface NotificationItemProps {
   notification: Notification;
   onAccept?: (id: string) => void;
@@ -15,13 +18,16 @@ interface NotificationItemProps {
 }
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onAccept, onReject, onClose }) => {
-  const { removeNotification, acceptInvitation, rejectInvitation, markAsRead } = useNotifications();
+  const { user } = useAuth();
+  const { removeNotification, markAsRead } = useNotifications();
+  const acceptInvitation = useMutation(api.invitations.acceptInvitation);
+  const rejectInvitation = useMutation(api.invitations.rejectInvitation);
 
   const handleAccept = () => {
     if (onAccept) onAccept(notification.id);
     // For invitations, we call the specific accept function
     if (notification.type === 'invitation') {
-      acceptInvitation(notification.id);
+      acceptInvitation({ invitationId: notification.id as Id<"invitations">, userId: user?.id as string });
     } else {
       removeNotification(notification.id);
     }
@@ -31,7 +37,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onAcc
     if (onReject) onReject(notification.id);
     // For invitations, we call the specific reject function
     if (notification.type === 'invitation') {
-      rejectInvitation(notification.id);
+      rejectInvitation({ invitationId: notification.id as Id<"invitations">, userId: user?.id as string });
     } else {
       removeNotification(notification.id);
     }
@@ -70,9 +76,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onAcc
             </p>
             <p className="text-xs text-muted-foreground mt-1">{notification.senderEmail}</p>
           </div>
-          <Button variant="outline" size="sm" className="h-8" onClick={handleClose}>
+          {/* <Button variant="outline" size="sm" className="h-8" onClick={handleClose}>
             <X className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
         <div className="flex gap-2 mt-3">
           <Button size="sm" className="flex-1" onClick={handleAccept}>
@@ -108,23 +114,61 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onAcc
 const NotificationBar: React.FC = () => {
   const { notifications, markAllAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
+  const prevNotificationIdsRef = useRef<Set<string>>(new Set());
+  const isFirstLoadRef = useRef(true);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  useEffect(() => {
+    // Initialize ID set on first load
+    if (isFirstLoadRef.current) {
+      prevNotificationIdsRef.current = new Set(notifications.map(n => n.id));
+      isFirstLoadRef.current = false;
+      return;
+    }
+
+    // Check for new notifications
+    notifications.forEach(n => {
+      if (!prevNotificationIdsRef.current.has(n.id)) {
+        // New notification found
+        if (n.type === 'invitation') {
+          toast.info(`New invitation from ${n.senderName}`, {
+            description: `Invited to ${n.collectionName} as ${n.role}`,
+            action: {
+              label: 'View',
+              onClick: () => setIsOpen(true)
+            }
+          });
+        } else {
+          toast.info(n.title, {
+            description: n.message,
+            action: {
+              label: 'View',
+              onClick: () => setIsOpen(true)
+            }
+          });
+        }
+      }
+    });
+
+    // Update the set of known IDs
+    prevNotificationIdsRef.current = new Set(notifications.map(n => n.id));
+  }, [notifications]);
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative h-8 w-8">
-          <Bell className="h-4 w-4" />
+          <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white animate-pulse">
               {unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-[500px] overflow-y-auto p-0">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Notifications</h3>
             {unreadCount > 0 && (
@@ -138,7 +182,7 @@ const NotificationBar: React.FC = () => {
         {notifications.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">No notifications yet</div>
         ) : (
-          <div>
+          <div className="divide-y">
             {notifications.map((notification) => (
               <NotificationItem key={notification.id} notification={notification} />
             ))}

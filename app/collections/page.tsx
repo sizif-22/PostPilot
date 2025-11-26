@@ -52,12 +52,12 @@ const CollectionPage = () => {
     api.collectionFuncs.getCollectionsPaginated,
     user?.id
       ? {
-          userId: user.id,
-          paginationOpts: {
-            numItems: pageSize,
-            cursor: cursors[page - 1],
-          },
-        }
+        userId: user.id,
+        paginationOpts: {
+          numItems: pageSize,
+          cursor: cursors[page - 1],
+        },
+      }
       : 'skip',
   );
   const collectionsLoading = collectionsData === undefined;
@@ -120,7 +120,7 @@ const CollectionPage = () => {
               ) : (
                 <>
                   <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                    Hi {user?.firstName + ' ' + user?.lastName}
+                    Hi {user?.firstName + ' '}{user?.lastName ?? ""}
                   </h1>
                   <p className="mt-2 text-lg text-muted-foreground">Welcome to PostPilot</p>
                 </>
@@ -226,13 +226,12 @@ const CollectionPage = () => {
                             {/* Display the role on the collection card */}
                             <div className="flex items-center gap-2">
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  collection.role === 'Owner'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                    : collection.role === 'Contributor'
-                                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                                      : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                }`}
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${collection.role === 'Owner'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                  : collection.role === 'Contributor'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                  }`}
                               >
                                 {collection.role}
                               </span>
@@ -277,9 +276,8 @@ const CollectionPage = () => {
                       <PaginationItem>
                         <PaginationPrevious
                           onClick={goToPreviousPage}
-                          className={`rounded-full cursor-pointer ${
-                            !hasPrevious ? 'opacity-50 pointer-events-none' : 'hover:bg-accent'
-                          }`}
+                          className={`rounded-full cursor-pointer ${!hasPrevious ? 'opacity-50 pointer-events-none' : 'hover:bg-accent'
+                            }`}
                           aria-disabled={!hasPrevious}
                         />
                       </PaginationItem>
@@ -306,9 +304,8 @@ const CollectionPage = () => {
                       <PaginationItem>
                         <PaginationNext
                           onClick={goToNextPage}
-                          className={`rounded-full cursor-pointer ${
-                            !hasNext ? 'opacity-50 pointer-events-none' : 'hover:bg-accent'
-                          }`}
+                          className={`rounded-full cursor-pointer ${!hasNext ? 'opacity-50 pointer-events-none' : 'hover:bg-accent'
+                            }`}
                           aria-disabled={!hasNext}
                         />
                       </PaginationItem>
