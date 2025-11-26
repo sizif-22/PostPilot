@@ -18,7 +18,7 @@ export default function CollectionLayout({ children }: { children: ReactNode }) 
             setSidebarOpen(false);
             setTimeout(() => {
                 router.replace('/collections');
-            }, 1500);
+            }, 3000);
             notFound();
         } else if (membership) {
             setSidebarOpen(true);
