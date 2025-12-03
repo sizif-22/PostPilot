@@ -92,6 +92,10 @@ export const CPDialog = ({
   const [xText, setXText] = useState("");
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubeDisc, setYoutubeDisc] = useState("");
+  const [youtubeTags, setYoutubeTags] = useState("");
+  const [youtubePrivacy, setYoutubePrivacy] = useState("public");
+  const [youtubeMadeForKids, setYoutubeMadeForKids] = useState<boolean | null>(null);
+  const [youtubeCategory, setYoutubeCategory] = useState("22");
   const [selectedImages, setSelectedImages] = useState<MediaItem[]>([]);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [isThumbnailPickerOpen, setIsThumbnailPickerOpen] = useState(false);
@@ -284,6 +288,12 @@ export const CPDialog = ({
     setTiktokCommercialContent(false);
     setTiktokBrandOrganic(false);
     setTiktokBrandedContent(false);
+    setYoutubeTitle("");
+    setYoutubeDisc("");
+    setYoutubeTags("");
+    setYoutubePrivacy("public");
+    setYoutubeMadeForKids(null);
+    setYoutubeCategory("22");
   };
 
   const handleImageSelect = async (image: MediaItem) => {
@@ -306,54 +316,43 @@ export const CPDialog = ({
   };
 
   const isFormValid = (() => {
-    if (selectedPlatforms.length === 0) {
-      return false;
-    }
+    if (selectedPlatforms.length === 0) return false;
 
     const hasMedia = selectedImages.length > 0;
     const hasVideo = selectedImages.some((item) => item.isVideo);
     const hasImage = selectedImages.some((item) => !item.isVideo);
+    const videoCount = selectedImages.filter((item) => item.isVideo).length;
 
-    if (hasVideo && hasImage) {
-      return false;
-    }
+    // General Media Rules
+    if (hasVideo && hasImage) return false;
+    if (videoCount > 1) return false;
 
-    if (selectedImages.filter((item) => item.isVideo).length > 1) {
-      return false;
-    }
-
-    if (hasMedia) {
-      return true;
-    }
-
-    const textOnlyPlatforms = ["facebook", "linkedin", "x"];
-    const allPlatformsAreTextOnly = selectedPlatforms.every((p) =>
-      textOnlyPlatforms.includes(p),
-    );
-
-    if (!allPlatformsAreTextOnly) {
-      return false;
-    }
-
-    if (selectedPlatforms.includes("x") && xText.trim() === "") {
-      return false;
-    }
-
-    if (selectedPlatforms.includes("facebook") && facebookText.trim() === "") {
-      return false;
-    }
-
-    if (selectedPlatforms.includes("instagram") && instagramText.trim() === "") {
-      return false;
-    }
-
-    if (selectedPlatforms.includes("linkedin") && linkedinText.trim() === "") {
-      return false;
-    }
-
-    if (selectedPlatforms.includes("tiktok")) {
-      if (!tiktokPrivacy) return false;
-      if (tiktokCommercialContent && !tiktokBrandOrganic && !tiktokBrandedContent) return false;
+    // Platform Specific Rules
+    for (const platform of selectedPlatforms) {
+      switch (platform) {
+        case "youtube":
+          if (!hasVideo) return false; // Must have video
+          if (!youtubeTitle.trim()) return false; // Must have title
+          if (youtubeMadeForKids === null) return false; // Must select audience
+          break;
+        case "instagram":
+          if (!hasMedia) return false; // Must have media
+          break;
+        case "tiktok":
+          if (!hasVideo) return false; // Must have video
+          if (!tiktokPrivacy) return false;
+          if (tiktokCommercialContent && !tiktokBrandOrganic && !tiktokBrandedContent) return false;
+          break;
+        case "facebook":
+          if (!hasMedia && !facebookText.trim() && !postText.trim()) return false;
+          break;
+        case "linkedin":
+          if (!hasMedia && !linkedinText.trim() && !postText.trim()) return false;
+          break;
+        case "x":
+          if (!hasMedia && !xText.trim() && !postText.trim()) return false;
+          break;
+      }
     }
 
     return true;
@@ -379,6 +378,31 @@ export const CPDialog = ({
     setError(null);
     try {
       if (!isFormValid) {
+        // Double check specific errors to give feedback if needed
+        const hasMedia = selectedImages.length > 0;
+        const hasVideo = selectedImages.some((item) => item.isVideo);
+
+        if (selectedPlatforms.includes("youtube")) {
+          if (!hasVideo) throw new Error("YouTube requires at least one video file.");
+          if (!youtubeTitle.trim()) throw new Error("YouTube requires a title.");
+          if (youtubeMadeForKids === null) throw new Error("YouTube requires audience selection (Made for Kids).");
+        }
+        if (selectedPlatforms.includes("instagram") && !hasMedia) {
+          throw new Error("Instagram requires at least one image or video.");
+        }
+        if (selectedPlatforms.includes("tiktok") && !hasVideo) {
+          throw new Error("TikTok requires at least one video file.");
+        }
+        if (selectedPlatforms.includes("facebook") && !hasMedia && !facebookText.trim() && !postText.trim()) {
+          throw new Error("Facebook requires either text or media.");
+        }
+        if (selectedPlatforms.includes("linkedin") && !hasMedia && !linkedinText.trim() && !postText.trim()) {
+          throw new Error("LinkedIn requires either text or media.");
+        }
+        if (selectedPlatforms.includes("x") && !hasMedia && !xText.trim() && !postText.trim()) {
+          throw new Error("X requires either text or media.");
+        }
+
         throw new Error("Invalid post data. Please check your inputs.");
       }
 
@@ -496,6 +520,10 @@ export const CPDialog = ({
         linkedinText,
         youtubeTitle,
         youtubeDisc,
+        youtubeTags: youtubeTags.split(",").map((tag) => tag.trim()).filter((tag) => tag !== ""),
+        youtubePrivacy,
+        youtubeMadeForKids: youtubeMadeForKids ?? false,
+        youtubeCategory,
         media: selectedImages,
         facebookVideoType,
         draft,
@@ -868,32 +896,133 @@ export const CPDialog = ({
                 </div>
               )}
               {activeTab === "youtube" && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
-                    Youtube Post
-                  </h3>
-                  <p className="text-xs text-stone-500 dark:text-white/60">
-                    Title:
-                  </p>
-                  <textarea
-                    value={youtubeTitle}
-                    onChange={(e) => setYoutubeTitle(e.target.value)}
-                    placeholder="your Title?"
-                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
-                    rows={1}
-                    maxLength={280}
-                  />
-                  <p className="text-xs text-stone-500 dark:text-white/60">
-                    Discription:
-                  </p>
-                  <textarea
-                    value={youtubeDisc}
-                    onChange={(e) => setYoutubeDisc(e.target.value)}
-                    placeholder="Discription?"
-                    className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
-                    rows={4}
-                    maxLength={280}
-                  />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                      YouTube Post Details
+                    </h3>
+                  </div>
+
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Title <span className="text-red-500">*</span></Label>
+                    <textarea
+                      value={youtubeTitle}
+                      onChange={(e) => setYoutubeTitle(e.target.value)}
+                      placeholder="Add a title that describes your video"
+                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                      rows={2}
+                      maxLength={100}
+                    />
+                    <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                      {youtubeTitle.length}/100
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Description</Label>
+                    <textarea
+                      value={youtubeDisc}
+                      onChange={(e) => setYoutubeDisc(e.target.value)}
+                      placeholder="Tell viewers about your video"
+                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
+                      rows={5}
+                      maxLength={5000}
+                    />
+                    <div className="text-right text-xs text-stone-400 dark:text-white/50">
+                      {youtubeDisc.length}/5000
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Tags (Comma separated)</Label>
+                    <input
+                      type="text"
+                      value={youtubeTags}
+                      onChange={(e) => setYoutubeTags(e.target.value)}
+                      placeholder="gaming, vlog, tutorial"
+                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base"
+                    />
+                    <p className="text-xs text-stone-400 dark:text-white/50">
+                      Tags can be useful if content in your video is commonly misspelled. Otherwise, tags play a minimal role in helping viewers find your video.
+                    </p>
+                  </div>
+
+                  {/* Privacy */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Visibility</Label>
+                    <Select value={youtubePrivacy} onValueChange={setYoutubePrivacy}>
+                      <SelectTrigger className="w-full dark:bg-darkButtons dark:border-darkBorder">
+                        <SelectValue placeholder="Select visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="unlisted">Unlisted</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Category */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Category</Label>
+                    <Select value={youtubeCategory} onValueChange={setYoutubeCategory}>
+                      <SelectTrigger className="w-full dark:bg-darkButtons dark:border-darkBorder">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Film & Animation</SelectItem>
+                        <SelectItem value="2">Autos & Vehicles</SelectItem>
+                        <SelectItem value="10">Music</SelectItem>
+                        <SelectItem value="15">Pets & Animals</SelectItem>
+                        <SelectItem value="17">Sports</SelectItem>
+                        <SelectItem value="19">Travel & Events</SelectItem>
+                        <SelectItem value="20">Gaming</SelectItem>
+                        <SelectItem value="22">People & Blogs</SelectItem>
+                        <SelectItem value="23">Comedy</SelectItem>
+                        <SelectItem value="24">Entertainment</SelectItem>
+                        <SelectItem value="25">News & Politics</SelectItem>
+                        <SelectItem value="26">Howto & Style</SelectItem>
+                        <SelectItem value="27">Education</SelectItem>
+                        <SelectItem value="28">Science & Technology</SelectItem>
+                        <SelectItem value="29">Nonprofits & Activism</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Audience (Made for Kids) */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-stone-500 dark:text-white/60">Audience <span className="text-red-500">*</span></Label>
+                    <div className="space-y-2 p-3 border border-stone-200 dark:border-darkBorder rounded-lg">
+                      <p className="text-xs text-stone-500 dark:text-white/60 mb-2">
+                        Is this video made for kids? (Required)
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="madeForKidsYes"
+                          name="madeForKids"
+                          checked={youtubeMadeForKids === true}
+                          onChange={() => setYoutubeMadeForKids(true)}
+                          className="text-violet-600 focus:ring-violet-500"
+                        />
+                        <label htmlFor="madeForKidsYes" className="text-sm cursor-pointer">Yes, it's made for kids</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="madeForKidsNo"
+                          name="madeForKids"
+                          checked={youtubeMadeForKids === false}
+                          onChange={() => setYoutubeMadeForKids(false)}
+                          className="text-violet-600 focus:ring-violet-500"
+                        />
+                        <label htmlFor="madeForKidsNo" className="text-sm cursor-pointer">No, it's not made for kids</label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {activeTab === "tiktok" && (

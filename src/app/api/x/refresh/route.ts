@@ -23,12 +23,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (channel.socialMedia?.x) {
-      await refreshX(channel, channelId);
-    }
-    if (channel.socialMedia?.tiktok) {
-      // await refreshTiktok(channel);
-    }
+    await Promise.all([
+      refreshYoutube(channel, channelId),
+      refreshX(channel, channelId),
+      refreshTiktok(channel),
+    ]);
 
     return NextResponse.json({ message: "Token refreshed" });
   } catch (error: any) {
@@ -41,6 +40,12 @@ export async function POST(request: Request) {
 }
 
 const refreshX = async (channel: Channel, channelIdParam?: string) => {
+  if (!channel.socialMedia?.x) {
+    return NextResponse.json(
+      { error: "X profile not found in channel" },
+      { status: 400 },
+    );
+  }
   const encryptedRefreshToken = channel.socialMedia?.x?.refreshToken;
   if (!encryptedRefreshToken) {
     return NextResponse.json(
@@ -126,6 +131,12 @@ const refreshX = async (channel: Channel, channelIdParam?: string) => {
 };
 
 const refreshTiktok = async (channel: Channel) => {
+  if (!channel.socialMedia?.tiktok) {
+    return NextResponse.json(
+      { error: "Tiktok profile not found in channel" },
+      { status: 400 },
+    );
+  }
   const encryptedRefreshToken = channel.socialMedia?.tiktok?.refreshToken;
   if (!encryptedRefreshToken) {
     return NextResponse.json(
@@ -197,3 +208,94 @@ const refreshTiktok = async (channel: Channel) => {
   });
   return NextResponse.json({ message: "TikTok token refreshed" });
 };
+
+const refreshYoutube = async (channel: Channel, channelIdParam?: string) => {
+  if (!channel.socialMedia?.youtube) {
+    return NextResponse.json(
+      { error: "Youtube profile not found in channel" },
+      { status: 400 },
+    );
+  }
+
+  const encryptedRefreshToken = channel.socialMedia?.youtube?.refreshToken;
+  if (!encryptedRefreshToken) {
+    return NextResponse.json(
+      { error: "Refresh token is required" },
+      { status: 400 },
+    );
+  }
+
+  const refreshToken: string = await decrypt(encryptedRefreshToken);
+
+  if (!refreshToken) {
+    return NextResponse.json(
+      { error: "Refresh token is required" },
+      { status: 400 },
+    );
+  }
+
+  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
+  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
+
+  // Exchange refresh token for new access token
+  const refreshParams = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: GOOGLE_CLIENT_ID,
+    client_secret: GOOGLE_CLIENT_SECRET,
+  });
+
+  const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: refreshParams,
+  });
+
+  const refreshData = await refreshRes.json();
+
+  if (!refreshRes.ok) {
+    console.error("Refresh token exchange failed:", refreshData);
+    return NextResponse.json(
+      {
+        error:
+          refreshData.error_description ||
+          refreshData.error ||
+          "Failed to refresh access token",
+      },
+      { status: 400 },
+    );
+  }
+
+  // Use the existing profile data from channel.socialMedia.youtube
+  const currentYoutube = channel.socialMedia?.youtube;
+  if (!currentYoutube) {
+    return NextResponse.json(
+      { error: "Youtube profile not found in channel" },
+      { status: 400 },
+    );
+  }
+
+  // Encrypt new tokens
+  const encryptedAccessToken: string = await encrypt(refreshData.access_token);
+  const encryptedRefreshTokenValue: string = await encrypt(refreshToken);
+
+  // Prepare updated socialMedia.youtube object
+  const updatedSocialMediaYoutube = {
+    ...currentYoutube,
+    accessToken: encryptedAccessToken,
+    refreshToken: encryptedRefreshTokenValue,
+    expiresIn: refreshData.expires_in,
+    tokenExpiry: refreshData.expires_in
+      ? new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
+      : null,
+  };
+
+  // Update Firestore with new tokens
+  const targetId = channelIdParam ?? channel.id;
+  await fs.updateDoc(fs.doc(db, "Channels", targetId), {
+    "socialMedia.youtube": updatedSocialMediaYoutube,
+  });
+  return NextResponse.json({ message: "YouTube token refreshed" });
+}

@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import Cookies from "js-cookie";
 import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
-import { youtubeChannel } from "@/interfaces/Channel";
+import { Channel, youtubeChannel } from "@/interfaces/Channel";
 import { encrypt } from "@/utils/encryption";
+import { refreshYoutube } from "./server-action";
+import axios from "axios";
 
 const YouTubeConnection = () => {
   const router = useRouter();
@@ -68,11 +70,11 @@ const YouTubeConnection = () => {
   const saveYouTubeChannel = async (data: any) => {
     try {
       if (!id) return;
-      
+
       const projectRef = doc(db, "Channels", id as string);
       const encryptedAccessToken: string = await encrypt(data.accessToken);
       const encryptedRefreshToken: string | undefined = data.refreshToken ? await encrypt(data.refreshToken) : undefined;
-      
+
       const youtubeData: youtubeChannel = {
         name: data.channel.name,
         id: data.channel.id,
@@ -88,6 +90,18 @@ const YouTubeConnection = () => {
       await updateDoc(projectRef, {
         "socialMedia.youtube": youtubeData,
       });
+
+      const channel = (
+        await getDoc(doc(db, "Channels", id as string))
+      ).data() as Channel;
+
+      if (!channel?.socialMedia?.youtubeEventBridge) {
+        await axios.post("/api/x/refresh", { channelId: id });
+        await refreshYoutube(id);
+        await updateDoc(doc(db, "Channels", id as string), {
+          "socialMedia.youtubeEventBridge": true,
+        });
+      }
 
       router.replace(`/collections/${id}`);
     } catch (err) {
@@ -119,7 +133,7 @@ const YouTubeConnection = () => {
             Successfully connected to your YouTube channel
           </p>
         </div>
-        
+
         <div className="flex flex-col gap-6">
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="font-semibold text-gray-800">Channel Info:</h2>
@@ -129,12 +143,12 @@ const YouTubeConnection = () => {
               <p><span className="font-medium">Subscribers:</span> {channelData?.subscriberCount}</p>
             </div>
           </div>
-          
+
           <div className="text-sm text-gray-600">
             <p>Your YouTube account is now connected to PostPilot. You can now schedule and publish videos directly from the platform.</p>
           </div>
         </div>
-        
+
         <div className="mt-8 flex justify-end">
           <Button
             onClick={() => router.replace(`/collections/${id}`)}

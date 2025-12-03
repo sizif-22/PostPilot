@@ -118,7 +118,7 @@ export default function XCallbackPage() {
         await getDoc(doc(db, "Channels", channelId as string))
       ).data() as Channel;
 
-      if (channel.socialMedia?.Tox !== true) {
+      if (channel.socialMedia?.Tox !== true && channel.socialMedia?.youtubeEventBridge !== true) {
         await refreshXFunc(channelId as string);
         await updateDoc(doc(db, "Channels", channelId as string), {
           "socialMedia.Tox": true,

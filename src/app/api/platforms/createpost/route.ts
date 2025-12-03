@@ -75,6 +75,66 @@ export async function POST(request: Request) {
       );
     }
 
+    // Platform-specific validation
+    const validationErrors: string[] = [];
+
+    post.platforms.forEach((platform) => {
+      if (!platform || typeof platform !== "string") return;
+
+      switch (platform) {
+        case "youtube":
+          // YouTube: Requires Video + Title
+          const hasVideo = post.media?.some(
+            (m) => m.contentType?.startsWith("video/") || m.isVideo
+          );
+          if (!hasVideo) {
+            validationErrors.push("YouTube requires at least one video file.");
+          }
+          if (!post.youtubeTitle && !post.title) {
+            validationErrors.push("YouTube requires a title.");
+          }
+          break;
+
+        case "instagram":
+          // Instagram: Requires Media
+          if (!post.media || post.media.length === 0) {
+            validationErrors.push("Instagram requires at least one image or video.");
+          }
+          break;
+
+        case "tiktok":
+          // TikTok: Requires Video
+          const hasTiktokVideo = post.media?.some(
+            (m) => m.contentType?.startsWith("video/") || m.isVideo
+          );
+          if (!hasTiktokVideo) {
+            validationErrors.push("TikTok requires at least one video file.");
+          }
+          break;
+
+        case "facebook":
+        case "linkedin":
+        case "x":
+          // FB/LinkedIn/X: Requires Text OR Media
+          const hasText = post.message || post[`${platform}Text` as keyof Post];
+          const hasMedia = post.media && post.media.length > 0;
+
+          if (!hasText && !hasMedia) {
+            validationErrors.push(
+              `${platform.charAt(0).toUpperCase() + platform.slice(1)} requires either text or media.`
+            );
+          }
+          break;
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        { message: "Validation failed", errors: validationErrors },
+        { status: 400 }
+      );
+    }
+
     const platformPromises = post.platforms
       .filter((platform) => platform && typeof platform === "string") // Filter out invalid platforms
       .map(async (platform) => {
@@ -375,9 +435,10 @@ export async function POST(request: Request) {
 
                 const result = await PostOnYouTube({
                   accessToken: accessToken,
-                  title: post.youtubeTitle || "Untitled Video",
-                  description: post.youtubeDisc || ".",
-                  privacy: "public", // Default to public, could be configurable
+                  title: post.youtubeTitle || post.title || "Untitled Video",
+                  description: post.youtubeDisc || post.message || "",
+                  tags: post.youtubeTags || [], // Support tags if available
+                  privacy: (post.youtubePrivacy as "public" | "private" | "unlisted") || "public",
                   media: post.media || [],
                   scheduleTime:
                     post.isScheduled && post.date

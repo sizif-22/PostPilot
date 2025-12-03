@@ -128,7 +128,7 @@ const TiktokPage = () => {
           await getDoc(doc(db, "Channels", id as string))
         ).data() as Channel;
 
-        if (channel.socialMedia?.Tox !== true) {
+        if (channel.socialMedia?.Tox !== true && channel.socialMedia?.youtubeEventBridge !== true) {
           await refreshXFunc(id as string);
           await updateDoc(doc(db, "Channels", id as string), {
             "socialMedia.Tox": true,

@@ -81,6 +81,7 @@ export interface youtubeChannel {
 export interface Channel extends ChannelBrief {
   socialMedia?: {
     Tox?: boolean;
+    youtubeEventBridge?: boolean;
     facebook?: facebookChannel;
     instagram?: instagramChannel;
     tiktok?: tiktok;
@@ -116,6 +117,10 @@ export type Post = {
   message?: string;
   youtubeTitle?: string;
   youtubeDisc?: string;
+  youtubeTags?: string[];
+  youtubePrivacy?: string;
+  youtubeMadeForKids?: boolean;
+  youtubeCategory?: string;
   platforms?: string[];
   media?: MediaItem[];
   videoUrls?: any[];
