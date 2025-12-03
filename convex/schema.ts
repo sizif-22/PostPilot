@@ -2,9 +2,6 @@ import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 export default defineSchema({
-  numbers: defineTable({
-    value: v.number(),
-  }),
   collection: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
@@ -134,4 +131,42 @@ export default defineSchema({
   })
     .index('by_user', ['userId'])
     .index('by_user_and_read_status', ['userId', 'isRead']),
+  posts: defineTable({
+    collectionId: v.id('collection'),
+    platforms: v.array(v.string()), // ['facebook', 'instagram', etc.]
+    content: v.object({
+      facebook: v.optional(v.string()),
+      instagram: v.optional(v.string()),
+      linkedin: v.optional(v.string()),
+      x: v.optional(v.string()),
+      youtube: v.optional(
+        v.object({
+          title: v.string(),
+          description: v.string(),
+        }),
+      ),
+      tiktok: v.optional(
+        v.object({
+          title: v.string(),
+          description: v.string(),
+          privacy: v.string(),
+          allowComment: v.boolean(),
+          allowDuet: v.boolean(),
+          allowStitch: v.boolean(),
+        }),
+      ),
+    }),
+    media: v.array(
+      v.object({
+        url: v.string(),
+        name: v.string(),
+        isVideo: v.boolean(),
+      }),
+    ),
+    scheduledDate: v.optional(v.string()), // ISO date string if scheduled
+    status: v.string(), // 'draft', 'scheduled', 'published', 'failed'
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    createdBy: v.string(), // userId
+  }).index('by_collectionId', ['collectionId']),
 });

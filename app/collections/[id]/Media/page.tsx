@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpload } from "@/components/UploadProvider";
+import { MediaDialog } from "../Dashboard/_components/wizard/MediaDialog";
 
 interface FileData {
   key: string;
@@ -62,18 +63,6 @@ export default function Media() {
   }, [isUploading, fetchFiles, progress]);
 
 
-  const handleUpload = async () => {
-    if (uploadQueue.length === 0) return;
-    setIsUploadDialogOpen(false);
-    await uploadFiles(uploadQueue, collectionId, () => {
-      setIsUploadDialogOpen(false);
-      setUploadQueue([]);
-      fetchFiles();
-    });
-
-    setIsUploadDialogOpen(false);
-    setUploadQueue([]);
-  };
 
   const handleDelete = () => {
     if (selectedFiles.size === 0) return;
@@ -115,7 +104,7 @@ export default function Media() {
       {/* Header Stats & Actions */}
 
       <div className="bg-white dark:bg-background absolute top-12 z-10 left-0 w-full h-15"></div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-4 rounded-xl border shadow-sm  sticky top-0 z-20 relative">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-4 rounded-xl border shadow-sm  sticky top-0 z-20">
         <div className="space-y-1">
           <h2 className="text-2xl font-bold tracking-tight">Media Library</h2>
           <div className="text-sm text-muted-foreground flex items-center gap-2">
@@ -147,60 +136,18 @@ export default function Media() {
               <Button variant="outline" size="sm" onClick={() => setIsSelectMode(true)}>
                 Select
               </Button>
-              <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Upload Media</DialogTitle>
-                  </DialogHeader>
-                  <div
-                    className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-accent/50 transition-colors cursor-pointer"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setUploadQueue(Array.from(e.dataTransfer.files));
-                    }}
-                    onClick={() => document.getElementById('file-upload')?.click()}
-                  >
-                    <input
-                      id="file-upload"
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => setUploadQueue(Array.from(e.target.files || []))}
-                    />
-                    <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-sm text-muted-foreground">
-                      Drag & drop files here, or click to select
-                    </p>
-                  </div>
-
-                  {uploadQueue.length > 0 && (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {uploadQueue.map((file, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded">
-                          <span className="truncate max-w-[200px]">{file.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Button variant="outline" onClick={() => { setUploadQueue([]); setIsUploadDialogOpen(false); }}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleUpload} disabled={uploadQueue.length === 0 || isUploading}>
-                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                      Upload {uploadQueue.length > 0 ? `(${uploadQueue.length})` : ''}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button size="sm" onClick={() => setIsUploadDialogOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload
+              </Button>
+              <MediaDialog
+                open={isUploadDialogOpen}
+                onOpenChange={(open) => {
+                  setIsUploadDialogOpen(open);
+                  if (!open) fetchFiles(); // Refresh on close
+                }}
+                selectionMode={false}
+              />
             </>
           )}
         </div>
@@ -239,7 +186,7 @@ export default function Media() {
               {file.type === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
-                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                    <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1" />
                   </div>
                 </div>
               )}
@@ -262,7 +209,7 @@ export default function Media() {
 
       {/* Lightbox Dialog */}
       <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && setLightboxIndex(null)}>
-        <DialogContent className="!max-w-[95vw] !w-[95vw] h-[95vh] p-0 bg-black/95 border-none flex flex-col items-center justify-center outline-none">
+        <DialogContent className="max-w-[95vw]! w-[95vw]! h-[95vh] p-0 bg-black/95 border-none flex flex-col items-center justify-center outline-none">
           <DialogHeader className="sr-only">
             <DialogTitle>Image Viewer</DialogTitle>
           </DialogHeader>

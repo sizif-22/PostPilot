@@ -14,4 +14,12 @@ const compat = new FlatCompat({
 export default defineConfig([
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   ...convexPlugin.configs.recommended,
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
+      '@next/next/no-img-element': 'warn',
+    },
+  },
 ]);

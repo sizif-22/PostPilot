@@ -11,7 +11,7 @@
 import type * as collectionFuncs from "../collectionFuncs.js";
 import type * as connectCollection from "../connectCollection.js";
 import type * as invitations from "../invitations.js";
-import type * as numbers from "../numbers.js";
+import type * as postFunctions from "../postFunctions.js";
 import type * as sessions from "../sessions.js";
 import type * as users from "../users.js";
 
@@ -33,7 +33,7 @@ declare const fullApi: ApiFromModules<{
   collectionFuncs: typeof collectionFuncs;
   connectCollection: typeof connectCollection;
   invitations: typeof invitations;
-  numbers: typeof numbers;
+  postFunctions: typeof postFunctions;
   sessions: typeof sessions;
   users: typeof users;
 }>;
