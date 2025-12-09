@@ -528,9 +528,6 @@ export async function POST(request: Request) {
           emailBody += "<b>Successfully published on:</b><br>";
           successfulPlatforms.forEach((p) => {
             emailBody += `- ${p.platform}<br>`;
-            if (p.platform.toLowerCase() === "tiktok") {
-              emailBody += `<em>(Your post has been sent to TikTok and is ready. Please publish it manually from the TikTok app.)</em><br>`;
-            }
           });
           emailBody += "<br>";
         }

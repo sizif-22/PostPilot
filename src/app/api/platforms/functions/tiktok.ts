@@ -119,8 +119,13 @@ export async function PostOnTiktok({
 
     // Prepare post info for direct publishing
     const postInfo: any = {
-      title: description || title || message || "", // Use description first, then title, then message
-      privacy_level: privacy_level || "PUBLIC_TO_EVERYONE",
+      title: (description || title || message || "").substring(0, 2200), // Max 2200 chars
+      privacy_level:
+        privacy_level === "private"
+          ? "SELF_ONLY"
+          : privacy_level === "friends"
+            ? "MUTUAL_FOLLOW_FRIENDS"
+            : "PUBLIC_TO_EVERYONE",
       disable_duet: disable_duet || false,
       disable_comment: disable_comment || false,
       disable_stitch: disable_stitch || false,
