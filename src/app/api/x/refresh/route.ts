@@ -152,22 +152,25 @@ const refreshTiktok = async (channel: Channel) => {
     );
   }
   const CLIENT_KEY = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY!;
+  const CLIENT_SECRET = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_SECRET!;
 
   // Exchange refresh token for new access token
   const refreshParams = new URLSearchParams({
+    client_key: CLIENT_KEY,
+    client_secret: CLIENT_SECRET,
     grant_type: "refresh_token",
     refresh_token: refreshToken,
-    client_key: CLIENT_KEY,
   });
 
   const refreshRes = await axios.post(
-    "https://api.tiktok.com/oauth/refresh_token",
+    "https://open.tiktokapis.com/v2/oauth/token/",
     refreshParams,
     {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache",
       },
-    },
+    }
   );
 
   const refreshData = refreshRes.data;

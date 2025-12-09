@@ -103,12 +103,10 @@ export async function POST(request: Request) {
           break;
 
         case "tiktok":
-          // TikTok: Requires Video
-          const hasTiktokVideo = post.media?.some(
-            (m) => m.contentType?.startsWith("video/") || m.isVideo
-          );
-          if (!hasTiktokVideo) {
-            validationErrors.push("TikTok requires at least one video file.");
+          // TikTok: Requires Media (Video or Image)
+          const hasTiktokMedia = post.media && post.media.length > 0;
+          if (!hasTiktokMedia) {
+            validationErrors.push("TikTok requires at least one video or image file.");
           }
           break;
 

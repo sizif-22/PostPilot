@@ -339,7 +339,7 @@ export const CPDialog = ({
           if (!hasMedia) return false; // Must have media
           break;
         case "tiktok":
-          if (!hasVideo) return false; // Must have video
+          if (!hasMedia) return false; // Must have media (video or images)
           if (!tiktokPrivacy) return false;
           if (tiktokCommercialContent && !tiktokBrandOrganic && !tiktokBrandedContent) return false;
           break;
@@ -390,8 +390,8 @@ export const CPDialog = ({
         if (selectedPlatforms.includes("instagram") && !hasMedia) {
           throw new Error("Instagram requires at least one image or video.");
         }
-        if (selectedPlatforms.includes("tiktok") && !hasVideo) {
-          throw new Error("TikTok requires at least one video file.");
+        if (selectedPlatforms.includes("tiktok") && !hasMedia) {
+          throw new Error("TikTok requires at least one video or image file.");
         }
         if (selectedPlatforms.includes("facebook") && !hasMedia && !facebookText.trim() && !postText.trim()) {
           throw new Error("Facebook requires either text or media.");
