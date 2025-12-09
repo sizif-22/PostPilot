@@ -23,12 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useChannel } from "@/context/ChannelContext";
 import { useNotification } from "@/context/NotificationContext";
-type EditDialogPost = {
-  id: string;
-  message: string;
-  platforms: string[];
-  media: any[];
-};
+
 
 interface IssueDetailModalProps {
   issue: Issue;
@@ -56,7 +51,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   getStatusColor,
 }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editDialogPost, setEditDialogPost] = useState<EditDialogPost | null>(
+  const [editDialogPost, setEditDialogPost] = useState<Post | null>(
     null
   );
   const [commentText, setCommentText] = useState("");
@@ -70,7 +65,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
     const fetchedComments =
       channel?.posts?.[issue.postId]?.issues?.[issue.id]?.comments ?? [];
     setComments(fetchedComments);
-  }, [channel,issue, toggle]);
+  }, [channel, issue, toggle]);
 
   const handleAddComment = async () => {
     if (!commentText.trim() || isSubmittingComment) return;
@@ -178,7 +173,7 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      setEditDialogPost(post as EditDialogPost | null);
+                      setEditDialogPost(post);
                       setIsEditDialogOpen(true);
                     }}
                     className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors text-sm font-medium bg-blue-600 hover:bg-blue-700">
@@ -264,64 +259,64 @@ const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 {/* Media */}
                 {((post.media && post.media.length > 0) ||
                   (post.videoUrls && post.videoUrls.length > 0)) && (
-                  <div className="mb-6">
-                    <h4 className="font-medium text-stone-900 dark:text-white mb-3">
-                      Media Content
-                    </h4>
+                    <div className="mb-6">
+                      <h4 className="font-medium text-stone-900 dark:text-white mb-3">
+                        Media Content
+                      </h4>
 
-                    {/* Images */}
-                    {post.media && post.media.length > 0 && (
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FiImage className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                            Images ({post.media.length})
-                          </span>
+                      {/* Images */}
+                      {post.media && post.media.length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FiImage className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                              Images ({post.media.length})
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {post.media.map((image, idx) => (
+                              <div
+                                key={idx}
+                                className="relative aspect-square bg-stone-100 dark:bg-stone-800 rounded-lg overflow-hidden">
+                                <img
+                                  src={image.url}
+                                  alt={`Post image ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {post.media.map((image, idx) => (
-                            <div
-                              key={idx}
-                              className="relative aspect-square bg-stone-100 dark:bg-stone-800 rounded-lg overflow-hidden">
-                              <img
-                                src={image.url}
-                                alt={`Post image ${idx + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Videos */}
-                    {post.videoUrls && post.videoUrls.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <FiVideo className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                          <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                            Videos ({post.videoUrls.length})
-                          </span>
+                      {/* Videos */}
+                      {post.videoUrls && post.videoUrls.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <FiVideo className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                              Videos ({post.videoUrls.length})
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            {post.videoUrls.map((video, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-3 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg">
+                                <FiVideo className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                <span className="text-sm text-stone-700 dark:text-stone-300">
+                                  Video {idx + 1}
+                                </span>
+                                <button className="ml-auto p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded">
+                                  <FiExternalLink className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          {post.videoUrls.map((video, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-3 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg">
-                              <FiVideo className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                              <span className="text-sm text-stone-700 dark:text-stone-300">
-                                Video {idx + 1}
-                              </span>
-                              <button className="ml-auto p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded">
-                                <FiExternalLink className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
 
                 {/* Post Stats */}
                 {/* <div className="bg-stone-50 dark:bg-darkButtons rounded-lg p-4">
