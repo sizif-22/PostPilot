@@ -189,7 +189,7 @@ export const Upcoming = ({ media }: { media: MediaItem[] }) => {
                       <div className="min-w-1 w-1 self-stretch bg-violet-500 rounded-full"></div>
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 mb-2">
-                          {post.message}
+                          {post.facebookText || post.instagramText || post.xText || post.linkedinText || post.youtubeTitle || post.tiktokDescription}
                         </h3>
                         {post.media && post.media.length > 0 && (
                           <div className="flex gap-2 mt-2">

@@ -339,7 +339,7 @@ export const CPDialog = ({
           if (!hasMedia) return false; // Must have media
           break;
         case "tiktok":
-          if (!hasMedia) return false; // Must have media (video or images)
+          if (!hasVideo) return false; // Must have video
           if (!tiktokPrivacy) return false;
           if (tiktokCommercialContent && !tiktokBrandOrganic && !tiktokBrandedContent) return false;
           break;

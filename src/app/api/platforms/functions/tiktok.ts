@@ -235,7 +235,7 @@ export async function PostOnTiktok({
         post_info: postInfo,
         source_info: {
           source: "FILE_UPLOAD",
-          photo_cover_index: 1,
+          photo_cover_index: 0,
           photo_images: imageBuffers.map((img) => ({
             image_size: img.size,
           })),
@@ -252,7 +252,7 @@ export async function PostOnTiktok({
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+            "Content-Type": "application/json; charset=UTF-8",
           },
           body: JSON.stringify(initPayload),
         }
@@ -260,7 +260,8 @@ export async function PostOnTiktok({
 
       if (!initResponse.ok) {
         const text = await initResponse.text();
-        console.error("TikTok Photo Init Error:", text);
+        console.error("TikTok Photo Init Error Status:", initResponse.status);
+        console.error("TikTok Photo Init Error Body:", text);
         try {
           const errJson = JSON.parse(text);
           throw new Error(`TikTok Photo Init Failed: ${JSON.stringify(errJson)}`);
@@ -270,7 +271,7 @@ export async function PostOnTiktok({
       }
 
       const initData = await initResponse.json();
-      console.log("TikTok Init Response:", initData);
+      console.log("TikTok Init Response Success:", JSON.stringify(initData, null, 2));
 
       const publishId = initData.data.publish_id;
       const photoImages = initData.data.photo_images;

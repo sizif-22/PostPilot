@@ -37,6 +37,8 @@ type EditDialogPost = {
   message: string;
   platforms: string[];
   media: any[];
+  date: any;
+  isScheduled: boolean;
 };
 
 type CommentType = "comment" | "issue";
@@ -149,6 +151,8 @@ export const NewDetailsDialog = ({
       message: event.message || "",
       platforms: event.platforms || [],
       media: event.media || [],
+      date: event.date,
+      isScheduled: event.isScheduled,
     };
   };
 
@@ -329,8 +333,8 @@ export const NewDetailsDialog = ({
           }}>
           <div
             className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] max-h-[80vh] w-full max-w-6xl grid overflow-hidden ${selectedPost?.media && selectedPost.media.length > 0
-                ? "grid-cols-14"
-                : "grid-cols-9"
+              ? "grid-cols-14"
+              : "grid-cols-9"
               }`}
             onClick={(e) => e.stopPropagation()}>
             {/* Close Button */}
@@ -497,14 +501,6 @@ export const NewDetailsDialog = ({
 
               {/* Post Message */}
               <div className="flex-1 max-h-[60vh] overflow-auto">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  Post Content
-                </h3>
-                <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {selectedPost.message}
-                  </p>
-                </div>
                 {selectedPost.facebookText && (
                   <>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
@@ -643,8 +639,8 @@ export const NewDetailsDialog = ({
                   <button
                     onClick={() => setCommentType("comment")}
                     className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${commentType === "comment"
-                        ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                       }`}>
                     <FiMessageCircle className="w-4 h-4" />
                     <span>Comments</span>
@@ -652,8 +648,8 @@ export const NewDetailsDialog = ({
                   <button
                     onClick={() => setCommentType("issue")}
                     className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${commentType === "issue"
-                        ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                       }`}>
                     <FiAlertTriangle className="w-4 h-4" />
                     <span>Issues</span>
