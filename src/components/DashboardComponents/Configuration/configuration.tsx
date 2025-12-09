@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { FiAlertCircle, FiCheck } from "react-icons/fi";
 import { useParams, useRouter } from "next/navigation";
@@ -142,11 +143,11 @@ export const Configuration = () => {
       "https://www.googleapis.com/auth/youtube",
       "https://www.googleapis.com/auth/youtubepartner"
     ].join(" ");
-    
+
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI!
     )}&scope=${encodeURIComponent(SCOPE)}&access_type=offline&prompt=consent`;
-    
+
     window.location.href = authUrl;
   };
 
@@ -343,11 +344,10 @@ export const Configuration = () => {
                     </div>
                     <button
                       onClick={item.connect}
-                      className={`text-sm font-bold duration-300 transition-colors rounded-lg border px-4 py-2 ${
-                        item.isConnected
+                      className={`text-sm font-bold duration-300 transition-colors rounded-lg border px-4 py-2 ${item.isConnected
                           ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900"
                           : "bg-white hover:text-black text-black/70 border-stone-200 hover:bg-stone-200 dark:bg-stone-900 dark:text-white dark:border-darkBorder dark:hover:bg-stone-800"
-                      }`}>
+                        }`}>
                       {item.isConnected ? "Reconnect" : "Connect"}
                     </button>
                   </div>
