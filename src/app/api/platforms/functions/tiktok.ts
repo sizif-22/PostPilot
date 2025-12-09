@@ -48,15 +48,18 @@ export async function PostOnTiktok({
       throw new Error("TikTok only supports single video uploads");
     }
 
-    // Prepare post info
-    const postInfo: any = {
-      title: [title, description || message].filter(Boolean).join("\n\n").substring(0, 2200),
-      privacy_level:
-        privacy_level === "private"
-          ? "SELF_ONLY"
-          : privacy_level === "friends"
-            ? "MUTUAL_FOLLOW_FRIENDS"
-            : "PUBLIC_TO_EVERYONE",
+    // Prepare common post info
+    const caption = [title, description || message].filter(Boolean).join("\n\n");
+
+    // Privacy Logic
+    const privacyLevel = privacy_level === "private"
+      ? "SELF_ONLY"
+      : privacy_level === "friends"
+        ? "MUTUAL_FOLLOW_FRIENDS"
+        : "PUBLIC_TO_EVERYONE";
+
+    const commonPostInfo = {
+      privacy_level: privacyLevel,
       disable_duet: disable_duet || false,
       disable_comment: disable_comment || false,
       disable_stitch: disable_stitch || false,
@@ -67,6 +70,11 @@ export async function PostOnTiktok({
 
     if (isVideo) {
       // --- VIDEO UPLOAD LOGIC ---
+      const postInfo: any = {
+        ...commonPostInfo,
+        title: caption.substring(0, 2200), // Video caption is 'title'
+      };
+
       const mediaUrl = media[0].url;
       const thumbnailUrl = media[0].thumbnailUrl;
 
@@ -206,6 +214,13 @@ export async function PostOnTiktok({
       // --- PHOTO UPLOAD LOGIC ---
       console.log("Starting TikTok Photo Upload...");
 
+      // For Photo Mode, caption goes into 'description', title can be short title (or omitted)
+      const postInfo: any = {
+        ...commonPostInfo,
+        title: title ? title.substring(0, 150) : undefined,
+        description: caption.substring(0, 2200),
+      };
+
       // Download all images
       const imageBuffers = await Promise.all(
         media.map(async (item) => {
@@ -246,7 +261,12 @@ export async function PostOnTiktok({
       if (!initResponse.ok) {
         const text = await initResponse.text();
         console.error("TikTok Photo Init Error:", text);
-        throw new Error(`TikTok Photo Init Failed: ${text}`);
+        try {
+          const errJson = JSON.parse(text);
+          throw new Error(`TikTok Photo Init Failed: ${JSON.stringify(errJson)}`);
+        } catch {
+          throw new Error(`TikTok Photo Init Failed: ${text}`);
+        }
       }
 
       const initData = await initResponse.json();
@@ -272,7 +292,7 @@ export async function PostOnTiktok({
           method: "PUT",
           headers: {
             "Content-Type": "image/jpeg", // Assuming JPEG or generic image type. TikTok detects?
-            // "Content-Length": imageBuffers[i].size.toString() 
+            // "Content-Length": imageBuffers[i].size.toString()
           },
           body: imageBuffers[i].buffer,
         });

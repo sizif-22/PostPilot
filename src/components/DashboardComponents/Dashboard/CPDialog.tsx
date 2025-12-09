@@ -1041,18 +1041,6 @@ export const CPDialog = ({
                     )}
                   </div>
 
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label className="text-xs text-stone-500 dark:text-white/60">Title (Optional)</Label>
-                    <textarea
-                      value={tiktokTitle}
-                      onChange={(e) => setTiktokTitle(e.target.value)}
-                      placeholder="Enter video title..."
-                      className="w-full px-3 py-3 border dark:border-darkBorder dark:text-white dark:bg-darkButtons border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm sm:text-base"
-                      rows={1}
-                      maxLength={150}
-                    />
-                  </div>
 
                   {/* Description */}
                   <div className="space-y-2">

@@ -328,11 +328,10 @@ export const NewDetailsDialog = ({
             }
           }}>
           <div
-            className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] max-h-[80vh] w-full max-w-6xl grid overflow-hidden ${
-              selectedPost?.media && selectedPost.media.length > 0
+            className={`bg-white dark:bg-secondDarkBackground rounded-xl shadow-2xl h-[80vh] max-h-[80vh] w-full max-w-6xl grid overflow-hidden ${selectedPost?.media && selectedPost.media.length > 0
                 ? "grid-cols-14"
                 : "grid-cols-9"
-            }`}
+              }`}
             onClick={(e) => e.stopPropagation()}>
             {/* Close Button */}
             <button
@@ -506,15 +505,82 @@ export const NewDetailsDialog = ({
                     {selectedPost.message}
                   </p>
                 </div>
+                {selectedPost.facebookText && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      Facebook Caption
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                        {selectedPost.facebookText}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {selectedPost.instagramText && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      Instagram Caption
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                        {selectedPost.instagramText}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {selectedPost.linkedinText && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      LinkedIn Caption
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                        {selectedPost.linkedinText}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {selectedPost.tiktokDescription && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      TikTok Caption
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                        {selectedPost.tiktokDescription}
+                      </p>
+                    </div>
+                  </>
+                )}
                 {selectedPost.xText && (
                   <>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
-                      X Text
+                      X Caption
                     </h3>
                     <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                        {selectedPost.xText}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {selectedPost.youtubeTitle || selectedPost.youtubeDisc && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                      YouTube Title
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                      {selectedPost.youtubeTitle && (
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-                          {selectedPost.xText}
+                          {selectedPost.youtubeTitle}
                         </p>
+                      )}
+                      {selectedPost.youtubeDisc && (
+                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                          {selectedPost.youtubeDisc}
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
@@ -576,21 +642,19 @@ export const NewDetailsDialog = ({
                 <div className="flex rounded-lg bg-gray-200 dark:bg-darkBorder p-1">
                   <button
                     onClick={() => setCommentType("comment")}
-                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      commentType === "comment"
+                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${commentType === "comment"
                         ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
                         : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}>
+                      }`}>
                     <FiMessageCircle className="w-4 h-4" />
                     <span>Comments</span>
                   </button>
                   <button
                     onClick={() => setCommentType("issue")}
-                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      commentType === "issue"
+                    className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${commentType === "issue"
                         ? "bg-white dark:bg-darkButtons text-gray-900 dark:text-white shadow-sm"
                         : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}>
+                      }`}>
                     <FiAlertTriangle className="w-4 h-4" />
                     <span>Issues</span>
                   </button>
@@ -620,11 +684,10 @@ export const NewDetailsDialog = ({
                         <div className="mt-2">
                           <span
                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                          ${
-                            issue.status == "open"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                          }
+                          ${issue.status == "open"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              }
                           `}>
                             <FiAlertCircle className="w-3 h-3 mr-1" />
 
