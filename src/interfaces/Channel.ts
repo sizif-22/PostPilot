@@ -112,6 +112,7 @@ export interface Issue {
 
 export type Post = {
   id?: string;
+  postType?: "post" | "reel" | "story"; // Content type: regular post, reel, or story
   issues?: { [issueId: string]: Issue };
   comments?: Comment[];
   message?: string;

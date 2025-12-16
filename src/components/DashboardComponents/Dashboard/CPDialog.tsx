@@ -135,6 +135,9 @@ export const CPDialog = ({
   const [tiktokBrandedContent, setTiktokBrandedContent] = useState(false);
   const [tiktokLoading, setTiktokLoading] = useState(false);
 
+  // Post Type State (post vs story)
+  const [postType, setPostType] = useState<"post" | "story">("post");
+
   // Get sorted timezones for better UX
   const sortedTimezones = getSortedTimezones();
 
@@ -294,6 +297,7 @@ export const CPDialog = ({
     setYoutubePrivacy("public");
     setYoutubeMadeForKids(null);
     setYoutubeCategory("22");
+    setPostType("post");
   };
 
   const handleImageSelect = async (image: MediaItem) => {
@@ -323,7 +327,19 @@ export const CPDialog = ({
     const hasImage = selectedImages.some((item) => !item.isVideo);
     const videoCount = selectedImages.filter((item) => item.isVideo).length;
 
-    // General Media Rules
+    // Stories-specific validation
+    if (postType === "story") {
+      // Stories require exactly 1 media item
+      if (selectedImages.length !== 1) return false;
+      // Stories are only for Facebook and Instagram
+      const storyPlatforms = selectedPlatforms.filter(p => p === "facebook" || p === "instagram");
+      if (storyPlatforms.length === 0) return false;
+      // Don't allow mixing story platforms with non-story platforms
+      if (selectedPlatforms.length !== storyPlatforms.length) return false;
+      return true;
+    }
+
+    // General Media Rules (for regular posts)
     if (hasVideo && hasImage) return false;
     if (videoCount > 1) return false;
 
@@ -513,6 +529,7 @@ export const CPDialog = ({
 
       const newPost: Post = {
         id: postId,
+        postType: postType,
         platforms: selectedPlatforms,
         message: postText, // Keep for backward compatibility or default
         facebookText,
@@ -717,6 +734,42 @@ export const CPDialog = ({
                 )}
               </div>
             </div>
+
+            {/* Content Type Selection (Post vs Story) - Only for FB/IG */}
+            {(selectedPlatforms.includes("facebook") || selectedPlatforms.includes("instagram")) && (
+              <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">
+                <h3 className="text-sm font-medium text-stone-700 dark:text-white/70">
+                  Content Type
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPostType("post")}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-colors text-sm ${postType === "post"
+                      ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
+                      : "border-stone-200 hover:border-stone-300 dark:border-darkBorder dark:hover:border-stone-600"
+                      }`}
+                  >
+                    <span className="text-base">📝</span>
+                    <span>Post</span>
+                  </button>
+                  <button
+                    onClick={() => setPostType("story")}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-colors text-sm ${postType === "story"
+                      ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700"
+                      : "border-stone-200 hover:border-stone-300 dark:border-darkBorder dark:hover:border-stone-600"
+                      }`}
+                  >
+                    <span className="text-base">📸</span>
+                    <span>Story</span>
+                  </button>
+                </div>
+                {postType === "story" && (
+                  <p className="text-xs text-stone-500 dark:text-stone-400">
+                    Stories require a single image or video (max 60 seconds for video). Stories expire after 24 hours.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Post Content - Custom Tab Implementation */}
             <div className="space-y-3 p-4 border border-stone-200 dark:border-darkBorder rounded-lg">

@@ -9,6 +9,7 @@ import { PostOnLinkedIn } from "../functions/linkedin";
 import { decrypt, isValidEncryptedFormat, encrypt } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
 import { PostOnYouTube } from "../functions/youtube";
+import { PostInstagramStory, PostFacebookStory } from "../functions/story";
 import { transporter } from "../../../../utils/smtp.config";
 
 export async function POST(request: Request) {
@@ -143,18 +144,30 @@ export async function POST(request: Request) {
               try {
                 if (!channel.socialMedia?.facebook?.accessToken)
                   throw new Error("Facebook access_token not found");
-                await PostOnFacebook({
-                  accessToken: await decrypt(
-                    channel.socialMedia?.facebook?.accessToken,
-                  ),
-                  pageId: channel.socialMedia?.facebook?.id,
-                  media: post.media,
-                  message: post.facebookText || post.message,
-                  facebookVideoType: post.facebookVideoType as
-                    | "default"
-                    | "reel"
-                    | undefined,
-                });
+
+                const facebookAccessToken = await decrypt(
+                  channel.socialMedia?.facebook?.accessToken,
+                );
+
+                // Check if this is a Story post
+                if (post.postType === "story") {
+                  await PostFacebookStory({
+                    accessToken: facebookAccessToken,
+                    pageId: channel.socialMedia?.facebook?.id,
+                    media: post.media || [],
+                  });
+                } else {
+                  await PostOnFacebook({
+                    accessToken: facebookAccessToken,
+                    pageId: channel.socialMedia?.facebook?.id,
+                    media: post.media,
+                    message: post.facebookText || post.message,
+                    facebookVideoType: post.facebookVideoType as
+                      | "default"
+                      | "reel"
+                      | undefined,
+                  });
+                }
 
                 return {
                   platform: "facebook",
@@ -181,14 +194,27 @@ export async function POST(request: Request) {
                 }
                 if (!channel.socialMedia?.instagram?.instagramId)
                   throw new Error("Instagram access_token not found.");
-                const result = await PostOnInstagram({
-                  accessToken: await decrypt(
-                    channel.socialMedia.instagram.pageAccessToken,
-                  ),
-                  pageId: channel.socialMedia?.instagram?.instagramId,
-                  message: post.instagramText || post.message,
-                  media: post.media,
-                });
+
+                const decryptedToken = await decrypt(
+                  channel.socialMedia.instagram.pageAccessToken,
+                );
+
+                let result;
+                // Check if this is a Story post
+                if (post.postType === "story") {
+                  result = await PostInstagramStory({
+                    accessToken: decryptedToken,
+                    pageId: channel.socialMedia?.instagram?.instagramId,
+                    media: post.media,
+                  });
+                } else {
+                  result = await PostOnInstagram({
+                    accessToken: decryptedToken,
+                    pageId: channel.socialMedia?.instagram?.instagramId,
+                    message: post.instagramText || post.message,
+                    media: post.media,
+                  });
+                }
 
                 return {
                   platform: "instagram",
