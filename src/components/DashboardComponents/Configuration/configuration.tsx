@@ -141,7 +141,7 @@ export const Configuration = () => {
     const SCOPE = [
       "https://www.googleapis.com/auth/youtube.upload",
       "https://www.googleapis.com/auth/youtube",
-      "https://www.googleapis.com/auth/youtubepartner"
+      // "https://www.googleapis.com/auth/youtubepartner"
     ].join(" ");
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(

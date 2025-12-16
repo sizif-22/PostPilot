@@ -11,7 +11,7 @@ export const Sidebar = ({
 }) => {
   return (
     <div>
-      <div className="overflow-y-scroll h-[calc(100vh-32px-48px)]">
+      <div className="overflow-y-scroll h-[calc(100dvh-32px-48px)]">
         <NotificationSection pageName="collections/id" />
         <AccountToggle />
         <RouteSelect Callbackfunc={Callbackfunc} route={route} />
