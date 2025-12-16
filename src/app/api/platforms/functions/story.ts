@@ -275,25 +275,28 @@ async function uploadFacebookVideoStory(
     const { video_id, upload_url } = initData;
     console.log("Video story upload session created:", { video_id });
 
-    // Step 2: Upload the video file using file_url
+    // Step 2: Upload the video file using file_url to the upload_url
+    // According to Facebook API, we need to use the upload_url and pass the file_url as a header
     const uploadResponse = await fetchWithRetry(
-        `https://graph.facebook.com/v19.0/${video_id}`,
+        upload_url,
         {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": `OAuth ${pageAccessToken}`,
+                "file_url": mediaItem.url,
             },
-            body: new URLSearchParams({
-                access_token: pageAccessToken,
-                file_url: mediaItem.url,
-            }),
         }
     );
 
     if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        console.error("Facebook video story upload failed:", errorData);
-        throw new Error(errorData.error?.message || "Failed to upload video for story");
+        const errorText = await uploadResponse.text();
+        console.error("Facebook video story upload failed:", errorText);
+        try {
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error?.message || "Failed to upload video for story");
+        } catch {
+            throw new Error(`Failed to upload video for story: ${errorText}`);
+        }
     }
 
     console.log("Video uploaded successfully");
