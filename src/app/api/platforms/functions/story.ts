@@ -275,19 +275,25 @@ async function uploadFacebookVideoStory(
     const { video_id, upload_url } = initData;
     console.log("Video story upload session created:", { video_id });
 
-    // Step 2: Upload the video file
-    const uploadResponse = await fetchWithRetry(upload_url, {
-        method: "POST",
-        headers: {
-            Authorization: `OAuth ${pageAccessToken}`,
-            file_url: mediaItem.url,
-        },
-    });
+    // Step 2: Upload the video file using file_url
+    const uploadResponse = await fetchWithRetry(
+        `https://graph.facebook.com/v19.0/${video_id}`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                access_token: pageAccessToken,
+                file_url: mediaItem.url,
+            }),
+        }
+    );
 
     if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error("Facebook video story upload failed:", errorText);
-        throw new Error("Failed to upload video for story");
+        const errorData = await uploadResponse.json();
+        console.error("Facebook video story upload failed:", errorData);
+        throw new Error(errorData.error?.message || "Failed to upload video for story");
     }
 
     console.log("Video uploaded successfully");
