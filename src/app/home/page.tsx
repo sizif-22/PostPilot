@@ -9,16 +9,27 @@ import { Pricing } from "./pricing";
 import { CTA } from "./cta";
 import { Footer } from "./footer";
 import { Navigation } from "./navigation";
+import { AboutSection } from "./aboutSection";
+import { ParallaxBackground } from "./parallaxBackground";
+
 export default function Home() {
   const { user } = useUser();
   return (
     <>
-        <main className="min-h-screen transition-colors duration-300 dark:bg-black light:bg-gradient-to-b from-violet-100 via-violet-50 to-white">
+      <main className="min-h-screen transition-colors duration-300 dark:bg-gradient-to-b dark:from-[#0a0a0f] dark:via-[#0d0d18] dark:to-[#0a0a12] bg-gradient-to-b from-violet-100 via-violet-50 to-white relative overflow-hidden">
+        {/* Parallax Background with SVGs */}
+        <ParallaxBackground />
+
+        {/* Main Content */}
+        <div className="relative z-10">
           {/* Navigation */}
           <Navigation />
 
           {/* Hero Section */}
           <Hero />
+
+          {/* About PostPilot & Webbingstone Section */}
+          <AboutSection />
 
           {/* Features Section */}
           <Features />
@@ -37,7 +48,10 @@ export default function Home() {
 
           {/* Footer */}
           <Footer />
-        </main>
+        </div>
+      </main>
     </>
   );
 }
+
+

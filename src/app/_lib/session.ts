@@ -5,7 +5,7 @@ import { serverApp } from "@/firebase-admin/config";
 
 export async function login(idToken: string) {
   try {
-    const expiresIn = 60 * 60 * 1000; // 1 hour in milliseconds
+    const expiresIn = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
     const sessionCookie = await getAuth(serverApp).createSessionCookie(
       idToken,
       {
