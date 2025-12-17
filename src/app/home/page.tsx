@@ -41,7 +41,7 @@ export default function Home() {
           {/* <Pricing /> */}
 
           {/* Testimonials Section */}
-          <Testimonial />
+          {/* <Testimonial /> */}
 
           {/* CTA Section */}
           <CTA />
