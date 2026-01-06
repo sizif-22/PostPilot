@@ -546,7 +546,7 @@ export async function POST(request: Request) {
         const successfulPlatforms = validResults.filter((r) => r.success);
         const failedPlatforms = validResults.filter((r) => !r.success);
 
-        let emailBody = `Hi ${user.name},<br><br>Here is the summary of your recent post publication:<br><br>`;
+        let emailBody = `Hi ${user.name},<br><br>Here is the summary of your recent post publication:<br><br>Channel: ${channel.name}<br>`;
 
         if (successfulPlatforms.length > 0) {
           emailBody += "<b>Successfully published on:</b><br>";
@@ -567,7 +567,7 @@ export async function POST(request: Request) {
         await transporter.sendMail({
           from: '"PostPilot" <postpilot@webbingstone.org>',
           to: user.email,
-          subject: "Your Post Publication Summary",
+          subject: `Your Post Publication Summary for ${channel.name}`,
           html: emailBody,
         });
       } else {

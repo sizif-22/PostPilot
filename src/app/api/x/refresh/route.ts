@@ -115,6 +115,7 @@ const refreshX = async (channel: Channel, channelIdParam?: string) => {
   const updatedSocialMediaX = {
     ...currentX,
     accessToken: encryptedAccessToken,
+    after1hour: new Date(Date.now() + 60 * 60 * 1000),
     refreshToken: encryptedRefreshTokenValue,
     expiresIn: refreshData.expires_in,
     tokenExpiry: refreshData.expires_in
@@ -199,6 +200,7 @@ const refreshTiktok = async (channel: Channel) => {
     ...channel.socialMedia?.tiktok,
     accessToken: encryptedAccessToken,
     refreshToken: encryptedRefreshTokenValue,
+    after1hour: new Date(Date.now() + 60 * 60 * 1000),
     expiresIn: refreshData.expires_in,
     tokenExpiry: refreshData.expires_in
       ? new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
@@ -289,6 +291,7 @@ const refreshYoutube = async (channel: Channel, channelIdParam?: string) => {
     ...currentYoutube,
     accessToken: encryptedAccessToken,
     refreshToken: encryptedRefreshTokenValue,
+    after1hour: new Date(Date.now() + 60 * 60 * 1000),
     expiresIn: refreshData.expires_in,
     tokenExpiry: refreshData.expires_in
       ? new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
