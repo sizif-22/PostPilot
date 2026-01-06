@@ -120,7 +120,7 @@ const VideoThumbnailPicker: React.FC<VideoThumbnailPickerProps> = ({
         createdAt: serverTimestamp()
       };
       
-      await addDoc(collection(db, 'videos'), thumbnailData);
+      // await addDoc(collection(db, 'videos'), thumbnailData);
       
       setUploadedThumbnailUrl(downloadURL);
       setIsUploaded(true);
