@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
-import { transporter } from "@/utils/smtp.config";
+import { createTransport } from "nodemailer";
 import { Channel } from "@/interfaces/Channel";
+
+const transporter = createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: Boolean(Number(process.env.SMTP_SECURE)),
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
 
 export async function POST(request: Request) {
     try {

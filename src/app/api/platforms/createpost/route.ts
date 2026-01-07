@@ -10,7 +10,17 @@ import { decrypt, isValidEncryptedFormat, encrypt } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
 import { PostOnYouTube } from "../functions/youtube";
 import { PostInstagramStory, PostFacebookStory } from "../functions/story";
-import { transporter } from "../../../../utils/smtp.config";
+import { createTransport } from "nodemailer";
+
+const transporter = createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: Boolean(Number(process.env.SMTP_SECURE)),
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export async function POST(request: Request) {
   try {

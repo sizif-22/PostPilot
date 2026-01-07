@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { transporter } from "@/utils/smtp.config";
+import { createTransport } from "nodemailer";
+
+const transporter = createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: Boolean(Number(process.env.SMTP_SECURE)),
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
 export async function POST(req: NextRequest) {
   const {
     sender,

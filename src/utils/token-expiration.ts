@@ -1,21 +1,18 @@
 import { Channel } from "@/interfaces/Channel";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase/config";
-import { transporter } from "./smtp.config";
 import { getDoc } from "firebase/firestore";
 import { User } from "@/interfaces/User";
 
 const sendExpirationEmail = async (userEmail: string, platformName: string) => {
-  const mailOptions = {
-    from: '"PostPilot" <postpilot@webbingstone.org>',
-    to: userEmail,
-    subject: `PostPilot | ${platformName} token has expired`,
-    text: `Your access token for ${platformName} has expired. Please log in to PostPilot and reconnect your account.`,
-    html: `<b>Your access token for ${platformName} has expired. Please log in to PostPilot and reconnect your account.</b>`,
-  };
-
   try {
-    await transporter.sendMail(mailOptions);
+    await fetch('/api/send-expiration-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userEmail, platformName }),
+    });
     console.log("Expiration email sent successfully.");
   } catch (error) {
     console.error("Error sending expiration email:", error);

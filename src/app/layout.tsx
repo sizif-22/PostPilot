@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UserProvider } from "@/context/UserContext";
 import { NotificationProvider } from "@/context/NotificationContext";
@@ -7,7 +6,6 @@ import { headers } from "next/headers";
 import "./globals.css";
 // import SubLayout from "./subLayout";
 import { cookies } from "next/headers";
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "PostPilot",
@@ -44,7 +42,7 @@ export default async function RootLayout({
           sizes="<generated>"
         />
       </head>
-      <body className={`${inter.className} text-stone-950 bg-stone-100 vsc-initialized`}>
+      <body className={`text-stone-950 bg-stone-100 vsc-initialized`}>
         <NotificationProvider>
           <ThemeProvider
             attribute="class"
