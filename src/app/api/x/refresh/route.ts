@@ -23,10 +23,17 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!channelId || typeof channelId !== 'string') {
+      return NextResponse.json(
+        { message: "Channel ID is required" },
+        { status: 400 },
+      );
+    }
+
     await Promise.all([
       refreshYoutube(channel, channelId),
       refreshX(channel, channelId),
-      refreshTiktok(channel),
+      refreshTiktok(channel, channelId),
     ]);
 
     return NextResponse.json({ message: "Token refreshed" });
@@ -131,7 +138,7 @@ const refreshX = async (channel: Channel, channelIdParam?: string) => {
   return NextResponse.json({ message: "X token refreshed" });
 };
 
-const refreshTiktok = async (channel: Channel) => {
+const refreshTiktok = async (channel: Channel, channelIdParam?: string) => {
   if (!channel.socialMedia?.tiktok) {
     return NextResponse.json(
       { error: "Tiktok profile not found in channel" },
@@ -208,7 +215,8 @@ const refreshTiktok = async (channel: Channel) => {
   };
 
   // Update Firestore with new tokens
-  await fs.updateDoc(fs.doc(db, "Channels", channel.id), {
+  const targetId = channelIdParam ?? channel.id;
+  await fs.updateDoc(fs.doc(db, "Channels", targetId), {
     "socialMedia.tiktok": updatedSocialMediaTiktok,
   });
   return NextResponse.json({ message: "TikTok token refreshed" });
