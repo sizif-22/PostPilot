@@ -10,16 +10,25 @@ const ChannelContext = createContext<{
   setChannel: (channel: Channel | null) => void;
 }>({
   channel: null,
-  setChannel: () => {},
+  setChannel: () => { },
 });
 
-export const ChannelContextProvider = ({ children , userChannel }: { children: React.ReactNode , userChannel: UserChannel }) => {
+import { checkTokenExpiration } from "@/utils/token-expiration";
+
+export const ChannelContextProvider = ({ children, userChannel }: { children: React.ReactNode, userChannel: UserChannel }) => {
   const [channel, setChannel] = useState<Channel | null>(null);
   useEffect(() => {
     if (userChannel) {
       getChannel(userChannel, (channel) => setChannel(channel));
     }
   }, [userChannel]);
+
+  useEffect(() => {
+    if (channel) {
+      checkTokenExpiration(channel);
+    }
+  }, [channel]);
+
   return (
     <ChannelContext.Provider value={{ channel, setChannel }}>
       {children}

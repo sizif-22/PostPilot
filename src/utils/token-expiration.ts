@@ -51,6 +51,7 @@ export const checkTokenExpiration = async (channel: Channel) => {
 
   const socialMedia = channel.socialMedia || {};
   const updatedSocialMedia = { ...socialMedia };
+  let hasChanges = false;
 
   for (const platformName in socialMedia) {
     const platform = socialMedia[platformName as keyof typeof socialMedia];
@@ -66,19 +67,16 @@ export const checkTokenExpiration = async (channel: Channel) => {
         delete updatedSocialMedia[
           platformName as keyof typeof updatedSocialMedia
         ];
-      } else {
-        (
-          updatedSocialMedia[
-            platformName as keyof typeof updatedSocialMedia
-          ] as any
-        ).remainingTime = tokenExpiry - now;
+        hasChanges = true;
       }
     }
   }
 
-  await updateDoc(doc(db, "Channels", channel.id), {
-    socialMedia: updatedSocialMedia,
-  });
+  if (hasChanges) {
+    await updateDoc(doc(db, "Channels", channel.id), {
+      socialMedia: updatedSocialMedia,
+    });
+  }
 
   return {
     ...channel,

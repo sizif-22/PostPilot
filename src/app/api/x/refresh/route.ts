@@ -30,11 +30,15 @@ export async function POST(request: Request) {
       );
     }
 
-    await Promise.all([
-      refreshYoutube(channel, channelId),
-      refreshX(channel, channelId),
-      refreshTiktok(channel, channelId),
-    ]);
+    if (channel.socialMedia?.x) {
+      await refreshX(channel, channelId);
+    }
+    if (channel.socialMedia?.youtube) {
+      await refreshYoutube(channel, channelId);
+    }
+    if (channel.socialMedia?.tiktok) {
+      await refreshTiktok(channel, channelId);
+    }
 
     return NextResponse.json({ message: "Token refreshed" });
   } catch (error: any) {
