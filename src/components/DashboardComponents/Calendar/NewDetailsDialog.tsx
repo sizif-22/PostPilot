@@ -12,6 +12,7 @@ import {
   FiTrash2,
   FiFileText,
   FiSend,
+  FiYoutube
 } from "react-icons/fi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -104,6 +105,8 @@ export const NewDetailsDialog = ({
         return <FaXTwitter className="text-gray-800 dark:text-white w-5 h-5" />;
       case "tiktok":
         return <FaTiktok className="text-gray-800 dark:text-white w-5 h-5" />;
+      case "youtube":
+        return <FiYoutube className="text-gray-800 dark:text-white w-5 h-5" />;
       default:
         return <FiGlobe className="text-stone-600 w-5 h-5" />;
     }
@@ -373,7 +376,7 @@ export const NewDetailsDialog = ({
                     <>
                       {selectedPost.media[currentIndex]?.thumbnailUrl ? (
                         <Image
-                          src={selectedPost.media[currentIndex].thumbnailUrl}
+                          src={selectedPost.media[currentIndex].thumbnailUrl!}
                           width={1000}
                           height={1000}
                           alt="Post media"
@@ -561,23 +564,32 @@ export const NewDetailsDialog = ({
                     </div>
                   </>
                 )}
-                {selectedPost.youtubeTitle || selectedPost.youtubeDisc && (
+                {(selectedPost.youtubeTitle || selectedPost.youtubeDisc) && (
                   <>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
-                      YouTube Title
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
-                      {selectedPost.youtubeTitle && (
-                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-                          {selectedPost.youtubeTitle}
-                        </p>
-                      )}
-                      {selectedPost.youtubeDisc && (
-                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-                          {selectedPost.youtubeDisc}
-                        </p>
-                      )}
-                    </div>
+                    {selectedPost.youtubeTitle && (
+                      <>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                          YouTube Title
+                        </h3>
+                        <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                          <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap font-medium">
+                            {selectedPost.youtubeTitle}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                    {selectedPost.youtubeDisc && (
+                      <>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white my-3">
+                          YouTube Description
+                        </h3>
+                        <div className="bg-gray-50 dark:bg-darkButtons rounded-lg p-4 max-h-64 overflow-y-auto">
+                          <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                            {selectedPost.youtubeDisc}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </div>

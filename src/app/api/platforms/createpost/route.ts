@@ -467,6 +467,10 @@ export async function POST(request: Request) {
                   }
                 }
 
+                // Note: We don't pass scheduleTime to YouTube because scheduling is handled
+                // by AWS Lambda. The Lambda triggers at the scheduled time, so YouTube
+                // should publish immediately. Passing the original schedule date would
+                // cause an "invalid scheduled publishing time" error since that time is now in the past.
                 const result = await PostOnYouTube({
                   accessToken: accessToken,
                   title: post.youtubeTitle || post.title || "Untitled Video",
@@ -474,10 +478,6 @@ export async function POST(request: Request) {
                   tags: post.youtubeTags || [], // Support tags if available
                   privacy: (post.youtubePrivacy as "public" | "private" | "unlisted") || "public",
                   media: post.media || [],
-                  scheduleTime:
-                    post.isScheduled && post.date
-                      ? new Date(post.date.toDate()).toISOString()
-                      : undefined,
                 });
 
                 return {

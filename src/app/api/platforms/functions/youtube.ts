@@ -83,12 +83,11 @@ export const PostOnYouTube = async (
       categoryId: categoryId || "22", // Default to People & Blogs if not specified
     };
 
+    // Note: scheduleTime/publishAt is not used because scheduling is handled
+    // by AWS Lambda which triggers the upload at the scheduled time
     const status = {
       privacyStatus: privacy || "public",
       selfDeclaredMadeForKids: madeForKids ?? false,
-      ...(scheduleTime && {
-        publishAt: scheduleTime,
-      }),
     };
 
     console.log("Initializing resumable upload session...");

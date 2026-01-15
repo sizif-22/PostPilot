@@ -1,6 +1,6 @@
 import { Post } from "@/interfaces/Channel";
 import { format } from "date-fns";
-import { FiFacebook, FiInstagram } from "react-icons/fi";
+import { FiFacebook, FiInstagram, FiYoutube } from "react-icons/fi";
 import { FaLinkedin, FaPlay } from "react-icons/fa";
 import Image from "next/image";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
@@ -18,20 +18,19 @@ export const PostCard = ({
     <button
       key={post.id}
       onClick={callbackFunc}
-      className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${
-        post.issues &&
-        Object.values(post.issues).filter((i) => i.status === "open").length > 0
+      className={`w-full h-12 text-left  flex gap-1.5 items-center p-1 text-[10px] sm:text-xs truncate rounded b transition-colors ${post.issues &&
+          Object.values(post.issues).filter((i) => i.status === "open").length > 0
           ? "dark:bg-red-950/80 bg-red-700 text-red-200 dark:text-red-200"
           : post.draft === true
-          ? "dark:bg-gray-500/80 bg-gray-500 text-gray-200"
-          : "bg-violet-300 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
-      }`}
+            ? "dark:bg-gray-500/80 bg-gray-500 text-gray-200"
+            : "bg-violet-300 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-400"
+        }`}
       title={`${format(new Date(post.date.toDate()), "h:mm a")}`}>
       <div className="w-10 h-10 ml-0.5 rounded-sm relative">
         {post.media &&
-        post.media[0] &&
-        post.media[0].url &&
-        !post.media[0].isVideo ? (
+          post.media[0] &&
+          post.media[0].url &&
+          !post.media[0].isVideo ? (
           <Image
             src={post.media[0].url}
             width={70}
@@ -78,6 +77,8 @@ export const PostCard = ({
               <FaTiktok key={index} />
             ) : platform === "linkedin" ? (
               <FaLinkedin key={index} />
+            ) : platform === "youtube" ? (
+              <FiYoutube key={index} />
             ) : null
           )}
         </div>
