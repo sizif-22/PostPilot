@@ -1,18 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebase/config";
 import * as fs from "firebase/firestore";
-import { createTransport } from "nodemailer";
-import { Channel } from "@/interfaces/Channel";
 
-const transporter = createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Boolean(Number(process.env.SMTP_SECURE)),
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+import { Channel } from "@/interfaces/Channel";
+import { sendPostEditNotification } from "@/smtp/post-edit";
 
 export async function POST(request: Request) {
     try {
@@ -47,12 +38,7 @@ export async function POST(request: Request) {
       <p>Login to PostPilot to view the full details.</p>
     `;
 
-        await transporter.sendMail({
-            from: '"PostPilot" <postpilot@webbingstone.org>',
-            to: owner.email,
-            subject: `Post Edited in ${channel.name}`,
-            html: emailBody,
-        });
+        await sendPostEditNotification(owner.email, channelId, emailBody);
 
         console.log(`Edit notification email sent to ${owner.email} for post ${postId}`);
 

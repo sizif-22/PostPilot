@@ -20,7 +20,7 @@ export const SupportedPlatforms = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-24 px-6">
+    <section id="platforms" className="py-16 sm:py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

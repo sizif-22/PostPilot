@@ -23,23 +23,23 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="#"
+                  href="#about"
+                  className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
+                  About
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#features"
                   className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                   Features
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#platforms"
                   className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
-                  API
+                  Supported Platforms
                 </a>
               </li>
             </ul>
@@ -50,16 +50,16 @@ export const Footer = () => {
               Company
             </h5>
             <ul className="space-y-2 text-sm">
-              <li>
+              {/* <li>
                 <a
                   href="#about"
                   className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">
                   About
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a
-                  href="https://www.webbingstone.com/contact-us/"
+                  href="mailto:sheriflotfy22@hotmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="dark:text-zinc-400 text-gray-600 hover:dark:text-violet-400 hover:text-violet-700 transition-colors">

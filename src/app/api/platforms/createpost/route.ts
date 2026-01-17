@@ -10,17 +10,7 @@ import { decrypt, isValidEncryptedFormat, encrypt } from "@/utils/encryption";
 import { PostOnTiktok } from "../functions/tiktok";
 import { PostOnYouTube } from "../functions/youtube";
 import { PostInstagramStory, PostFacebookStory } from "../functions/story";
-import { createTransport } from "nodemailer";
-
-const transporter = createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Boolean(Number(process.env.SMTP_SECURE)),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+import { sendEmail } from "@/smtp/config";
 
 export async function POST(request: Request) {
   try {
@@ -574,8 +564,8 @@ export async function POST(request: Request) {
           emailBody += "<br>";
         }
 
-        await transporter.sendMail({
-          from: '"PostPilot" <postpilot@webbingstone.org>',
+        await sendEmail({
+          from: '"PostPilot" <notification@postpilot.webbingstone.org>',
           to: user.email,
           subject: `Your Post Publication Summary for ${channel.name}`,
           html: emailBody,

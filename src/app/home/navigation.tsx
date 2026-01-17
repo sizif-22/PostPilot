@@ -24,19 +24,19 @@ import axios from "axios";
 export const Navigation = () => {
   const router = useRouter();
   const { user } = useUser();
-  const Buttons = [
-    {
-      name: "About",
-      href: "#about",
-    },
-    {
-      name: "Contact-Us",
-      href: "#contact",
-    },
-    {
-      name: "Privacy-Policy",
-      href: "/privacy-policy",
-    },
+  const Buttons: { name: string; href: string }[] = [
+    // {
+    //   name: "About",
+    //   href: "#about",
+    // },
+    // {
+    //   name: "Contact-Us",
+    //   href: "#contact",
+    // },
+    // {
+    //   name: "Privacy-Policy",
+    //   href: "/privacy-policy",
+    // },
   ];
   const { addNotification } = useNotification();
   const notificationRef = useRef<HTMLDivElement>(null);

@@ -36,7 +36,7 @@ export const Features = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-24 px-6 dark:bg-gradient-to-b dark:from-[#0d0d18]/80 dark:via-[#12121f]/60 dark:to-[#0d0d18]/80 bg-gradient-to-b from-white to-violet-50 relative">
+    <section id="features" className="py-16 sm:py-24 px-6 dark:bg-gradient-to-b dark:from-[#0d0d18]/80 dark:via-[#12121f]/60 dark:to-[#0d0d18]/80 bg-gradient-to-b from-white to-violet-50 relative">
       {/* Decorative gradient orb */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full dark:bg-violet-600/5 bg-violet-200/20 blur-3xl pointer-events-none" />
 
